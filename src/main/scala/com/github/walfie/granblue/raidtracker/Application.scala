@@ -9,7 +9,7 @@ object Application {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def main(args: Array[String]): Unit = {
-    val system = ActorSystem()
+    val system = ActorSystem("raid-tracker")
 
     val mediator = DistributedPubSub(system).mediator
 
@@ -17,6 +17,7 @@ object Application {
       RaidPoller.defaultProps(Some(mediator)), "poller"
     )
 
+    Thread.sleep(1000) // For testing purposes
     val subscriber = system.actorOf(
       Props(new SubscriberActor(raidPoller, mediator)), "subscriber"
     )
@@ -32,15 +33,27 @@ object Application {
   class SubscriberActor(
     raidPoller: ActorRef, mediator: ActorRef
   ) extends Actor {
+    import RaidPoller._
     import akka.cluster.pubsub.DistributedPubSubMediator.{Subscribe, SubscribeAck}
 
-    // TODO: Use second param for optional group?
-    // Subscribe(topic: String, group: Option[String], ref: ActorRef)
-    mediator ! Subscribe("Lv60 ユグドラシル・マグナ", self)
+    val following = Set("Lv60 ユグドラシル・マグナ")
+
+    raidPoller ! GetRaidBosses
+
+    following.foreach { raidBoss =>
+      // TODO: Use second param for optional group?
+      // Subscribe(topic: String, group: Option[String], ref: ActorRef)
+      mediator ! Subscribe(raidBoss, self)
+      raidPoller ! GetCachedRaids(raidBoss)
+    }
 
     def receive: Receive = {
-      case RaidPoller.RaidsMessage(bossName, raids) =>
-        println("Subscriber actor received:")
+      case RaidBossesMessage(raidBosses) =>
+        println("Known raid bosses:")
+        raidBosses.foreach(println)
+
+      case RaidsMessage(bossName, raids) =>
+        println("Received raids:")
         raids.foreach(println)
     }
   }

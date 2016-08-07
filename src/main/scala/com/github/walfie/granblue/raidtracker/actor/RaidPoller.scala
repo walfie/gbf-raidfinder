@@ -43,9 +43,11 @@ class RaidPoller(
       raidBosses = raidBosses ++ getRaidBosses(newRaidTweets)
       raidTweetsCache = combineRaidTweets(raidTweetsCache, newRaidTweets, raidTweetsCacheSize)
 
-      // TODO: Change this
-      raidTweetsCache.foreach(println)
-      raidBosses.foreach(println)
+    case GetRaidBosses =>
+      sender ! RaidBossesMessage(raidBosses.values.toSeq)
+
+    case GetCachedRaids(bossName) =>
+      sender ! RaidsMessage(bossName, raidTweetsCache.getOrElse(bossName, Seq.empty).map(_.raid))
   }
 
   private def publishRaids(raids: Seq[Raid]): Unit = pubSubMediator.foreach { mediator =>
@@ -55,7 +57,6 @@ class RaidPoller(
     }
   }
 
-  private case class RaidTweet(tweet: Tweet, raid: Raid)
   private def getRaidsFromSearchResult(result: TweetSearchResult): Seq[RaidTweet] = {
     result.tweets.flatMap { tweet: Tweet =>
       raidParser.parseText(tweet.text).map(RaidTweet(tweet, _))
@@ -122,9 +123,14 @@ object RaidPoller {
   ).withDeploy(Deploy.local)
 
   private case object Tick
-  private case class RaidBoss(name: String, image: Option[String], lastSeen: java.util.Date)
 
   // TODO: Put this in some kind of protocol object to distinguish between internal domain objects
+  case class RaidBoss(name: String, image: Option[String], lastSeen: java.util.Date)
+  case class RaidTweet(tweet: Tweet, raid: Raid)
+
+  case object GetRaidBosses
+  case class GetCachedRaids(bossName: String)
+  case class RaidBossesMessage(raidBosses: Seq[RaidBoss])
   case class RaidsMessage(bossName: String, raids: Seq[Raid])
 }
 
