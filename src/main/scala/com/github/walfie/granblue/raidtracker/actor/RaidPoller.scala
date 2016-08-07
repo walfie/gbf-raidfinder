@@ -106,7 +106,7 @@ class RaidPoller(
 
 object RaidPoller {
   val DefaultSearchTerm = "参加者募集！参戦ID："
-  val DefaultPollingInterval = 20.seconds
+  val DefaultPollingInterval = 10.seconds // Max 180 queries in 15 mins (average 1 query in 5 seconds)
   val DefaultRaidTtl = 30.minutes
   val DefaultRaidTweetCacheSize = 50
 
