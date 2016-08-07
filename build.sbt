@@ -5,9 +5,10 @@ organization := "com.github.walfie"
 name := "granblue-raid-tracker"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-actor" % "2.4.8",
-  "org.twitter4j" % "twitter4j-core" % "4.0.4",
-  "org.twitter4j" % "twitter4j-stream" % "4.0.4"
+  "com.typesafe.akka" %% "akka-actor" % Versions.Akka,
+  "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka,
+  "org.twitter4j" % "twitter4j-core" % Versions.Twitter4j,
+  "org.twitter4j" % "twitter4j-stream" % Versions.Twitter4j
 )
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint")

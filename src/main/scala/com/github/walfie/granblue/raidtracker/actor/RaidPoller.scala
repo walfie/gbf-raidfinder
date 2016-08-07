@@ -1,8 +1,10 @@
 package com.github.walfie.granblue.raidtracker.actor
 
 import akka.actor._
-import scala.concurrent.duration._
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.Publish
 import com.github.walfie.granblue.raidtracker._
+import scala.concurrent.duration._
 
 // This maintains so much state and is annoying to test
 class RaidPoller(
@@ -11,7 +13,8 @@ class RaidPoller(
   searchTerm:          String,
   pollingInterval:     FiniteDuration,
   raidTtl:             FiniteDuration,
-  raidTweetsCacheSize: Int
+  raidTweetsCacheSize: Int,
+  pubSubMediator:      Option[ActorRef]
 ) extends Actor {
   import scala.concurrent.ExecutionContext.Implicits.global
   import RaidPoller._
@@ -33,6 +36,9 @@ class RaidPoller(
 
     case searchResult: TweetSearchResult =>
       val newRaidTweets: Seq[RaidTweet] = getRaidsFromSearchResult(searchResult)
+
+      publishRaids(newRaidTweets.map(_.raid))
+
       latestTweetId = searchResult.maxId
       raidBosses = raidBosses ++ getRaidBosses(newRaidTweets)
       raidTweetsCache = combineRaidTweets(raidTweetsCache, newRaidTweets, raidTweetsCacheSize)
@@ -40,6 +46,13 @@ class RaidPoller(
       // TODO: Change this
       raidTweetsCache.foreach(println)
       raidBosses.foreach(println)
+  }
+
+  private def publishRaids(raids: Seq[Raid]): Unit = pubSubMediator.foreach { mediator =>
+    raids.groupBy(_.bossName).foreach {
+      case (bossName, raids) =>
+        mediator ! Publish(bossName, RaidsMessage(bossName, raids))
+    }
   }
 
   private case class RaidTweet(tweet: Tweet, raid: Raid)
@@ -96,18 +109,22 @@ object RaidPoller {
   val DefaultRaidTtl = 30.minutes
   val DefaultRaidTweetCacheSize = 50
 
-  def defaultProps = Props(
+  def defaultProps(mediator: Option[ActorRef]) = Props(
     new RaidPoller(
       TweetSearcher.default,
       RaidParser.Default,
       DefaultSearchTerm,
       DefaultPollingInterval,
       DefaultRaidTtl,
-      DefaultRaidTweetCacheSize
+      DefaultRaidTweetCacheSize,
+      mediator
     )
   ).withDeploy(Deploy.local)
 
   private case object Tick
   private case class RaidBoss(name: String, image: Option[String], lastSeen: java.util.Date)
+
+  // TODO: Put this in some kind of protocol object to distinguish between internal domain objects
+  case class RaidsMessage(bossName: String, raids: Seq[Raid])
 }
 
