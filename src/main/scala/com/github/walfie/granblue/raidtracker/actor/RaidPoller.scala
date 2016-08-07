@@ -5,9 +5,9 @@ import scala.concurrent.duration._
 import com.github.walfie.granblue.raidtracker._
 
 class RaidPoller(
-  tweetSearcher: TweetSearcher,
-  raidParser: RaidParser,
-  searchTerm: String,
+  tweetSearcher:   TweetSearcher,
+  raidParser:      RaidParser,
+  searchTerm:      String,
   pollingInterval: FiniteDuration
 ) extends Actor {
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -60,7 +60,6 @@ class RaidPoller(
 object RaidPoller {
   val DefaultSearchTerm = "参加者募集！参戦ID："
   val DefaultPollingInterval = 20.seconds
-
 
   val DefaultProps = Props(
     new RaidPoller(
