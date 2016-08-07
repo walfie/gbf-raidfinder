@@ -10,6 +10,12 @@ object Application {
   def main(args: Array[String]): Unit = {
     val system = ActorSystem()
     system.actorOf(RaidPoller.DefaultProps)
+
+    // Temporary way to stop server without killing SBT
+    println("Server running. Press RETURN to stop.")
+    scala.io.StdIn.readLine()
+    println("Stopping server.")
+    system.terminate()
   }
 }
 
