@@ -96,7 +96,7 @@ object RaidPoller {
   val DefaultRaidTtl = 30.minutes
   val DefaultRaidTweetCacheSize = 50
 
-  val DefaultProps = Props(
+  def defaultProps = Props(
     new RaidPoller(
       TweetSearcher.default,
       RaidParser.Default,
