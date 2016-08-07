@@ -11,7 +11,7 @@ case class Tweet(
   def smallImageUrls(): Seq[String] = imageUrls.map(_ + ":small")
 }
 
-case class TweetSearchResult(tweets: Seq[Tweet], maxId: Long)
+case class TweetSearchResult(tweets: Seq[Tweet], maxId: Option[Long])
 
 case class Raid(
   bossName: String,

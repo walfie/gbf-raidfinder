@@ -12,12 +12,12 @@ trait TweetSearcher {
 
 class TweetSearcherImpl(
   twitter: Twitter, maxCount: Int, filterSource: Option[String]
-)(implicit ec: ExecutionContext) extends TweetSearcher {
+) extends TweetSearcher {
   def search(searchTerm: String, sinceId: Option[Long]): Future[TweetSearchResult] = {
     val query = new Query(searchTerm).count(maxCount)
     sinceId.foreach(query.setSinceId)
 
-    BlockingIO.future(twitter.search(query)).map(toTweetSearchResult)
+    BlockingIO.future(toTweetSearchResult(twitter.search(query)))
   }
 
   private def toTweetSearchResult(
@@ -34,7 +34,7 @@ class TweetSearcherImpl(
       createdAt = status.getCreatedAt
     )
 
-    TweetSearchResult(tweets, queryResult.getMaxId)
+    TweetSearchResult(tweets, Option(queryResult.getMaxId))
   }
 }
 
@@ -47,7 +47,7 @@ object TweetSearcher {
   def fromSingleton(
     maxCount: Int = MaxCount,
     filterSource: Option[String] = Some(GranblueSource)
-  )(implicit ec: ExecutionContext): TweetSearcher =
+  ): TweetSearcher =
     new TweetSearcherImpl(TwitterFactory.getSingleton, maxCount, filterSource)
 }
 

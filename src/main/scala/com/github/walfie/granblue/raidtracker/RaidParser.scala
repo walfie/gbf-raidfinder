@@ -7,14 +7,18 @@ trait RaidParser {
   def parseText(text: String): Option[Raid]
 }
 
-trait RaidParserImpl extends RaidParser {
+trait DefaultRaidParser extends RaidParser {
   protected val RaidRegex = "(.*)参加者募集！参戦ID：([0-9A-F]{8})\n(.+)\n?.*".r
 
   def parseText(text: String): Option[Raid] = parseTextPF(text)
 
   private val parseTextPF: String => Option[Raid] = ({
     case RaidRegex(extraText, raidId, bossName) =>
-      Raid(bossName, raidId, extraText)
+      Raid(bossName, raidId, extraText.trim)
   }: PartialFunction[String, Raid]).lift
+}
+
+object RaidParser {
+  lazy val Default = new DefaultRaidParser {}
 }
 
