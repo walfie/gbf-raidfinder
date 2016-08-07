@@ -30,7 +30,7 @@ class TweetSearcherImpl(
       id = status.getId,
       screenName = status.getUser.getScreenName,
       text = status.getText,
-      imageUrls = status.getMediaEntities.map(_.getMediaURLHttps),
+      images = status.getMediaEntities.map(entity => TwitterImage(entity.getMediaURLHttps)),
       createdAt = status.getCreatedAt
     )
 

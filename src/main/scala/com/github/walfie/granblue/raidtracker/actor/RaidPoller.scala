@@ -50,9 +50,9 @@ class RaidPoller(
   private def getRaidBossImages(raidTweets: Seq[RaidTweet]): Map[RaidBossName, RaidBossImage] = {
     raidTweets
       .groupBy(_.raid.bossName) // Map[RaidBossName, Seq[RaidTweet]]
-      .mapValues(_.head.tweet.smallImageUrls.headOption) // Map[RaidBossName, Option[RaidBossImage]]
+      .mapValues(_.head.tweet.images.headOption) // Map[RaidBossName, Option[RaidBossImage]]
       .collect {
-        case (name, Some(image)) => name -> image
+        case (name, Some(image)) => name -> image.thumb
       }.toMap
   }
 }
