@@ -19,22 +19,21 @@ class RaidPoller(
 
   // Internal state variables
   type RaidBossName = String
-  type RaidBossImage = String
-  var raidBossImages: Map[RaidBossName, Option[RaidBossImage]] = Map.empty
-  var latestTweetId: Option[Long] = None
+  private var raidBosses: Map[RaidBossName, RaidBoss] = Map.empty
+  private var latestTweetId: Option[Long] = None
 
   def receive: Receive = {
     case GetLatestRaids =>
       tweetSearcher.search(searchTerm, latestTweetId).foreach(self ! _)
 
-    case result: TweetSearchResult =>
-      val raidTweets: Seq[RaidTweet] = getRaidsFromSearchResult(result)
-      latestTweetId = result.maxId
-      raidBossImages = raidBossImages ++ getRaidBossImages(raidTweets)
+    case searchResult: TweetSearchResult =>
+      val raidTweets: Seq[RaidTweet] = getRaidsFromSearchResult(searchResult)
+      latestTweetId = searchResult.maxId
+      raidBosses = raidBosses ++ getRaidBosses(raidTweets)
 
       // TODO: Change this
       raidTweets.foreach(println)
-      raidBossImages.foreach(println)
+      raidBosses.foreach(println)
   }
 
   private case class RaidTweet(tweet: Tweet, raid: Raid)
@@ -44,12 +43,16 @@ class RaidPoller(
     }
   }
 
-  private def getRaidBossImages(
+  private def getRaidBosses(
     raidTweets: Seq[RaidTweet]
-  ): Map[RaidBossName, Option[RaidBossImage]] = {
+  ): Map[RaidBossName, RaidBoss] = {
     raidTweets
       .groupBy(_.raid.bossName) // Map[RaidBossName, Seq[RaidTweet]]
-      .mapValues(_.head.tweet.images.headOption.map(_.thumb))
+      .mapValues { raidTweets: Seq[RaidTweet] =>
+        val raidTweet = raidTweets.head
+        val image = raidTweet.tweet.images.headOption.map(_.thumb)
+        RaidBoss(raidTweet.raid.bossName, image, raidTweet.tweet.createdAt)
+      }
   }
 }
 
@@ -67,5 +70,6 @@ object RaidPoller {
   ).withDeploy(Deploy.local)
 
   private case object GetLatestRaids
+  private case class RaidBoss(name: String, image: Option[String], lastSeen: java.util.Date)
 }
 
