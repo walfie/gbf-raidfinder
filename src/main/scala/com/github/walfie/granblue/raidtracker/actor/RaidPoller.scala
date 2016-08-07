@@ -62,7 +62,7 @@ object RaidPoller {
 
   val DefaultProps = Props(
     new RaidPoller(
-      TweetSearcher.fromSingleton(),
+      TweetSearcher.default,
       RaidParser.Default,
       DefaultSearchTerm,
       DefaultPollingInterval

@@ -44,10 +44,7 @@ object TweetSearcher {
   val GranblueSource =
     """<a href="http://granbluefantasy.jp/" rel="nofollow">グランブルー ファンタジー</a>"""
 
-  def fromSingleton(
-    maxCount:     Int            = MaxCount,
-    filterSource: Option[String] = Some(GranblueSource)
-  ): TweetSearcher =
-    new TweetSearcherImpl(TwitterFactory.getSingleton, maxCount, filterSource)
+  def default(): TweetSearcher =
+    new TweetSearcherImpl(TwitterFactory.getSingleton, MaxCount, Some(GranblueSource))
 }
 
