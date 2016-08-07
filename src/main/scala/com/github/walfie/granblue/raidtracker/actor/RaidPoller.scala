@@ -13,28 +13,47 @@ class RaidPoller(
   import scala.concurrent.ExecutionContext.Implicits.global
   import RaidPoller._
 
-  var latestTweetId: Option[Long] = None
-
   override def preStart(): Unit = self ! GetLatestRaids
+
+  // Internal state variables
+  type RaidBossName = String
+  type RaidBossImage = String
+  var raidBossImages: Map[RaidBossName, RaidBossImage] = Map.empty
+  var latestTweetId: Option[Long] = None
 
   def receive: Receive = {
     case GetLatestRaids =>
       tweetSearcher.search(searchTerm, latestTweetId).foreach(self ! _)
 
     case result: TweetSearchResult =>
+      val raidTweets: Seq[RaidTweet] = getRaidsFromSearchResult(result)
       latestTweetId = result.maxId
-      val raids: Seq[Raid] = getRaidsFromSearchResult(result)
-      raids.foreach(println) // TODO: Change this
+      raidBossImages = raidBossImages ++ getRaidBossImages(raidTweets)
 
+      // TODO: Change this
+      raidTweets.foreach(println)
+      raidBossImages.foreach(println)
+
+      // TODO: If one search fails, this never recovers
       context.system.scheduler.scheduleOnce(
         pollingInterval, self, GetLatestRaids
       )(context.system.dispatcher)
   }
 
-  def getRaidsFromSearchResult(result: TweetSearchResult): Seq[Raid] = {
+  private case class RaidTweet(tweet: Tweet, raid: Raid)
+  private def getRaidsFromSearchResult(result: TweetSearchResult): Seq[RaidTweet] = {
     result.tweets.flatMap { tweet: Tweet =>
-      raidParser.parseText(tweet.text)
+      raidParser.parseText(tweet.text).map(RaidTweet(tweet, _))
     }
+  }
+
+  private def getRaidBossImages(raidTweets: Seq[RaidTweet]): Map[RaidBossName, RaidBossImage] = {
+    raidTweets
+      .groupBy(_.raid.bossName) // Map[RaidBossName, Seq[RaidTweet]]
+      .mapValues(_.head.tweet.smallImageUrls.headOption) // Map[RaidBossName, Option[RaidBossImage]]
+      .collect {
+        case (name, Some(image)) => name -> image
+      }.toMap
   }
 }
 

@@ -9,6 +9,7 @@ case class Tweet(
   createdAt: java.util.Date
 ) {
   def smallImageUrls(): Seq[String] = imageUrls.map(_ + ":small")
+  def url(): String = s"https://twitter.com/$screenName/status/$id"
 }
 
 case class TweetSearchResult(tweets: Seq[Tweet], maxId: Option[Long])
