@@ -13,14 +13,6 @@ import scala.io.StdIn
 object Application {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def createRoutes(
-    system: ActorSystem, raidPoller: ActorRef, pubSubMediator: ActorRef
-  ) = path("ws") {
-    handleWebSocketMessages(WebsocketFlow.newSubscriber(system, raidPoller, pubSubMediator))
-  } ~ pathPrefix("") {
-    encodeResponse(getFromResourceDirectory("static"))
-  }
-
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem("raid-tracker")
     implicit val materializer = ActorMaterializer()(system)
@@ -39,6 +31,14 @@ object Application {
     scala.io.StdIn.readLine()
     println("Stopping server.")
     system.terminate()
+  }
+
+  def createRoutes(
+    system: ActorSystem, raidPoller: ActorRef, pubSubMediator: ActorRef
+  ) = path("ws") {
+    handleWebSocketMessages(WebsocketFlow.newSubscriber(system, raidPoller, pubSubMediator))
+  } ~ pathPrefix("") {
+    encodeResponse(getFromResourceDirectory("static"))
   }
 }
 

@@ -7,6 +7,7 @@ import akka.NotUsed
 import akka.stream._
 import akka.stream.scaladsl._
 import java.util.UUID
+import com.github.walfie.granblue.raidtracker.json._
 
 object WebsocketFlow {
   def newSubscriber(
@@ -20,7 +21,9 @@ object WebsocketFlow {
 
     val incomingMessages: Sink[Message, NotUsed] = Flow[Message].map {
       case TextMessage.Strict(text) => // TODO: parse json
-        subscriber ! WebsocketHandler.Protocol.RaidBossesRequest
+        parseStringAsJson(text)
+          .flatMap(_.validate[WebsocketHandler.Protocol.Request])
+          .foreach(subscriber ! _)
       case _ => // Ignore
     }.to(Sink.actorRef[Any](subscriber, PoisonPill))
 

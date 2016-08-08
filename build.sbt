@@ -8,8 +8,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % Versions.Akka,
   "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka,
   "com.typesafe.akka" %% "akka-http-experimental" % Versions.Akka,
-  "org.twitter4j" % "twitter4j-core" % Versions.Twitter4j,
-  "org.twitter4j" % "twitter4j-stream" % Versions.Twitter4j
+  "com.typesafe.play" %% "play-json" % Versions.Play,
+  "org.twitter4j" % "twitter4j-core" % Versions.Twitter4j
 )
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint")

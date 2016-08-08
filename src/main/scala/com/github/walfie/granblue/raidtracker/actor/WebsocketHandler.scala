@@ -42,10 +42,10 @@ class WebsocketHandler(
 object WebsocketHandler {
   case class WebsocketConnected(out: ActorRef)
 
-  trait Response
-  trait Request
-
   object Protocol {
+    sealed trait Response
+    sealed trait Request
+
     case object RaidBossesRequest extends Request
     case class SubscribeRequest(bossName: String) extends Request
     case class UnsubscribeRequest(bossName: String) extends Request
