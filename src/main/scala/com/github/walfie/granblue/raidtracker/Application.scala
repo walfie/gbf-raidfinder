@@ -35,7 +35,9 @@ object Application {
 
   def createRoutes(
     system: ActorSystem, raidPoller: ActorRef, pubSubMediator: ActorRef
-  ) = path("ws") {
+  ) = pathEndOrSingleSlash {
+    encodeResponse(getFromResource("static/index.html"))
+  } ~ path("ws") {
     handleWebSocketMessages(WebsocketFlow.newSubscriber(system, raidPoller, pubSubMediator))
   } ~ pathPrefix("") {
     encodeResponse(getFromResourceDirectory("static"))
