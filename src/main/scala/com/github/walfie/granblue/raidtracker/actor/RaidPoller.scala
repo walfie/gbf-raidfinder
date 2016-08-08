@@ -42,6 +42,7 @@ class RaidPoller(
       latestTweetId = searchResult.maxId
       raidBosses = raidBosses ++ getRaidBosses(newRaidTweets)
       raidTweetsCache = combineRaidTweets(raidTweetsCache, newRaidTweets, raidTweetsCacheSize)
+      removeOldRaids()
 
     case GetRaidBosses =>
       sender ! RaidBossesMessage(raidBosses.values.toSeq)
@@ -125,7 +126,6 @@ object RaidPoller {
   private case object Tick
 
   // TODO: Put this in some kind of protocol object to distinguish between internal domain objects
-  case class RaidBoss(name: String, image: Option[String], lastSeen: java.util.Date)
   case class RaidTweet(tweet: Tweet, raid: Raid)
 
   case object GetRaidBosses

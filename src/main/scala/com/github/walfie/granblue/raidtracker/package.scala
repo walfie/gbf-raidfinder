@@ -23,3 +23,9 @@ case class Raid(
   text:     String
 )
 
+case class RaidBoss(
+  name:     String,
+  image:    Option[String],
+  lastSeen: java.util.Date
+)
+
