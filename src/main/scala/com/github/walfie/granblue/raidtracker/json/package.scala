@@ -13,6 +13,13 @@ package object json {
     }
   }
 
+  implicit val ResponseWrites: Writes[Response] = Writes { response: Response =>
+    response match {
+      case r: RaidsResponse => RaidsResponse.writes(r)
+      case r: RaidBossesResponse => RaidBossesResponseWrites.writes(r)
+    }
+  }
+
   implicit val RaidBossWrites: Writes[RaidBoss] =
     Json.writes[RaidBoss]
 

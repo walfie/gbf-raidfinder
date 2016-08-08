@@ -69,7 +69,7 @@ class RaidPoller(
     newRaidTweets: Seq[RaidTweet],
     maxSize:       Int
   ): Map[RaidBossName, Seq[RaidTweet]] = {
-    newRaidTweets.groupBy(_.raid.bossName).map {
+    oldRaidTweets ++ newRaidTweets.groupBy(_.raid.bossName).map {
       case (bossName, newTweets) =>
         val oldTweets = oldRaidTweets.getOrElse(bossName, Seq.empty)
 

@@ -6,8 +6,10 @@ import akka.http.scaladsl.model.ws._
 import akka.NotUsed
 import akka.stream._
 import akka.stream.scaladsl._
-import java.util.UUID
+import com.github.walfie.granblue.raidtracker.actor.WebsocketHandler.Protocol._
 import com.github.walfie.granblue.raidtracker.json._
+import java.util.UUID
+import play.api.libs.json._
 
 object WebsocketFlow {
   def newSubscriber(
@@ -29,12 +31,12 @@ object WebsocketFlow {
 
     val outgoingMessages: Source[Message, NotUsed] = {
       val bufferSize = 100
-      Source.actorRef[Any](bufferSize, OverflowStrategy.fail)
+      Source.actorRef[Response](bufferSize, OverflowStrategy.fail)
         .mapMaterializedValue { out =>
           subscriber ! WebsocketHandler.WebsocketConnected(out)
           NotUsed
-        }.map { msg: Any =>
-          TextMessage(msg.toString) // TODO: Make this not bad
+        }.map { msg: Response =>
+          TextMessage(Json.stringify(Json.toJson(msg)))
         }
     }
 

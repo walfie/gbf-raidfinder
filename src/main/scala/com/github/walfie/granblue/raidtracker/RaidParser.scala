@@ -14,7 +14,7 @@ trait DefaultRaidParser extends RaidParser {
 
   private val parseTextPF: String => Option[Raid] = ({
     case RaidRegex(extraText, raidId, bossName) =>
-      Raid(bossName, raidId, extraText.trim)
+      Raid(bossName.trim, raidId.trim, extraText.trim)
   }: PartialFunction[String, Raid]).lift
 }
 
