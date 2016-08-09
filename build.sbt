@@ -5,10 +5,7 @@ organization := "com.github.walfie"
 name := "granblue-raid-finder"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-actor" % Versions.Akka,
-  "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka,
-  "com.typesafe.akka" %% "akka-http-experimental" % Versions.Akka,
-  "com.typesafe.play" %% "play-json" % Versions.Play,
+  "com.typesafe.akka" %% "akka-stream" % Versions.Akka,
   "org.twitter4j" % "twitter4j-core" % Versions.Twitter4j
 )
 
