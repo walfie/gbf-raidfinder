@@ -14,8 +14,10 @@ object Application {
 
     val tweetSource = TwitterSearch.defaultPaginatedSource()
 
-    // Force the tweetSource to the rate specified by tickSource
-    tweetSource.runWith(Sink.foreach(println))
+    tweetSource
+      .mapConcat(_.toVector)
+      .collect(Function.unlift(StatusParser.parseStatus))
+      .runWith(Sink.foreach(println))
 
     println("Application started. Press RETURN to stop.")
     scala.io.StdIn.readLine()
