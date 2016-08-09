@@ -10,18 +10,12 @@ object Application {
     implicit val system = ActorSystem("granblue-raid-finder")
     implicit val materializer = ActorMaterializer()
 
-    import akka.NotUsed
-    import akka.stream._
-    import akka.stream.scaladsl._
-    import scala.concurrent.Future
-    import scala.concurrent.duration._
+    import akka.stream.scaladsl.Sink
 
     val tweetSource = TwitterSearch.defaultPaginatedSource()
-    val tickSource = Source.tick(0.seconds, 10.seconds, NotUsed)
 
     // Force the tweetSource to the rate specified by tickSource
-    val polling = tweetSource.zipWith(tickSource)((status, _) => status)
-    polling.runWith(Sink.foreach(println))
+    tweetSource.runWith(Sink.foreach(println))
 
     println("Application started. Press RETURN to stop.")
     scala.io.StdIn.readLine()
