@@ -1,4 +1,4 @@
-package com.github.walfie.granblue.raidtracker
+package com.github.walfie.granblue.raidfinder
 
 /** Twitter status with only the stuff we care about */
 case class Tweet(

@@ -1,4 +1,4 @@
-package com.github.walfie.granblue.raidtracker
+package com.github.walfie.granblue.raidfinder
 
 import twitter4j._
 import twitter4j.conf.ConfigurationBuilder

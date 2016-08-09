@@ -1,7 +1,7 @@
-package com.github.walfie.granblue.raidtracker
+package com.github.walfie.granblue.raidfinder
 
-import com.github.walfie.granblue.raidtracker.TweetSearcher._
-import com.github.walfie.granblue.raidtracker.util.BlockingIO
+import com.github.walfie.granblue.raidfinder.TweetSearcher._
+import com.github.walfie.granblue.raidfinder.util.BlockingIO
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import twitter4j._

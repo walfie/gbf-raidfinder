@@ -2,7 +2,7 @@ scalaVersion := "2.11.8"
 
 organization := "com.github.walfie"
 
-name := "granblue-raid-tracker"
+name := "granblue-raid-finder"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % Versions.Akka,

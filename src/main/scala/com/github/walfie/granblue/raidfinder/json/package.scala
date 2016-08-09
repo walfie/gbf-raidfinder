@@ -1,6 +1,6 @@
-package com.github.walfie.granblue.raidtracker
+package com.github.walfie.granblue.raidfinder
 
-import com.github.walfie.granblue.raidtracker.actor.WebsocketHandler.Protocol._
+import com.github.walfie.granblue.raidfinder.actor.WebsocketHandler.Protocol._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import scala.util.{Try, Success, Failure}

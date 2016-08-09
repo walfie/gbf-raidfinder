@@ -1,4 +1,4 @@
-package com.github.walfie.granblue.raidtracker
+package com.github.walfie.granblue.raidfinder
 
 import akka.actor._
 import akka.cluster.pubsub.DistributedPubSub
@@ -6,7 +6,7 @@ import akka.cluster.pubsub.DistributedPubSubMediator.{Subscribe, SubscribeAck}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import com.github.walfie.granblue.raidtracker.actor._
+import com.github.walfie.granblue.raidfinder.actor._
 import scala.io.StdIn
 
 // TODO: Make this not so bad

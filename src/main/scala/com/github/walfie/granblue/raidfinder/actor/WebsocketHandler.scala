@@ -1,8 +1,8 @@
-package com.github.walfie.granblue.raidtracker.actor
+package com.github.walfie.granblue.raidfinder.actor
 
 import akka.actor._
 import akka.cluster.pubsub.DistributedPubSubMediator.{Subscribe, Unsubscribe}
-import com.github.walfie.granblue.raidtracker._
+import com.github.walfie.granblue.raidfinder._
 
 // For temporary debugging
 class WebsocketHandler(

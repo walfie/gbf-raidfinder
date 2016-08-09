@@ -1,4 +1,4 @@
-package com.github.walfie.granblue.raidtracker.actor
+package com.github.walfie.granblue.raidfinder.actor
 
 import akka.actor._
 import akka.http.scaladsl.model._
@@ -6,8 +6,8 @@ import akka.http.scaladsl.model.ws._
 import akka.NotUsed
 import akka.stream._
 import akka.stream.scaladsl._
-import com.github.walfie.granblue.raidtracker.actor.WebsocketHandler.Protocol._
-import com.github.walfie.granblue.raidtracker.json._
+import com.github.walfie.granblue.raidfinder.actor.WebsocketHandler.Protocol._
+import com.github.walfie.granblue.raidfinder.json._
 import java.util.UUID
 import play.api.libs.json._
 

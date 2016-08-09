@@ -1,4 +1,4 @@
-package com.github.walfie.granblue.raidtracker.util
+package com.github.walfie.granblue.raidfinder.util
 
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{Executors, ThreadFactory}
