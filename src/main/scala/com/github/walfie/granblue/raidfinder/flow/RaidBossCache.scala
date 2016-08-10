@@ -22,6 +22,7 @@ object RaidBossCache {
   }
 
   // TODO: Add implicit Clock for better testing
+  // TODO: This doesn't actually work except on the exact tick. Should rework this.
   def aggregateWithTtl(
     ttl:           FiniteDuration = DefaultTtl,
     checkInterval: FiniteDuration = DefaultCheckInterval
