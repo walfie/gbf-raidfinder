@@ -10,14 +10,27 @@ object Application {
     implicit val system = ActorSystem("granblue-raid-finder")
     implicit val materializer = ActorMaterializer()
 
-    import akka.stream.scaladsl.Sink
+    import akka.NotUsed
+    import akka.stream.ClosedShape
+    import akka.stream.scaladsl._
 
     val tweetSource = TwitterSearch.defaultPaginatedSource()
 
-    tweetSource
+    val raidsSource: Source[(RaidBoss, RaidTweet), NotUsed] = tweetSource
       .mapConcat(_.toVector)
       .collect(Function.unlift(StatusParser.parseStatus))
-      .runWith(Sink.foreach(println))
+
+    RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      // Unzip raidsSource into two streams
+      val unzip = builder.add(Unzip[RaidBoss, RaidTweet]())
+
+      raidsSource ~> unzip.in
+      unzip.out0 ~> RaidBossCache.aggregateWithTtl() ~> Sink.foreach(println)
+      unzip.out1 ~> Sink.foreach(println)
+      ClosedShape
+    }).run()
 
     println("Application started. Press RETURN to stop.")
     scala.io.StdIn.readLine()
