@@ -15,27 +15,9 @@ object Application {
     import scala.concurrent.ExecutionContext.Implicits.global
 
     val raidInfoCache = RaidInfoCache.default
-    val raidInfoSource: Source[Seq[RaidInfo], NotUsed] =
-      TwitterSearch.defaultPaginatedSource()
-        .map(_.flatMap(StatusParser.parseStatus))
+    val scheduler = RaidInfoCache.defaultCacheEvictionScheduler(raidInfoCache)
 
-    val graph = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
-      import GraphDSL.Implicits._
-
-      val broadcast = builder.add(Broadcast[Seq[RaidInfo]](2))
-
-      raidInfoSource ~> broadcast
-      broadcast ~> Sink.foreach(raidInfoCache.put)
-      broadcast ~> Flow[Seq[RaidInfo]].mapConcat(_.toVector).map(_.tweet) ~>
-        RaidTweetsPublisher.fromSystem(system)
-
-      ClosedShape
-    })
-
-    RaidInfoCache.cacheEvictionScheduler(
-      cache = raidInfoCache, ttl = 3.hours, tickInterval = 30.seconds
-    ).run()
-
+    val graph = RaidFinderGraph.default(raidInfoCache)
     graph.run()
 
     println("Application started. Press RETURN to stop.")

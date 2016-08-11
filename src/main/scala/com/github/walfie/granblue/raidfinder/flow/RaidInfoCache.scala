@@ -24,6 +24,8 @@ trait RaidInfoCache {
 object RaidInfoCache {
   type BossName = String
 
+  val DefaultTtl = 3.hours
+  val DefaultTickInterval = 30.seconds
   val DefaultCacheSizePerBoss = 50
 
   def default(implicit ec: ExecutionContext): RaidInfoAgentCache =
@@ -40,6 +42,10 @@ object RaidInfoCache {
       val minDate = new Date(System.currentTimeMillis - ttlMillis)
       cache.evictOldItems(minDate)
     })
+  }
+
+  def defaultCacheEvictionScheduler(cache: RaidInfoCache): RunnableGraph[Cancellable] = {
+    cacheEvictionScheduler(cache, ttl = DefaultTtl, tickInterval = DefaultTickInterval)
   }
 }
 
