@@ -15,25 +15,13 @@ object Application {
     import akka.stream.ClosedShape
     import akka.stream.scaladsl._
 
-    val tweetSource = TwitterSearch.defaultPaginatedSource()
+    val raidInfoCache = RaidInfoCache.default
+    val tweetSource: Source[Seq[twitter4j.Status], NotUsed] =
+      TwitterSearch.defaultPaginatedSource()
 
-    val raidsSource: Source[(RaidBoss, RaidTweet), NotUsed] = tweetSource
-      .mapConcat(_.toVector)
-      .collect(Function.unlift(StatusParser.parseStatus))
-
-    val raidBossCache = RaidBossCache.default
-
-    RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
-      import GraphDSL.Implicits._
-
-      // Unzip raidsSource into two streams
-      val unzip = builder.add(Unzip[RaidBoss, RaidTweet]())
-
-      raidsSource ~> unzip.in
-      unzip.out0 ~> Sink.foreach(raidBossCache.put)
-      unzip.out1 ~> Sink.foreach(println)
-      ClosedShape
-    }).run()
+    tweetSource
+      .map(_.flatMap(StatusParser.parseStatus))
+      .runForeach(raidInfoCache.put)
 
     println("Application started. Press RETURN to stop.")
     scala.io.StdIn.readLine()

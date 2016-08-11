@@ -11,7 +11,7 @@ object StatusParser {
   val GranblueSource =
     """<a href="http://granbluefantasy.jp/" rel="nofollow">グランブルー ファンタジー</a>"""
 
-  def parseStatus(status: Status): Option[(RaidBoss, RaidTweet)] = status.getText match {
+  def parseStatus(status: Status): Option[RaidInfo] = status.getText match {
     case _ if status.getSource != GranblueSource => None
 
     case RaidRegex(extraText, raidId, boss) =>
@@ -26,13 +26,9 @@ object StatusParser {
         createdAt = status.getCreatedAt
       )
 
-      val raidBoss = RaidBoss(
-        bossName = bossName,
-        image = getImageFromStatus(status),
-        lastSeen = status.getCreatedAt
-      )
+      val image = getImageFromStatus(status).map(RaidImage.apply)
 
-      Some((raidBoss, raidTweet))
+      Some(RaidInfo(raidTweet, image))
 
     case _ => None
   }

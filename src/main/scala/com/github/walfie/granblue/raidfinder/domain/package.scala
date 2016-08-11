@@ -2,9 +2,9 @@ package com.github.walfie.granblue.raidfinder.domain
 
 import java.util.Date
 
-case class ParsedStatus(
-  raidTweet: RaidTweet,
-  raidBoss:  RaidBoss
+case class RaidInfo(
+  tweet: RaidTweet,
+  image: Option[RaidImage]
 )
 
 case class RaidTweet(
@@ -16,9 +16,7 @@ case class RaidTweet(
   createdAt:  Date
 )
 
-case class RaidBoss(
-  bossName: String,
-  image:    Option[String],
-  lastSeen: Date
-)
+case class RaidImage(url: String) extends AnyVal {
+  def thumb(): String = url + ":thumb"
+}
 
