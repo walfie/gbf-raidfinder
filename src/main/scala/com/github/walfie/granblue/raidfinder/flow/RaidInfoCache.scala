@@ -1,8 +1,8 @@
 package com.github.walfie.granblue.raidfinder.flow
 
+import akka.actor.Cancellable
 import akka.agent.Agent
 import akka.NotUsed
-import akka.stream.Materializer
 import akka.stream.scaladsl._
 import com.github.walfie.granblue.raidfinder.domain._
 import java.util.Date
@@ -26,8 +26,21 @@ object RaidInfoCache {
 
   val DefaultCacheSizePerBoss = 50
 
-  def default(implicit ec: ExecutionContext, materializer: Materializer): RaidInfoAgentCache =
+  def default(implicit ec: ExecutionContext): RaidInfoAgentCache =
     new RaidInfoAgentCache(DefaultCacheSizePerBoss)
+
+  def cacheEvictionScheduler(
+    cache:        RaidInfoCache,
+    ttl:          FiniteDuration,
+    tickInterval: FiniteDuration
+  ): RunnableGraph[Cancellable] = {
+    val ttlMillis = ttl.toMillis
+    Source.tick(tickInterval, tickInterval, NotUsed).to(Sink.foreach { _ =>
+      // TODO: Use clock for easier testing
+      val minDate = new Date(System.currentTimeMillis - ttlMillis)
+      cache.evictOldItems(minDate)
+    })
+  }
 }
 
 class RaidInfoAgentCache(

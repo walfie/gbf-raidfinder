@@ -1,8 +1,11 @@
 package com.github.walfie.granblue.raidfinder.domain
 
 import akka.actor._
+import akka.NotUsed
+import akka.stream.scaladsl._
 import akka.stream.ActorMaterializer
 import com.github.walfie.granblue.raidfinder.flow._
+import scala.concurrent.duration._
 import twitter4j.TwitterFactory
 
 object Application {
@@ -11,17 +14,18 @@ object Application {
     implicit val materializer = ActorMaterializer()
     import scala.concurrent.ExecutionContext.Implicits.global
 
-    import akka.NotUsed
-    import akka.stream.ClosedShape
-    import akka.stream.scaladsl._
-
     val raidInfoCache = RaidInfoCache.default
-    val tweetSource: Source[Seq[twitter4j.Status], NotUsed] =
+    val raidInfoSource: Source[Seq[RaidInfo], NotUsed] =
       TwitterSearch.defaultPaginatedSource()
+        .map(_.flatMap(StatusParser.parseStatus))
 
-    tweetSource
-      .map(_.flatMap(StatusParser.parseStatus))
+    raidInfoSource
+      .alsoTo(Sink.foreach(println))
       .runForeach(raidInfoCache.put)
+
+    RaidInfoCache.cacheEvictionScheduler(
+      cache = raidInfoCache, ttl = 3.hours, tickInterval = 30.seconds
+    ).run()
 
     println("Application started. Press RETURN to stop.")
     scala.io.StdIn.readLine()
