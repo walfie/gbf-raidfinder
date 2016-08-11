@@ -17,7 +17,7 @@ object Application {
     val raidInfoCache = RaidInfoCache.default
     val scheduler = RaidInfoCache.defaultCacheEvictionScheduler(raidInfoCache)
 
-    val graph = RaidFinderGraph.default(raidInfoCache)
+    val graph = RaidFinderGraph.default(Some(raidInfoCache))
     graph.run()
 
     println("Application started. Press RETURN to stop.")

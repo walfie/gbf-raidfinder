@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext
 object RaidFinderGraph {
   def create(
     raidInfoSource:      Source[Seq[RaidInfo], _],
-    raidInfoCache:       RaidInfoCache,
+    raidInfoCache:       Option[RaidInfoCache],
     raidTweetsPublisher: Sink[RaidTweet, _]
   ): RunnableGraph[NotUsed] =
     RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
@@ -20,8 +20,12 @@ object RaidFinderGraph {
 
       val broadcast = builder.add(Broadcast[Seq[RaidInfo]](2))
 
+      val cacheSink = raidInfoCache.fold[Sink[Seq[RaidInfo], _]](
+        Sink.ignore
+      )(cache => Sink.foreach(cache.put))
+
       raidInfoSource ~> broadcast
-      broadcast ~> Sink.foreach(raidInfoCache.put)
+      broadcast ~> cacheSink
       broadcast ~> Flow[Seq[RaidInfo]].mapConcat(_.toVector).map(_.tweet) ~>
         raidTweetsPublisher
 
@@ -29,7 +33,7 @@ object RaidFinderGraph {
     })
 
   def default(
-    raidInfoCache: RaidInfoCache
+    raidInfoCache: Option[RaidInfoCache]
   )(implicit system: ActorSystem, ec: ExecutionContext): RunnableGraph[NotUsed] = {
     val raidInfoSource: Source[Seq[RaidInfo], NotUsed] =
       TwitterSearch.defaultPaginatedSource()
