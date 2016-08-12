@@ -5,6 +5,7 @@ import akka.stream.scaladsl._
 import com.github.walfie.granblue.raidfinder.util.BlockingIO
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext
 import twitter4j._
 
 object TwitterSearch {
@@ -25,7 +26,7 @@ object TwitterSearch {
     searchTerm:      String,
     maxCount:        Int,
     pollingInterval: FiniteDuration
-  ): Source[Seq[Status], NotUsed] = {
+  )(implicit ec: ExecutionContext): Source[Seq[Status], NotUsed] = {
     val tickSource = Source.tick(0.seconds, pollingInterval, NotUsed)
 
     // Source that maintains pagination state between search requests
@@ -36,6 +37,11 @@ object TwitterSearch {
       BlockingIO.future {
         val queryResult = twitter.search(query)
         Some(Option(queryResult.getMaxId) -> queryResult.getTweets.asScala)
+      }.recover {
+        // On failure, reuse the last known `sinceId` so the stream doesn't terminate.
+        case e: Throwable =>
+          System.err.println(e) // TODO: Better logging
+          Some(sinceId -> Seq.empty)
       }
     }
 
@@ -44,7 +50,7 @@ object TwitterSearch {
   }
 
   /** `paginatedSource` with default arguments, using a `twitter4j.Twitter` singleton */
-  def defaultPaginatedSource(): Source[Seq[Status], NotUsed] =
+  def defaultPaginatedSource(implicit ec: ExecutionContext): Source[Seq[Status], NotUsed] =
     paginatedSource(TwitterFactory.getSingleton, DefaultSearchTerm, MaxCount, DefaultPollingInterval)
 }
 

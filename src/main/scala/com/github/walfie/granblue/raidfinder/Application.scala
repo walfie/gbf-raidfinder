@@ -15,7 +15,8 @@ object Application {
     import scala.concurrent.ExecutionContext.Implicits.global
 
     val raidInfoCache = RaidInfoCache.default
-    val scheduler = RaidInfoCache.defaultCacheEvictionScheduler(raidInfoCache)
+    val cacheEvictionScheduler =
+      RaidInfoCache.defaultCacheEvictionScheduler(raidInfoCache)
 
     val graph = RaidFinderGraph.default(Some(raidInfoCache))
     graph.run()

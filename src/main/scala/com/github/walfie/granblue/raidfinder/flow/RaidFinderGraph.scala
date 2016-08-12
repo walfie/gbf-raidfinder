@@ -36,7 +36,7 @@ object RaidFinderGraph {
     raidInfoCache: Option[RaidInfoCache]
   )(implicit system: ActorSystem, ec: ExecutionContext): RunnableGraph[NotUsed] = {
     val raidInfoSource: Source[Seq[RaidInfo], NotUsed] =
-      TwitterSearch.defaultPaginatedSource()
+      TwitterSearch.defaultPaginatedSource
         .map(_.flatMap(StatusParser.parseStatus))
 
     val raidTweetsPublisher = RaidTweetsPublisher.fromSystem(system)
