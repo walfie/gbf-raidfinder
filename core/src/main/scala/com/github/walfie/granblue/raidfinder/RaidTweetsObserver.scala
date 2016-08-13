@@ -14,38 +14,59 @@ class RaidInfoObserver(
   private val raidInfoObservables: Agent[Map[BossName, Observable[RaidInfo]]] =
     Agent(Map.empty)
 
-  private val subscribersWaiting: Agent[Map[BossName, Set[Subscriber[RaidInfo]]]] =
+  /** Subscribers waiting for a boss that we don't yet know about */
+  private val subscribersOnHold: Agent[Map[BossName, Set[Subscriber[RaidInfo]]]] =
     Agent(Map.empty)
 
   def onComplete(): Unit = ???
 
   def onError(e: Throwable): Unit = ???
 
+  /**
+    * When a new raid boss comes in, add it to the Map of known raid bosses,
+    * and start publishing to any subscriber who has previously expressed interest
+    */
   def onNext(elem: GroupedObservable[BossName, RaidInfo]): Future[Ack] = {
     val bossName = elem.key
     val newStream = elem.cache(cacheSizePerBoss)
 
-    raidInfoObservables
-      .alter(_.updated(bossName, newStream))
-      .flatMap(_ => Ack.Continue)
+    for {
+      _ <- raidInfoObservables.alter { observables =>
+        observables.updated(bossName, newStream)
+      }
+      _ <- updateSubscribersOnHold(bossName) { subscribers =>
+        subscribers.foreach(newStream.subscribe)
+        Set.empty
+      }
+      ack <- Ack.Continue
+    } yield ack
   }
 
-  def subscribe(subscriber: Subscriber[RaidInfo], bossName: BossName): Cancelable = {
+  /**
+    * Attempt to subscribe to a certain raid boss. If it's not a raid boss we know
+    * about, put the subscriber on hold until we get info about that boss.
+    */
+  def subscribe(bossName: BossName, subscriber: Subscriber[RaidInfo]): Cancelable = {
     raidInfoObservables.get.get(bossName) match {
       case None =>
-        updateSubscribersWaiting(bossName)(_ + subscriber)
-        Cancelable(() => updateSubscribersWaiting(bossName)(_ - subscriber))
+        updateSubscribersOnHold(bossName)(_ + subscriber)
+        // TODO: This cancelable becomes invalid when the boss comes in later
+        Cancelable(() => updateSubscribersOnHold(bossName)(_ - subscriber))
       case Some(raidInfoObservable) =>
         raidInfoObservable.subscribe(subscriber)
     }
   }
 
-  private def updateSubscribersWaiting(bossName: BossName)(
+  private def updateSubscribersOnHold(bossName: BossName)(
     f: Set[Subscriber[RaidInfo]] => Set[Subscriber[RaidInfo]]
   ): Future[Map[BossName, Set[Subscriber[RaidInfo]]]] = {
-    subscribersWaiting.alter { waiting =>
-      val currentlyWaiting = waiting.getOrElse(bossName, Set.empty)
-      waiting.updated(bossName, f(currentlyWaiting))
+    subscribersOnHold.alter { waiting =>
+      val currentlyOnHold = waiting.getOrElse(bossName, Set.empty)
+      val updatedOnHold = f(currentlyOnHold)
+
+      if (updatedOnHold.isEmpty) {
+        waiting - bossName
+      } else waiting.updated(bossName, updatedOnHold)
     }
   }
 }
