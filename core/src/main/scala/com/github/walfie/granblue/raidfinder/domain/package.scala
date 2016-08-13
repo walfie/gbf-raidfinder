@@ -23,6 +23,12 @@ package domain {
     createdAt:    Date
   )
 
+  case class RaidBoss(
+    bossName: BossName,
+    image:    Option[RaidImage],
+    lastSeen: Date
+  )
+
   case class RaidImage(url: String) extends AnyVal {
     def thumb(): String = url + ":thumb"
   }

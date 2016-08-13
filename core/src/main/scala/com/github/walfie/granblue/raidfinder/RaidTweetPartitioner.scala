@@ -9,26 +9,26 @@ import monix.reactive.observers.Subscriber
 import monix.reactive.subjects.PublishSubject
 import scala.concurrent.{ExecutionContext, Future}
 
-trait RaidInfoPartitioner {
-  def getObservable(bossName: BossName): Observable[RaidInfo]
+trait RaidTweetPartitioner {
+  def getObservable(bossName: BossName): Observable[RaidTweet]
 }
 
-object CachedRaidInfoPartitioner {
+object CachedRaidTweetPartitioner {
   def fromObservable(
-    observable:       Observable[RaidInfo],
+    observable:       Observable[RaidTweet],
     cacheSizePerBoss: Int
-  )(implicit scheduler: Scheduler): CachedRaidInfoPartitioner = {
-    val partitioner = new CachedRaidInfoPartitioner(cacheSizePerBoss)
-    observable.groupBy(_.tweet.bossName).subscribe(partitioner)
+  )(implicit scheduler: Scheduler): CachedRaidTweetPartitioner = {
+    val partitioner = new CachedRaidTweetPartitioner(cacheSizePerBoss)
+    observable.groupBy(_.bossName).subscribe(partitioner)
     partitioner
   }
 }
 
-class CachedRaidInfoPartitioner(cacheSizePerBoss: Int)(implicit ec: ExecutionContext)
-  extends Observer[GroupedObservable[BossName, RaidInfo]] with RaidInfoPartitioner {
+class CachedRaidTweetPartitioner(cacheSizePerBoss: Int)(implicit ec: ExecutionContext)
+  extends Observer[GroupedObservable[BossName, RaidTweet]] with RaidTweetPartitioner {
 
   private val raidInfoObservables =
-    Agent[Map[BossName, Observable[RaidInfo]]](Map.empty)
+    Agent[Map[BossName, Observable[RaidTweet]]](Map.empty)
   private val incomingBosses = PublishSubject[BossName]()
 
   def onComplete(): Unit = {
@@ -43,7 +43,7 @@ class CachedRaidInfoPartitioner(cacheSizePerBoss: Int)(implicit ec: ExecutionCon
     * When a new raid boss comes in, add it to the Map of known raid bosses,
     * and push the boss name to the `incomingBosses` subject.
     */
-  def onNext(elem: GroupedObservable[BossName, RaidInfo]): Future[Ack] = {
+  def onNext(elem: GroupedObservable[BossName, RaidTweet]): Future[Ack] = {
     val bossName = elem.key
     val newStream = elem.cache(cacheSizePerBoss)
 
@@ -60,7 +60,7 @@ class CachedRaidInfoPartitioner(cacheSizePerBoss: Int)(implicit ec: ExecutionCon
     * Get the Observable for a specific boss. If it doesn't exist, wait until
     * it comes in, and try again.
     */
-  def getObservable(bossName: BossName): Observable[RaidInfo] = {
+  def getObservable(bossName: BossName): Observable[RaidTweet] = {
     raidInfoObservables.get.getOrElse(
       bossName,
       incomingBosses.findF(_ == bossName).flatMap(_ => getObservable(bossName))
