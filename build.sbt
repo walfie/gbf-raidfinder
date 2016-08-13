@@ -2,6 +2,7 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
   organization := "com.github.walfie",
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint"),
+  Scalariform.settings,
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % Versions.ScalaTest % "test"
   )
