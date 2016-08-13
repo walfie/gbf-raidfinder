@@ -1,46 +1,30 @@
-package com.github.walfie.granblue.raidfinder
+package com.github.walfie.granblue.raidfinder.domain
 
 import akka.actor._
-import akka.cluster.pubsub.DistributedPubSub
-import akka.cluster.pubsub.DistributedPubSubMediator.{Subscribe, SubscribeAck}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
-import com.github.walfie.granblue.raidfinder.actor._
-import scala.io.StdIn
+import akka.NotUsed
+import akka.stream.scaladsl._
+import akka.stream.{ActorMaterializer, ClosedShape}
+import com.github.walfie.granblue.raidfinder.flow._
+import scala.concurrent.duration._
+import twitter4j.TwitterFactory
 
-// TODO: Make this not so bad
 object Application {
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   def main(args: Array[String]): Unit = {
-    implicit val system = ActorSystem("raid-tracker")
-    implicit val materializer = ActorMaterializer()(system)
+    implicit val system = ActorSystem("granblue-raid-finder")
+    implicit val materializer = ActorMaterializer()
+    import scala.concurrent.ExecutionContext.Implicits.global
 
-    val mediator = DistributedPubSub(system).mediator
+    val raidInfoCache = RaidInfoCache.default
+    val cacheEvictionScheduler =
+      RaidInfoCache.defaultCacheEvictionScheduler(raidInfoCache)
 
-    val raidPoller = system.actorOf(
-      RaidPoller.defaultProps(Some(mediator)), "poller"
-    )
+    val graph = RaidFinderGraph.default(Some(raidInfoCache))
+    graph.run()
 
-    val routes = createRoutes(system, raidPoller, mediator)
-    val bindingFuture = Http().bindAndHandle(routes, "localhost", 8080)
-
-    // Temporary way to stop server without killing SBT
-    println("Server running. Press RETURN to stop.")
+    println("Application started. Press RETURN to stop.")
     scala.io.StdIn.readLine()
-    println("Stopping server.")
+    println("Stopping application.")
     system.terminate()
-  }
-
-  def createRoutes(
-    system: ActorSystem, raidPoller: ActorRef, pubSubMediator: ActorRef
-  ) = pathEndOrSingleSlash {
-    encodeResponse(getFromResource("static/index.html"))
-  } ~ path("ws") {
-    handleWebSocketMessages(WebsocketFlow.newSubscriber(system, raidPoller, pubSubMediator))
-  } ~ pathPrefix("") {
-    encodeResponse(getFromResourceDirectory("static"))
   }
 }
 
