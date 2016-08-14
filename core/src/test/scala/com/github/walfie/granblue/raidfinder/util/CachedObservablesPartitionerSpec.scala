@@ -14,25 +14,31 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
   import IdolColor._
 
   "getObservable" - {
-    "allow getting observable on an unknown key" in new PartitionerFixture {
-      partitioner.getObservable(Pink).subscribe(receiver)
+    "allow getting observables on an keys" in new PartitionerFixture {
+      Seq(Pink, Orange, Blue).foreach { color =>
+        partitioner.getObservable(color).subscribe(receiver)
+      }
 
       val akari = Idol("Oozora Akari", Pink)
       input.onNext(akari)
-
       scheduler.tick()
       receiver.received shouldBe Seq(akari)
+
+      val hinaki = Idol("Shinjou Hinaki", Orange)
+      input.onNext(hinaki)
+      scheduler.tick()
+      receiver.received shouldBe Seq(akari, hinaki)
+
+      val sumire = Idol("Hikami Sumire", Blue)
+      input.onNext(sumire)
+      scheduler.tick()
+      receiver.received shouldBe Seq(akari, hinaki, sumire)
     }
 
     "repeat cached elements for new subscribers" in new PartitionerFixture {
       val blueIdols = Seq(
-        "Shibuya Rin",
-        "Kamiya Nao",
-        "Hojo Karen",
-        "Toudou Yurika",
-        "Hikami Sumire",
-        "Nishikino Maki",
-        "Sonoda Umi"
+        "Shibuya Rin", "Kamiya Nao", "Hojo Karen", "Toudou Yurika",
+        "Hikami Sumire", "Nishikino Maki", "Sonoda Umi"
       ).map(Idol(_, Blue))
 
       // First receiver subscribes early on, and gets all the messages
@@ -53,6 +59,16 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
 
       receiver.received shouldBe blueIdols
       newReceiver.received shouldBe blueIdols.takeRight(cacheSize)
+
+      // More elements get pushed, all receivers should get them
+      val moreBlueIdols = Seq(
+        "Kiriya Aoi", "Kurosawa Rin", "Hayami Kanade"
+      ).map(Idol(_, Blue))
+      moreBlueIdols.foreach(input.onNext)
+      scheduler.tick()
+
+      receiver.received shouldBe (blueIdols ++ moreBlueIdols)
+      newReceiver.received shouldBe (blueIdols.takeRight(cacheSize) ++ moreBlueIdols)
     }
   }
 }

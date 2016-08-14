@@ -38,8 +38,9 @@ class CachedObservablesPartitioner[K, V](cacheSizePerKey: Int)(implicit ec: Exec
   }
 
   /**
-    * When a new raid boss comes in, add it to the Map of known raid bosses,
-    * and push the boss name to the `incomingBosses` subject.
+    * When a new key comes in, add it to the Map of known keys/values, and push
+    * the key to the internal `incomingKeys` subject, to inform subscribers
+    * that attempted to get an observable on an unknown key.
     */
   def onNext(elem: GroupedObservable[K, V]): Future[Ack] = {
     val key = elem.key
@@ -55,6 +56,9 @@ class CachedObservablesPartitioner[K, V](cacheSizePerKey: Int)(implicit ec: Exec
   /**
     * Get the Observable for a specific boss. If it doesn't exist, wait until
     * it comes in, and try again.
+    *
+    * NOTE: This may be a cold observable, so it should not be shared by subscribers
+    * unless explicitly turned into a hot observable (e.g., with `.publish`)
     */
   def getObservable(key: K): Observable[V] = {
     observablesByKey.get.getOrElse(
