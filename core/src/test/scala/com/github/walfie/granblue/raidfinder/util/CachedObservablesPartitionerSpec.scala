@@ -5,7 +5,7 @@ import monix.execution.Ack
 import monix.execution.schedulers.ExecutionModel.SynchronousExecution
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observer
-import monix.reactive.subjects.{PublishSubject, ConcurrentSubject}
+import monix.reactive.subjects._
 import org.scalatest._
 import org.scalatest.Matchers._
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,7 +14,7 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
   import IdolColor._
 
   "getObservable" - {
-    "allow getting observables on an keys" in new PartitionerFixture {
+    "allow getting observables on unknown keys" in new PartitionerFixture {
       Seq(Pink, Orange, Blue).foreach { color =>
         partitioner.getObservable(color).subscribe(receiver)
       }
@@ -70,6 +70,19 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
       receiver.received shouldBe (blueIdols ++ moreBlueIdols)
       newReceiver.received shouldBe (blueIdols.takeRight(cacheSize) ++ moreBlueIdols)
     }
+
+    "cache even when there are no subscribers" in new PartitionerFixture {
+      val purpleIdols = Seq(
+        "Kanzaki Mizuki", "Shibuki Ran", "Kurebayashi Juri"
+      ).map(Idol(_, Purple))
+
+      purpleIdols.foreach(input.onNext)
+      scheduler.tick()
+
+      partitioner.getObservable(Purple).subscribe(receiver)
+      scheduler.tick()
+      receiver.received shouldBe purpleIdols
+    }
   }
 }
 
@@ -86,7 +99,7 @@ trait CachedObservablesPartitionerSpecHelpers extends FreeSpec {
   trait PartitionerFixture {
     val cacheSize = 5
     implicit val scheduler = TestScheduler(SynchronousExecution)
-    lazy val input = ConcurrentSubject.publish[Idol]
+    lazy val input = ConcurrentSubject.replay[Idol]
     lazy val partitioner = CachedObservablesPartitioner
       .fromObservable(input, cacheSize)(_.color)
     lazy val receiver = newTestObserver()
