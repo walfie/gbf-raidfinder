@@ -55,7 +55,7 @@ trait CachedRaidTweetPartitionerSpecHelpers extends FreeSpec {
     val cacheSize = 5
     implicit val scheduler = TestScheduler(SynchronousExecution)
     lazy val input = ConcurrentSubject.publish[RaidTweet]
-    lazy val partitioner = CachedRaidTweetPartitioner.fromObservable(input, cacheSize)
+    lazy val partitioner = CachedRaidTweetsPartitioner.fromObservable(input, cacheSize)
     lazy val receiver = newTestObserver()
 
     private val latestTweetId = new AtomicInteger(0)
