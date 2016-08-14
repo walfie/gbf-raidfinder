@@ -6,11 +6,11 @@ import monix.execution.Scheduler
 import monix.reactive.Observable
 
 object CachedRaidTweetsPartitioner {
-  def fromObservable(
+  def fromUngroupedObservable(
     observable:       Observable[RaidTweet],
     cacheSizePerBoss: Int
   )(implicit scheduler: Scheduler): CachedRaidTweetsPartitioner = {
-    CachedObservablesPartitioner.fromObservable(observable, cacheSizePerBoss)(_.bossName)
+    CachedObservablesPartitioner.fromUngroupedObservable(observable, cacheSizePerBoss)(_.bossName)
   }
 }
 

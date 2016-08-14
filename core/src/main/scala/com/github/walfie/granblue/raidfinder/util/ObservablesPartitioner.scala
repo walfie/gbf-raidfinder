@@ -13,7 +13,7 @@ trait ObservablesPartitioner[K, V] {
 }
 
 object CachedObservablesPartitioner {
-  def fromObservable[K, V](observable: Observable[V], cacheSizePerKey: Int)(
+  def fromUngroupedObservable[K, V](observable: Observable[V], cacheSizePerKey: Int)(
     keySelector: V => K
   )(implicit scheduler: Scheduler): CachedObservablesPartitioner[K, V] = {
     val partitioner = new CachedObservablesPartitioner[K, V](cacheSizePerKey)
@@ -25,8 +25,7 @@ object CachedObservablesPartitioner {
 class CachedObservablesPartitioner[K, V](cacheSizePerKey: Int)(implicit ec: ExecutionContext)
   extends Observer[GroupedObservable[K, V]] with ObservablesPartitioner[K, V] {
 
-  private val observablesByKey =
-    Agent[Map[K, Observable[V]]](Map.empty)
+  private val observablesByKey = Agent[Map[K, Observable[V]]](Map.empty)
   private val incomingKeys = PublishSubject[K]()
 
   def onComplete(): Unit = {
@@ -35,6 +34,7 @@ class CachedObservablesPartitioner[K, V](cacheSizePerKey: Int)(implicit ec: Exec
 
   def onError(e: Throwable): Unit = {
     System.err.println(e) // TODO: Better logging?
+    incomingKeys.onError(e)
   }
 
   /**

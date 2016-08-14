@@ -53,7 +53,7 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
       receiver.received shouldBe blueIdols
 
       // New receiver subscribes later, should get the latest cached messages
-      val newReceiver = newTestObserver()
+      val newReceiver = new TestObserver[Idol]()
       partitioner.getObservable(Blue).subscribe(newReceiver)
       scheduler.tick()
 
@@ -101,22 +101,8 @@ trait CachedObservablesPartitionerSpecHelpers extends FreeSpec {
     implicit val scheduler = TestScheduler(SynchronousExecution)
     lazy val input = ConcurrentSubject.replay[Idol]
     lazy val partitioner = CachedObservablesPartitioner
-      .fromObservable(input, cacheSize)(_.color)
-    lazy val receiver = newTestObserver()
-  }
-
-  def newTestObserver() = new TestObserver[Idol]
-
-  class TestObserver[T] extends Observer[T] {
-    var received = Vector.empty[T]
-
-    def onNext(elem: T): Future[Ack] = {
-      received = received :+ elem
-      Ack.Continue
-    }
-
-    def onError(ex: Throwable): Unit = ()
-    def onComplete(): Unit = ()
+      .fromUngroupedObservable(input, cacheSize)(_.color)
+    lazy val receiver = new TestObserver[Idol]
   }
 }
 
