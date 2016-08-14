@@ -7,10 +7,8 @@ import monix.execution.schedulers.ExecutionModel.SynchronousExecution
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observer
 import monix.reactive.subjects.{PublishSubject, ConcurrentSubject}
-import org.mockito.Mockito._
 import org.scalatest._
 import org.scalatest.Matchers._
-import org.scalatest.mockito.MockitoSugar
 import scala.concurrent.{ExecutionContext, Future}
 
 class CachedRaidTweetPartitionerSpec extends CachedRaidTweetPartitionerSpecHelpers {
@@ -52,9 +50,8 @@ class CachedRaidTweetPartitionerSpec extends CachedRaidTweetPartitionerSpecHelpe
   }
 }
 
-// TODO: Mockito isn't actually used here anymore
-trait CachedRaidTweetPartitionerSpecHelpers extends FreeSpec with MockitoSugar {
-  trait PartitionerFixture extends MockitoSugar {
+trait CachedRaidTweetPartitionerSpecHelpers extends FreeSpec {
+  trait PartitionerFixture {
     val cacheSize = 5
     implicit val scheduler = TestScheduler(SynchronousExecution)
     lazy val input = ConcurrentSubject.publish[RaidTweet]
