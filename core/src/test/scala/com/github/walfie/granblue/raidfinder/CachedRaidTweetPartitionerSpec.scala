@@ -27,21 +27,27 @@ class CachedRaidTweetPartitionerSpec extends CachedRaidTweetPartitionerSpecHelpe
     }
 
     "repeat cached elements for new subscribers" in new PartitionerFixture {
-      // TODO: This fails
       val boss = "Usamin"
+      val allTweets = 1.to(cacheSize * 2).map(_ => newTweet(boss))
 
-      val tweets = 1.to(cacheSize * 2).map(_ => newTweet(boss))
-      tweets.foreach(input.onNext)
-      scheduler.tick()
-
+      // First receiver subscribes early on, and gets all the messages
+      input.onNext(allTweets.head)
       partitioner.getObservable(boss).subscribe(receiver)
       scheduler.tick()
-      receiver.received shouldBe tweets
 
+      receiver.received shouldBe allTweets.take(1)
+      allTweets.tail.foreach(input.onNext)
+      scheduler.tick()
+
+      receiver.received shouldBe allTweets
+
+      // New receiver subscribes later, should get the latest cached messages
       val newReceiver = newTestObserver()
       partitioner.getObservable(boss).subscribe(newReceiver)
       scheduler.tick()
-      newReceiver.received shouldBe tweets.takeRight(cacheSize)
+
+      receiver.received shouldBe allTweets
+      newReceiver.received shouldBe allTweets.takeRight(cacheSize)
     }
   }
 }
@@ -65,16 +71,10 @@ trait CachedRaidTweetPartitionerSpecHelpers extends FreeSpec with MockitoSugar {
   def newTestObserver() = new TestObserver[RaidTweet]
 
   class TestObserver[T] extends Observer[T] {
-    private var receivedRecently = Vector.empty[T]
-
-    def received(): Vector[T] = {
-      val result = receivedRecently
-      receivedRecently = Vector.empty
-      result
-    }
+    var received = Vector.empty[T]
 
     def onNext(elem: T): Future[Ack] = {
-      receivedRecently = receivedRecently :+ elem
+      received = received :+ elem
       Ack.Continue
     }
 

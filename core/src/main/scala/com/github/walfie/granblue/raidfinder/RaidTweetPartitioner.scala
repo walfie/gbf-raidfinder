@@ -48,9 +48,7 @@ class CachedRaidTweetPartitioner(cacheSizePerBoss: Int)(implicit ec: ExecutionCo
     val newStream = elem.cache(cacheSizePerBoss)
 
     for {
-      _ <- raidInfoObservables.alter { observables =>
-        observables.updated(bossName, newStream)
-      }
+      _ <- raidInfoObservables.alter(_.updated(bossName, newStream))
       _ <- incomingBosses.onNext(bossName)
       ack <- Ack.Continue
     } yield ack
@@ -61,8 +59,6 @@ class CachedRaidTweetPartitioner(cacheSizePerBoss: Int)(implicit ec: ExecutionCo
     * it comes in, and try again.
     */
   def getObservable(bossName: BossName): Observable[RaidTweet] = {
-    val got = raidInfoObservables.get.get(bossName)
-
     raidInfoObservables.get.getOrElse(
       bossName,
       incomingBosses.findF(_ == bossName).flatMap(_ => getObservable(bossName))
