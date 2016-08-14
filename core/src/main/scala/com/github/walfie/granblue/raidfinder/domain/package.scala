@@ -15,10 +15,10 @@ package domain {
 
   case class RaidTweet(
     bossName:     BossName,
+    raidId:       String,
     tweetId:      TweetId,
     screenName:   String,
     profileImage: String,
-    raidId:       String,
     text:         String,
     createdAt:    Date
   )

@@ -61,6 +61,8 @@ class CachedRaidTweetPartitioner(cacheSizePerBoss: Int)(implicit ec: ExecutionCo
     * it comes in, and try again.
     */
   def getObservable(bossName: BossName): Observable[RaidTweet] = {
+    val got = raidInfoObservables.get.get(bossName)
+
     raidInfoObservables.get.getOrElse(
       bossName,
       incomingBosses.findF(_ == bossName).flatMap(_ => getObservable(bossName))

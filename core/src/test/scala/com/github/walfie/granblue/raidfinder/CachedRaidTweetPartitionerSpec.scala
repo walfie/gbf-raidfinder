@@ -1,0 +1,85 @@
+package com.github.walfie.granblue.raidfinder
+
+import com.github.walfie.granblue.raidfinder.domain._
+import java.util.concurrent.atomic.AtomicInteger
+import monix.execution.Ack
+import monix.execution.schedulers.ExecutionModel.SynchronousExecution
+import monix.execution.schedulers.TestScheduler
+import monix.reactive.Observer
+import monix.reactive.subjects.{PublishSubject, ConcurrentSubject}
+import org.mockito.Mockito._
+import org.scalatest._
+import org.scalatest.Matchers._
+import org.scalatest.mockito.MockitoSugar
+import scala.concurrent.{ExecutionContext, Future}
+
+class CachedRaidTweetPartitionerSpec extends CachedRaidTweetPartitionerSpecHelpers {
+  "getObservable" - {
+    "allow getting observable on an unknown boss" in new PartitionerFixture {
+      val boss = "Egglord"
+      partitioner.getObservable(boss).subscribe(receiver)
+
+      val tweet = newTweet(boss)
+      input.onNext(tweet)
+
+      scheduler.tick()
+      receiver.received shouldBe Seq(tweet)
+    }
+
+    "repeat cached elements for new subscribers" in new PartitionerFixture {
+      // TODO: This fails
+      val boss = "Usamin"
+
+      val tweets = 1.to(cacheSize * 2).map(_ => newTweet(boss))
+      tweets.foreach(input.onNext)
+      scheduler.tick()
+
+      partitioner.getObservable(boss).subscribe(receiver)
+      scheduler.tick()
+      receiver.received shouldBe tweets
+
+      val newReceiver = newTestObserver()
+      partitioner.getObservable(boss).subscribe(newReceiver)
+      scheduler.tick()
+      newReceiver.received shouldBe tweets.takeRight(cacheSize)
+    }
+  }
+}
+
+// TODO: Mockito isn't actually used here anymore
+trait CachedRaidTweetPartitionerSpecHelpers extends FreeSpec with MockitoSugar {
+  trait PartitionerFixture extends MockitoSugar {
+    val cacheSize = 5
+    implicit val scheduler = TestScheduler(SynchronousExecution)
+    lazy val input = ConcurrentSubject.publish[RaidTweet]
+    lazy val partitioner = CachedRaidTweetPartitioner.fromObservable(input, cacheSize)
+    lazy val receiver = newTestObserver()
+
+    private val latestTweetId = new AtomicInteger(0)
+    def newTweet(bossName: String): RaidTweet = {
+      val id = latestTweetId.getAndIncrement()
+      RaidTweet(bossName, id.toString, id, "", "", "", new java.util.Date(0))
+    }
+  }
+
+  def newTestObserver() = new TestObserver[RaidTweet]
+
+  class TestObserver[T] extends Observer[T] {
+    private var receivedRecently = Vector.empty[T]
+
+    def received(): Vector[T] = {
+      val result = receivedRecently
+      receivedRecently = Vector.empty
+      result
+    }
+
+    def onNext(elem: T): Future[Ack] = {
+      receivedRecently = receivedRecently :+ elem
+      Ack.Continue
+    }
+
+    def onError(ex: Throwable): Unit = ()
+    def onComplete(): Unit = ()
+  }
+}
+
