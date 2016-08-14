@@ -4,7 +4,8 @@ lazy val commonSettings = Seq(
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint"),
   Scalariform.settings,
   libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % Versions.ScalaTest % "test"
+    "org.scalatest" %% "scalatest" % Versions.ScalaTest % "test",
+    "org.mockito" % "mockito-all" % Versions.Mockito % "test"
   )
 )
 

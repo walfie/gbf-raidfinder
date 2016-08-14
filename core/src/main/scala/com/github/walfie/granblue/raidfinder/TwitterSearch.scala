@@ -11,17 +11,18 @@ import twitter4j._
 trait TwitterSearch {
   import TwitterSearch.SinceId
 
-  def observable(searchTerm: String, maxCount: Int): Observable[Seq[Status]]
-
-  def nextPage(
-    sinceId:    Option[Long],
+  def observable(
     searchTerm: String,
+    sinceId:    Option[Long],
     maxCount:   Int
-  ): Future[(Seq[Status], Option[SinceId])]
+  ): Observable[Seq[Status]]
 }
 
 object TwitterSearch {
   type SinceId = Long
+
+  /** The maximum number of search results returned from the twitter API is 100 */
+  val MaxCount = 100
 
   def apply(twitter: Twitter): Twitter4jSearch = new Twitter4jSearch(twitter)
 }
@@ -33,9 +34,9 @@ class Twitter4jSearch(twitter: Twitter) extends TwitterSearch {
     * Create an observable that fetches pages of tweets. On error, returns
     * an empty page and the next attempt will retry the previous request.
     */
-  def observable(searchTerm: String, maxCount: Int): Observable[Seq[Status]] = {
+  def observable(searchTerm: String, sinceId: Option[SinceId], maxCount: Int): Observable[Seq[Status]] = {
     ObservableUtil.fromAsyncStateAction[Option[SinceId], Seq[Status]](None) { sinceId =>
-      Task.fromFuture(nextPage(sinceId, searchTerm, maxCount))
+      Task.fromFuture(search(searchTerm, sinceId, maxCount))
         .onErrorHandle { error: Throwable =>
           System.err.println(error) // TODO: Better handling?
           Seq.empty[Status] -> sinceId
@@ -43,9 +44,9 @@ class Twitter4jSearch(twitter: Twitter) extends TwitterSearch {
     }
   }
 
-  def nextPage(
-    sinceId:    Option[SinceId],
+  private def search(
     searchTerm: String,
+    sinceId:    Option[SinceId],
     maxCount:   Int
   ): Future[(Seq[Status], Option[SinceId])] = {
     val query = new Query(searchTerm).count(maxCount)
