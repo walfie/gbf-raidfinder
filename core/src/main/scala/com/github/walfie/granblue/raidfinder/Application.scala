@@ -8,7 +8,7 @@ object Application {
       import scala.concurrent.duration._
       import com.github.walfie.granblue.raidfinder.domain._
       import monix.execution.Scheduler.Implicits.global
-      val timer = Observable.timerRepeated(0.seconds, 100.milliseconds, ())
+      val timer = Observable.timerRepeated(0.seconds, 10.seconds, ())
       val raidTweets = timer.map { _ =>
         val bossName = scala.util.Random.nextInt(5)
         RaidTweet(

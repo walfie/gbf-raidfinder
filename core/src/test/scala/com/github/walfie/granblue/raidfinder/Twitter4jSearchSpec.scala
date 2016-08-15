@@ -35,6 +35,10 @@ class Twitter4jSearchSpec extends Twitter4jSearchSpecHelpers {
       scheduler.tick()
       resultF.futureValue shouldBe Seq(statuses1, statuses2)
     }
+
+    "continue on error" in new TwitterFixture {
+      pending
+    }
   }
 }
 
