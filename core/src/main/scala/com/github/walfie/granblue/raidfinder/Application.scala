@@ -4,30 +4,31 @@ import monix.reactive._
 
 object Application {
   def main(args: Array[String]): Unit = {
-    val x = {
+    val cancellable = {
+      import twitter4j._
       import scala.concurrent.duration._
       import com.github.walfie.granblue.raidfinder.domain._
       import monix.execution.Scheduler.Implicits.global
       val timer = Observable.timerRepeated(0.seconds, 10.seconds, ())
-      val raidTweets = timer.map { _ =>
-        val bossName = scala.util.Random.nextInt(5)
-        RaidTweet(
-          bossName.toString, "id", bossName, "screenName",
-          "profileImage", "text", new java.util.Date()
-        )
-      }
+      val twitter = TwitterFactory.getSingleton
+      val statuses = TwitterSearch(twitter).observable(
+        TwitterSearch.DefaultSearchTerm, None, TwitterSearch.MaxCount
+      )
+
+      val raidTweets = statuses
+        .zipWith(timer)((statuses, _) => statuses)
+        .flatMap(Observable.fromIterable)
+        .collect(Function.unlift(StatusParser.parse))
+        .map(_.tweet)
 
       val partitioner = CachedRaidTweetsPartitioner
         .fromUngroupedObservable(raidTweets, 50)
 
-      val z = scala.io.StdIn.readLine().trim
-      partitioner.getObservable(z).foreach(println)
+      partitioner.getObservable("Lv60 白虎").foreach(println)
     }
 
-    scala.io.StdIn.readLine().trim
-    x.cancel()
-
     handleStopEvent()
+    cancellable.cancel()
   }
 
   /** Temporary thing to allow stopping the application without killing SBT */

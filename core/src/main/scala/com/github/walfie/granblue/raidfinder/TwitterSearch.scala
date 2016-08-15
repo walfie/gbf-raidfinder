@@ -23,6 +23,7 @@ object TwitterSearch {
 
   /** The maximum number of search results returned from the twitter API is 100 */
   val MaxCount = 100
+  val DefaultSearchTerm = "参加者募集！参戦ID："
 
   def apply(twitter: Twitter): Twitter4jSearch = new Twitter4jSearch(twitter)
 }
