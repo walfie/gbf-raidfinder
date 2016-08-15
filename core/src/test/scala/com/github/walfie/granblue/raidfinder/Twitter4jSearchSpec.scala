@@ -1,16 +1,18 @@
 package com.github.walfie.granblue.raidfinder
 
 import com.github.walfie.granblue.raidfinder.util.TestObserver
+import java.util.Date
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.{Observable, Observer}
 import org.mockito.Mockito._
-import org.scalatest.{Status => ScalaTestStatus, _}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time._
 import org.scalatest.Matchers._
 import org.scalatest.mockito.MockitoSugar
+import org.scalatest.time._
+import org.scalatest.{Status => ScalaTestStatus, _}
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
+import scala.util.Random
 import twitter4j._
 
 class Twitter4jSearchSpec extends Twitter4jSearchSpecHelpers {
@@ -20,12 +22,12 @@ class Twitter4jSearchSpec extends Twitter4jSearchSpecHelpers {
       val maxCount = 5
 
       val query1 = new Query(searchTerm).count(maxCount)
-      val statuses1 = mockStatuses(3)
+      val statuses1 = mockStatuses(5)
       val result1 = mockQueryResult(Some(123), statuses1)
       when(twitter.search(query1)) thenReturn result1
 
       val query2 = new Query(searchTerm).count(maxCount).sinceId(123)
-      val statuses2 = mockStatuses(1)
+      val statuses2 = mockStatuses(4)
       val result2 = mockQueryResult(Some(456), statuses2)
       when(twitter.search(query2)) thenReturn result2
 
@@ -33,7 +35,10 @@ class Twitter4jSearchSpec extends Twitter4jSearchSpecHelpers {
 
       val resultF = observable.take(2).toListL.runAsync
       scheduler.tick()
-      resultF.futureValue shouldBe Seq(statuses1, statuses2)
+      resultF.futureValue shouldBe Seq(
+        statuses1.sortBy(_.getCreatedAt),
+        statuses2.sortBy(_.getCreatedAt)
+      )
     }
 
     "continue on error" in new TwitterFixture {
@@ -46,7 +51,7 @@ trait Twitter4jSearchSpecHelpers extends FreeSpec with ScalaFutures with Mockito
   /* Since Twitter4jSearch uses BlockingIO, tests could take slightly longer
      even though everything is mocked (the default PatienceConfig is 150ms) */
   override implicit val patienceConfig = PatienceConfig(
-    timeout = Span(3, Seconds),
+    timeout = Span(5, Seconds),
     interval = Span(50, Millis)
   )
 
@@ -63,6 +68,11 @@ trait Twitter4jSearchSpecHelpers extends FreeSpec with ScalaFutures with Mockito
     result
   }
 
-  def mockStatuses(count: Int): Seq[Status] = (1 to count).map(_ => mock[Status])
+  def mockStatus(): Status = {
+    val status = mock[Status]
+    when(status.getCreatedAt) thenReturn (new Date(Random.nextInt.abs.toLong * 1000))
+    status
+  }
+  def mockStatuses(count: Int): Seq[Status] = (1 to count).map(_ => mockStatus())
 }
 

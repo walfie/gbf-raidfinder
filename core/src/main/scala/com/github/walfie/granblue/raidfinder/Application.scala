@@ -4,7 +4,8 @@ import monix.reactive._
 
 object Application {
   def main(args: Array[String]): Unit = {
-    val cancellable = {
+    // This is temporary, for testing purposes
+    val cancellables = {
       import twitter4j._
       import scala.concurrent.duration._
       import com.github.walfie.granblue.raidfinder.domain._
@@ -24,11 +25,16 @@ object Application {
       val partitioner = CachedRaidTweetsPartitioner
         .fromUngroupedObservable(raidTweets, 50)
 
-      partitioner.getObservable("Lv60 白虎").foreach(println)
+      val bosses = List("Lv60 白虎", "Lv60 朱雀")
+      bosses.map { boss =>
+        println("Press RETURN to subscribe to " + boss)
+        scala.io.StdIn.readLine()
+        partitioner.getObservable(boss).foreach(println)
+      }
     }
 
     handleStopEvent()
-    cancellable.cancel()
+    cancellables.foreach(_.cancel)
   }
 
   /** Temporary thing to allow stopping the application without killing SBT */

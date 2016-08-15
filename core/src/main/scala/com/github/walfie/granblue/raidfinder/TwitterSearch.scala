@@ -55,7 +55,8 @@ class Twitter4jSearch(twitter: Twitter) extends TwitterSearch {
 
     BlockingIO.future {
       val queryResult = twitter.search(query)
-      queryResult.getTweets.asScala -> Option(queryResult.getMaxId)
+      val sortedTweets = queryResult.getTweets.asScala.sortBy(_.getCreatedAt) // Earliest first
+      sortedTweets -> Option(queryResult.getMaxId)
     }
   }
 }
