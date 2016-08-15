@@ -15,10 +15,10 @@ trait ObservablesPartitioner[K, V] {
 object CachedObservablesPartitioner {
   def fromUngroupedObservable[K, V](observable: Observable[V], cacheSizePerKey: Int)(
     keySelector: V => K
-  )(implicit scheduler: Scheduler): CachedObservablesPartitioner[K, V] = {
+  )(implicit scheduler: Scheduler): (CachedObservablesPartitioner[K, V], Cancelable) = {
     val partitioner = new CachedObservablesPartitioner[K, V](cacheSizePerKey)
-    observable.groupBy(keySelector).subscribe(partitioner)
-    partitioner
+    val cancelable = observable.groupBy(keySelector).subscribe(partitioner)
+    (partitioner, cancelable)
   }
 }
 

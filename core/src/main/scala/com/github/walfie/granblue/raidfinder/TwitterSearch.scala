@@ -53,6 +53,7 @@ class Twitter4jSearch(twitter: Twitter) extends TwitterSearch {
     val query = new Query(searchTerm).count(maxCount)
     sinceId.foreach(query.setSinceId)
 
+    // TODO: Refactor this so it doesn't time out on unit tests
     BlockingIO.future {
       val queryResult = twitter.search(query)
       val sortedTweets = queryResult.getTweets.asScala.sortBy(_.getCreatedAt) // Earliest first

@@ -33,6 +33,8 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
       input.onNext(sumire)
       scheduler.tick()
       receiver.received shouldBe Seq(akari, hinaki, sumire)
+
+      cancelable.cancel()
     }
 
     "repeat cached elements for new subscribers" in new PartitionerFixture {
@@ -69,6 +71,8 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
 
       receiver.received shouldBe (blueIdols ++ moreBlueIdols)
       newReceiver.received shouldBe (blueIdols.takeRight(cacheSize) ++ moreBlueIdols)
+
+      cancelable.cancel()
     }
 
     "cache even when there are no subscribers" in new PartitionerFixture {
@@ -82,6 +86,8 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
       partitioner.getObservable(Purple).subscribe(receiver)
       scheduler.tick()
       receiver.received shouldBe purpleIdols
+
+      cancelable.cancel()
     }
   }
 }
@@ -100,7 +106,7 @@ trait CachedObservablesPartitionerSpecHelpers extends FreeSpec {
     val cacheSize = 5
     implicit val scheduler = TestScheduler(SynchronousExecution)
     lazy val input = ConcurrentSubject.replay[Idol]
-    lazy val partitioner = CachedObservablesPartitioner
+    lazy val (partitioner, cancelable) = CachedObservablesPartitioner
       .fromUngroupedObservable(input, cacheSize)(_.color)
     lazy val receiver = new TestObserver[Idol]
   }

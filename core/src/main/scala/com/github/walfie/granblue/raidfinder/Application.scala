@@ -22,7 +22,7 @@ object Application {
         .collect(Function.unlift(StatusParser.parse))
         .map(_.tweet)
 
-      val partitioner = CachedRaidTweetsPartitioner
+      val (partitioner, cancelable) = CachedRaidTweetsPartitioner
         .fromUngroupedObservable(raidTweets, 50)
 
       val bosses = List("Lv60 白虎", "Lv60 朱雀")
@@ -30,7 +30,7 @@ object Application {
         println("Press RETURN to subscribe to " + boss)
         scala.io.StdIn.readLine()
         partitioner.getObservable(boss).foreach(println)
-      }
+      } :+ cancelable
     }
 
     handleStopEvent()
