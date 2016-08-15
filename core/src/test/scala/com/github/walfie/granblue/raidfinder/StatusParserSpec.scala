@@ -1,6 +1,7 @@
 package com.github.walfie.granblue.raidfinder
 
 import com.github.walfie.granblue.raidfinder.domain._
+import java.util.Date
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatest.mockito.MockitoSugar
@@ -20,45 +21,66 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       createdAt = now
     )
 
-    // Have to check each part manually since Mockito has issues with AnyVal
-    val parsed = StatusParser.parse(validStatus)
-    parsed.map(_.tweet) shouldBe Some(expectedRaidTweet)
-    parsed.map(_.image.get.url) shouldBe Some("http://example.com/raid-image.png")
+    val expectedImageUrl = "http://example.com/raid-image.png"
+
+    // Can't compare the whole case class because of an issue with Mockito and AnyVal
+    StatusParser.parse(mockStatus()).map { parsed =>
+      parsed.image.map(_.url) shouldBe Some(expectedImageUrl)
+      parsed.tweet shouldBe expectedRaidTweet
+    }
   }
 
-  // Testing this is going to be very annoying
-  "return None on invalid status" in pending
+  "non-official client" in {
+    StatusParser.parse(mockStatus(source = "TweetDeck")) shouldBe None
+  }
+
+  "invalid text" in {
+    val haiku = "#GranblueHaiku http://example.com/haiku.png"
+    StatusParser.parse(mockStatus(text = haiku)) shouldBe None
+  }
 }
 
 trait StatusParserSpecHelpers extends FreeSpec with MockitoSugar {
   val now = new java.util.Date()
 
-  def validStatus(): Status = {
-    val status = mock[Status]
-    doReturn(StatusParser.GranblueSource).when(status).getSource
-    doReturn(12345L).when(status).getId
-    doReturn(mockUser).when(status).getUser
-    doReturn(now).when(status).getCreatedAt
-    doReturn(Array(mockMediaEntity)).when(status).getMediaEntities
-    val tweetText = """
-      |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
-      |Lv60 Ozorotter
-      |http://example.com/image-that-is-ignored.png""".stripMargin.trim
+  val validTweetText = """
+    |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
+    |Lv60 Ozorotter
+    |http://example.com/image-that-is-ignored.png""".stripMargin.trim
 
-    doReturn(tweetText).when(status).getText
+  def mockStatus(
+    source:        String             = StatusParser.GranblueSource,
+    id:            Long               = 12345L,
+    user:          User               = mockUser(),
+    createdAt:     Date               = now,
+    mediaEntities: Array[MediaEntity] = Array(mockMediaEntity()),
+    text:          String             = validTweetText
+  ): Status = {
+    val status = mock[Status]
+    doReturn(source).when(status).getSource
+    doReturn(id).when(status).getId
+    doReturn(user).when(status).getUser
+    doReturn(createdAt).when(status).getCreatedAt
+    doReturn(mediaEntities).when(status).getMediaEntities
+    doReturn(text).when(status).getText
     status
   }
 
-  def mockMediaEntity(): MediaEntity = {
+  def mockMediaEntity(
+    mediaURLHttps: String = "http://example.com/raid-image.png"
+  ): MediaEntity = {
     val entity = mock[MediaEntity]
-    when(entity.getMediaURLHttps) thenReturn "http://example.com/raid-image.png"
+    doReturn(mediaURLHttps).when(entity).getMediaURLHttps
     entity
   }
 
-  def mockUser(): User = {
+  def mockUser(
+    screenName:           String = "walfieee",
+    profileImageURLHttps: String = "http://example.com/profile-image_normal.png"
+  ): User = {
     val user = mock[User]
-    when(user.getScreenName) thenReturn "walfieee"
-    when(user.getProfileImageURLHttps) thenReturn "http://example.com/profile-image_normal.png"
+    doReturn(screenName).when(user).getScreenName
+    doReturn(profileImageURLHttps).when(user).getProfileImageURLHttps
     user
   }
 }
