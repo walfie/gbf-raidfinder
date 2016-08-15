@@ -30,11 +30,29 @@ class StatusParserSpec extends StatusParserSpecHelpers {
     }
   }
 
-  "non-official client" in {
+  "parse a status without an image URL at the end" in {
+    // New bosses (e.g., watermelon boss) might not have images when they first come out
+    val text = """
+      |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
+      |Lv60 Ozorotter""".stripMargin.trim
+    val status = mockStatus(text = text)
+
+    StatusParser.parse(status) should not be empty
+  }
+
+  "parse a status without media entities" in {
+    val status = mockStatus(mediaEntities = Array.empty)
+
+    val parsed = StatusParser.parse(status)
+    parsed should not be empty
+    parsed.get.image shouldBe empty
+  }
+
+  "return None if non-official client" in {
     StatusParser.parse(mockStatus(source = "TweetDeck")) shouldBe None
   }
 
-  "invalid text" in {
+  "return None invalid text" in {
     val haiku = "#GranblueHaiku http://example.com/haiku.png"
     StatusParser.parse(mockStatus(text = haiku)) shouldBe None
   }
