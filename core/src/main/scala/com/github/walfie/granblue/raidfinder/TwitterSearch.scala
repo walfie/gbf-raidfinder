@@ -13,7 +13,7 @@ trait TwitterSearch {
 
   def observable(
     searchTerm: String,
-    sinceId:    Option[Long],
+    sinceId:    Option[SinceId],
     maxCount:   Int
   ): Observable[Seq[Status]]
 }

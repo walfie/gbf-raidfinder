@@ -5,6 +5,7 @@ import java.util.Date
 package object domain {
   type BossName = String
   type TweetId = Long
+  type RaidImage = String
 }
 
 package domain {
@@ -16,8 +17,8 @@ package domain {
   case class RaidTweet(
     bossName:     BossName,
     raidId:       String,
-    tweetId:      TweetId,
     screenName:   String,
+    tweetId:      TweetId,
     profileImage: String,
     text:         String,
     createdAt:    Date
@@ -29,8 +30,12 @@ package domain {
     lastSeen: Date
   )
 
-  case class RaidImage(url: String) extends AnyVal {
-    def thumb(): String = url + ":thumb"
+  object RaidBoss {
+    def fromRaidInfo(raidInfo: RaidInfo): RaidBoss = RaidBoss(
+      bossName = raidInfo.tweet.bossName,
+      image = raidInfo.image,
+      lastSeen = raidInfo.tweet.createdAt
+    )
   }
 }
 

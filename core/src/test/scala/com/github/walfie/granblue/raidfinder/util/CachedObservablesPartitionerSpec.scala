@@ -1,6 +1,5 @@
 package com.github.walfie.granblue.raidfinder.util
 
-import java.util.concurrent.atomic.AtomicInteger
 import monix.execution.Ack
 import monix.execution.schedulers.ExecutionModel.SynchronousExecution
 import monix.execution.schedulers.TestScheduler

@@ -23,10 +23,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
 
     val expectedImageUrl = "http://example.com/raid-image.png"
 
-    // Can't compare the whole case class because of an issue with Mockito and AnyVal
-    StatusParser.parse(mockStatus()).map { parsed =>
-      parsed.image.map(_.url) shouldBe Some(expectedImageUrl)
-      parsed.tweet shouldBe expectedRaidTweet
+    StatusParser.parse(mockStatus()) shouldBe Some {
+      RaidInfo(expectedRaidTweet, Some(expectedImageUrl))
     }
   }
 

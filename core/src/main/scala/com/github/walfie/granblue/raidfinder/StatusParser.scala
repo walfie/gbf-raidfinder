@@ -27,14 +27,14 @@ object StatusParser {
         createdAt = status.getCreatedAt
       )
 
-      val image = getImageFromStatus(status).map(RaidImage.apply)
+      val image = getImageFromStatus(status)
 
       Some(RaidInfo(raidTweet, image))
 
     case _ => None
   }
 
-  private def getImageFromStatus(status: Status): Option[String] = {
+  private def getImageFromStatus(status: Status): Option[RaidImage] = {
     status.getMediaEntities.headOption.map(_.getMediaURLHttps)
   }
 }
