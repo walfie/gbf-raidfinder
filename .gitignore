@@ -1,3 +1,4 @@
 *.class
 target/
+twitter4j.properties
 

@@ -1,4 +1,4 @@
-package com.github.walfie.granblue.raidfinder.flow
+package com.github.walfie.granblue.raidfinder
 
 import com.github.walfie.granblue.raidfinder.domain._
 import twitter4j._
@@ -11,7 +11,7 @@ object StatusParser {
   val GranblueSource =
     """<a href="http://granbluefantasy.jp/" rel="nofollow">グランブルー ファンタジー</a>"""
 
-  def parseStatus(status: Status): Option[RaidInfo] = status.getText match {
+  def parse(status: Status): Option[RaidInfo] = status.getText match {
     case _ if status.getSource != GranblueSource => None
 
     case RaidRegex(extraText, raidId, boss) =>
@@ -22,18 +22,19 @@ object StatusParser {
         screenName = status.getUser.getScreenName,
         bossName = bossName,
         raidId = raidId.trim,
+        profileImage = status.getUser.getProfileImageURLHttps,
         text = extraText.trim,
         createdAt = status.getCreatedAt
       )
 
-      val image = getImageFromStatus(status).map(RaidImage.apply)
+      val image = getImageFromStatus(status)
 
       Some(RaidInfo(raidTweet, image))
 
     case _ => None
   }
 
-  def getImageFromStatus(status: Status): Option[String] = {
+  private def getImageFromStatus(status: Status): Option[RaidImage] = {
     status.getMediaEntities.headOption.map(_.getMediaURLHttps)
   }
 }

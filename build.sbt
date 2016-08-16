@@ -1,15 +1,28 @@
-scalaVersion := "2.11.8"
-
-organization := "com.github.walfie"
-
-name := "granblue-raid-finder"
-
-libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-agent" % Versions.Akka,
-  "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka,
-  "com.typesafe.akka" %% "akka-stream" % Versions.Akka,
-  "org.twitter4j" % "twitter4j-core" % Versions.Twitter4j
+lazy val commonSettings = Seq(
+  scalaVersion := "2.11.8",
+  organization := "com.github.walfie",
+  scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint"),
+  Scalariform.settings,
+  libraryDependencies ++= Seq(
+    "org.scalatest" %% "scalatest" % Versions.ScalaTest % "test",
+    "org.mockito" % "mockito-all" % Versions.Mockito % "test"
+  )
 )
 
-scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint")
+lazy val core = (project in file("core"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "granblue-raid-finder",
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-agent" % Versions.Akka,
+      "io.monix" %% "monix" % Versions.Monix,
+      "org.twitter4j" % "twitter4j-core" % Versions.Twitter4j
+    )
+  )
+
+lazy val root = (project in file("."))
+  .aggregate(core)
+  .settings(
+    aggregate in update := false
+  )
 
