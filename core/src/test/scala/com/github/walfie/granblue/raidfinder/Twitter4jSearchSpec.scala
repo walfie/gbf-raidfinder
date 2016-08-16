@@ -2,9 +2,10 @@ package com.github.walfie.granblue.raidfinder
 
 import com.github.walfie.granblue.raidfinder.util.TestObserver
 import java.util.Date
-import monix.execution.schedulers.TestScheduler
+import monix.execution.Scheduler
 import monix.reactive.{Observable, Observer}
 import org.mockito.Mockito._
+import org.mockito.Matchers.any
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.Matchers._
 import org.scalatest.mockito.MockitoSugar
@@ -34,7 +35,6 @@ class Twitter4jSearchSpec extends Twitter4jSearchSpecHelpers {
       val observable = search.observable(searchTerm, None, maxCount)
 
       val resultF = observable.take(2).toListL.runAsync
-      scheduler.tick()
       resultF.futureValue shouldBe Seq(
         statuses1.sortBy(_.getCreatedAt),
         statuses2.sortBy(_.getCreatedAt)
@@ -42,21 +42,42 @@ class Twitter4jSearchSpec extends Twitter4jSearchSpecHelpers {
     }
 
     "continue on error" in new TwitterFixture {
-      pending
+      val searchTerm = "ai! katsu!"
+      val maxCount = 10
+
+      // First query returns success
+      val query1 = new Query(searchTerm).count(maxCount)
+      val statuses1 = mockStatuses(5)
+      val result1 = mockQueryResult(Some(5), statuses1)
+      when(twitter.search(query1)).thenReturn(result1)
+
+      // Second query fails once and then succeeds the second try
+      val query2 = new Query(searchTerm).count(maxCount).sinceId(5)
+      val statuses2 = mockStatuses(2)
+      val result2 = mockQueryResult(Some(7), statuses2)
+      when(twitter.search(query2))
+        .thenThrow(new RuntimeException("Oh no!!"))
+        .thenReturn(result2)
+
+      val observable = search.observable(searchTerm, None, maxCount)
+
+      val resultF = observable.take(3).toListL.runAsync
+      resultF.futureValue shouldBe Seq(
+        statuses1.sortBy(_.getCreatedAt),
+        Seq.empty,
+        statuses2.sortBy(_.getCreatedAt)
+      )
+
+      verify(twitter).search(query1)
+      verify(twitter, times(2)).search(query2)
+      verifyNoMoreInteractions(twitter)
     }
   }
 }
 
 trait Twitter4jSearchSpecHelpers extends FreeSpec with ScalaFutures with MockitoSugar {
-  /* Since Twitter4jSearch uses BlockingIO, tests could take slightly longer
-     even though everything is mocked (the default PatienceConfig is 150ms) */
-  override implicit val patienceConfig = PatienceConfig(
-    timeout = Span(5, Seconds),
-    interval = Span(50, Millis)
-  )
-
   trait TwitterFixture {
-    implicit val scheduler = TestScheduler()
+    implicit val scheduler = Scheduler.Implicits.global
     val twitter = mock[Twitter]
     val search = TwitterSearch(twitter)
   }
