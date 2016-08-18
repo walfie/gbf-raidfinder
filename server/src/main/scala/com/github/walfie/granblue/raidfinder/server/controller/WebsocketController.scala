@@ -12,7 +12,7 @@ import play.api.mvc._
 
 class WebsocketController(
   raidFinder: RaidFinder
-)(implicit system: ActorSystem, mat: Materializer) extends Controller {
+)(implicit system: ActorSystem, materializer: Materializer) extends Controller {
   // TODO: Change to Request/Response types
   def raids = WebSocket.accept[String, String] { request =>
     ActorFlow.actorRef(out => WebsocketRaidsHandler.props(out, raidFinder))

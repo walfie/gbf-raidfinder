@@ -3,6 +3,7 @@ package com.github.walfie.granblue.raidfinder.server
 import akka.actor._
 import akka.stream.ActorMaterializer
 import com.github.walfie.granblue.raidfinder
+import com.github.walfie.granblue.raidfinder.RaidFinder
 import monix.execution.Scheduler.Implicits.global
 import play.api.BuiltInComponents
 import play.api.http.DefaultHttpErrorHandler
@@ -15,7 +16,9 @@ import scala.concurrent.Future
 
 object Application {
   def main(args: Array[String]): Unit = {
-    val components = new Components
+    val raidFinder = RaidFinder.default()
+
+    val components = new Components(raidFinder)
     val server = components.server
 
     waitForStopEvent()
