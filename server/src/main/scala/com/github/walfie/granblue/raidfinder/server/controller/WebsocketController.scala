@@ -4,17 +4,21 @@ import akka.actor._
 import akka.stream.Materializer
 import com.github.walfie.granblue.raidfinder.domain._
 import com.github.walfie.granblue.raidfinder.RaidFinder
+import com.github.walfie.granblue.raidfinder.server.json._
 import com.github.walfie.granblue.raidfinder.server.protocol._
 import monix.execution.Cancelable
-import play.api.libs.streams._
 import monix.execution.Scheduler
+import play.api.libs.streams._
 import play.api.mvc._
+import play.api.mvc.WebSocket.MessageFlowTransformer
 
 class WebsocketController(
   raidFinder: RaidFinder
 )(implicit system: ActorSystem, materializer: Materializer) extends Controller {
-  // TODO: Change to Request/Response types
-  def raids = WebSocket.accept[String, String] { request =>
+  implicit val messageFlowTransformer = MessageFlowTransformer
+    .jsonMessageFlowTransformer[WebsocketRequest[_], WebsocketResponse]
+
+  def raids = WebSocket.accept[WebsocketRequest[_], WebsocketResponse] { request =>
     ActorFlow.actorRef(out => WebsocketRaidsHandler.props(out, raidFinder))
   }
 }
@@ -45,6 +49,10 @@ class WebsocketRaidsHandler(
 
     case GetBosses =>
       out ! Bosses(raidFinder.getKnownBosses.values.toSeq)
+  }
+
+  override def postStop(): Unit = {
+    subscribed.values.foreach(_.cancel)
   }
 }
 

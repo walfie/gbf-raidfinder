@@ -22,7 +22,10 @@ class Components(val raidFinder: RaidFinder) extends NettyServerComponents
   override lazy val httpErrorHandler = new ErrorHandler
 
   // TODO: Shut down actors, etc
-  override def serverStopHook = () => Future.successful(())
+  override def serverStopHook = () => Future.successful {
+    raidFinder.shutdown()
+    actorSystem.terminate()
+  }
 }
 
 trait RaidFinderControllers {

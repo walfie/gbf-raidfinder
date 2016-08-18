@@ -13,6 +13,7 @@ import play.api.routing.sird._
 import play.core.server._
 import play.core.server.NettyServerComponents
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 object Application {
   def main(args: Array[String]): Unit = {
