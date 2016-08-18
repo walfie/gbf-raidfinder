@@ -8,22 +8,29 @@ import scala.concurrent.Future
 
 class ErrorHandler extends HttpErrorHandler {
   // TODO: Make this more structured
-  private def jsonResponse(error: String): JsObject =
-    Json.obj("errors" -> Seq(error))
+  private def jsonResponse(statusCode: Int, message: String): JsObject =
+    Json.obj(
+      "errors" -> Json.arr(
+        Json.obj(
+          "status" -> statusCode,
+          "detail" -> message
+        )
+      )
+    )
 
   def onClientError(
     request:    RequestHeader,
     statusCode: Int,
     message:    String
   ): Future[Result] = Future.successful {
-    Status(statusCode)(jsonResponse(message))
+    Status(statusCode)(jsonResponse(statusCode, message))
   }
 
   def onServerError(
     request:   RequestHeader,
     exception: Throwable
   ): Future[Result] = Future.successful {
-    InternalServerError(jsonResponse("Internal server error"))
+    InternalServerError(jsonResponse(500, "Internal server error"))
   }
 }
 
