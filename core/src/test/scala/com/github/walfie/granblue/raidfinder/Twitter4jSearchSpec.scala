@@ -4,9 +4,9 @@ import com.github.walfie.granblue.raidfinder.util.TestObserver
 import java.util.Date
 import monix.execution.Scheduler
 import monix.reactive.{Observable, Observer}
-import org.mockito.Mockito._
 import org.mockito.Matchers.any
-import org.scalatest.concurrent.ScalaFutures
+import org.mockito.Mockito._
+import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.Matchers._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time._
@@ -75,7 +75,13 @@ class Twitter4jSearchSpec extends Twitter4jSearchSpecHelpers {
   }
 }
 
-trait Twitter4jSearchSpecHelpers extends FreeSpec with ScalaFutures with MockitoSugar {
+trait Twitter4jSearchSpecHelpers extends FreeSpec
+  with ScalaFutures with MockitoSugar with PatienceConfiguration {
+
+  implicit override val patienceConfig = PatienceConfig(
+    timeout = Span(5, Seconds), interval = Span(100, Millis)
+  )
+
   trait TwitterFixture {
     implicit val scheduler = Scheduler.Implicits.global
     val twitter = mock[Twitter]
