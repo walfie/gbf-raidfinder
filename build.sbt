@@ -18,6 +18,11 @@ lazy val core = (project in file("core"))
     )
   )
 
+lazy val protocol = (project in file("protocol"))
+  .settings(commonSettings: _*)
+  .settings(ScalaPB.settings)
+  .settings(name := "granblue-raid-finder-protocol")
+
 lazy val server = (project in file("server"))
   .settings(commonSettings: _*)
   .settings(

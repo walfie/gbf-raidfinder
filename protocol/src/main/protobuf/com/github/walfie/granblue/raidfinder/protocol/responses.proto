@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+import "scalapb/scalapb.proto";
+
+package com.github.walfie.granblue.raidfinder.protocol;
+
+option (scalapb.options) = {
+  single_file: true
+  preamble: "sealed trait ResponseMessage"
+  import: "com.github.walfie.granblue.raidfinder.protocol.DateMapper._"
+};
+
+message Response {
+  oneof data {
+    SubscriptionChangeResponse subscriptionChangeResponse = 1;
+    RaidTweetResponse raidTweetResponse = 2;
+    RaidBossesResponse raidBossesResponse = 3;
+  }
+};
+
+message SubscriptionChangeResponse {
+  option (scalapb.message).extends = "ResponseMessage";
+
+  repeated string subscribedBossNames = 1;
+};
+
+message RaidTweetResponse {
+  option (scalapb.message).extends = "ResponseMessage";
+
+  string bossName = 1;
+  string raidId = 2;
+  string screenName = 3;
+  int64 tweetId = 4;
+  string profileImage = 5;
+  string text = 6;
+  int64 createdAt = 7 [(scalapb.field).type = "java.util.Date"];
+};
+
+message RaidBossesResponse {
+  option (scalapb.message).extends = "ResponseMessage";
+
+  message RaidBoss {
+    string bossName = 1;
+    string image = 2;
+    int64 lastSeen = 3 [(scalapb.field).type = "java.util.Date"];
+  }
+
+  repeated RaidBoss raidBosses = 1;
+};
+
+// TODO: ShutdownResponse
+

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+import "scalapb/scalapb.proto";
+
+package com.github.walfie.granblue.raidfinder.protocol;
+
+option (scalapb.options) = {
+  single_file: true
+  preamble: "sealed trait RequestMessage"
+};
+
+message Request {
+  oneof data {
+    RaidBossesRequest raidBossesRequest = 1;
+    SubscriptionChangeRequest subscriptionChangeRequest = 2;
+  }
+}
+
+message RaidBossesRequest {
+  option (scalapb.message).extends = "RequestMessage";
+};
+
+message SubscriptionChangeRequest {
+  option (scalapb.message).extends = "RequestMessage";
+
+  enum SubscriptionAction {
+    UNSUBSCRIBE = 0;
+    SUBSCRIBE = 1;
+  }
+
+  repeated string bossNames = 1;
+  SubscriptionAction action = 2;
+};
+
