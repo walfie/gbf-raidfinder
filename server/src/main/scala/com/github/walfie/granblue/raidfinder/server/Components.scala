@@ -16,12 +16,12 @@ class Components(val raidFinder: RaidFinder) extends NettyServerComponents
   with BuiltInComponents with Controller with RaidFinderControllers {
 
   lazy val router = Router.from {
+    case GET(p"/") => controllers.Assets.at(path = "/public", "index.html") // Temporary
     case GET(p"/ws/raids") => websocketController.raids
   }
 
   override lazy val httpErrorHandler = new ErrorHandler
 
-  // TODO: Shut down actors, etc
   override def serverStopHook = () => Future.successful {
     raidFinder.shutdown()
     actorSystem.terminate()

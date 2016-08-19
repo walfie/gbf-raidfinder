@@ -12,6 +12,8 @@ package protocol {
 
   case class Subscribed(bossNames: Set[BossName]) extends WebsocketResponse
   case class RaidBosses(raidBosses: Seq[RaidBoss]) extends WebsocketResponse
+
+  // TODO: Add shutdown message?
 }
 
 package object protocol {
