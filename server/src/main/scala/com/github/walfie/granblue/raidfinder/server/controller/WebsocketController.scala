@@ -35,7 +35,10 @@ class WebsocketRaidsHandler(
     case Subscribe(bossName) =>
       // Only subscribe if not already subscribed
       if (!subscribed.isDefinedAt(bossName)) {
-        val cancelable = raidFinder.getRaidTweets(bossName).foreach(out ! _)
+        val cancelable = raidFinder
+          .getRaidTweets(bossName)
+          .foreach(out ! RaidTweetWrapper(_))
+
         subscribed = subscribed.updated(bossName, cancelable)
       }
       out ! Subscribed(subscribed.keys.toSet)
@@ -47,8 +50,8 @@ class WebsocketRaidsHandler(
       }
       out ! Subscribed(subscribed.keys.toSet)
 
-    case GetBosses =>
-      out ! Bosses(raidFinder.getKnownBosses.values.toSeq)
+    case GetRaidBosses =>
+      out ! RaidBosses(raidFinder.getKnownBosses.values.toSeq)
   }
 
   override def postStop(): Unit = {

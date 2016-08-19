@@ -10,29 +10,31 @@ package object json {
   implicit val WebsocketResponseWrites: Writes[WebsocketResponse] =
     Writes { response: WebsocketResponse =>
       response match {
+        case r: RaidTweetWrapper => RaidTweetWrapperWrites.writes(r)
         case r: Subscribed => SubscribedWrites.writes(r)
-        case r: Bosses => BossesWrites.writes(r)
+        case r: RaidBosses => RaidBossesWrites.writes(r)
       }
     }
+
+  implicit val RaidTweetWrapperWrites: Writes[RaidTweetWrapper] = Writes { rtw =>
+    Json.writes[RaidTweet].messageType("RaidTweet").writes(rtw.underlying)
+  }
 
   implicit val SubscribedWrites: Writes[Subscribed] =
     Json.writes[Subscribed].messageType("Subscribed")
 
   implicit val RaidBossWrites: Writes[RaidBoss] =
-    Json.writes[RaidBoss] // messageType not needed because this is inside `Bosses` response
+    Json.writes[RaidBoss] // messageType not needed because this is inside `RaidBosses` response
 
-  implicit val RaidTweetWrites: Writes[RaidTweet] =
-    Json.writes[RaidTweet].messageType("RaidTweet")
-
-  implicit val BossesWrites: Writes[Bosses] =
-    Json.writes[Bosses].messageType("Bosses")
+  implicit val RaidBossesWrites: Writes[RaidBosses] =
+    Json.writes[RaidBosses].messageType("RaidBosses")
 
   implicit val WebsocketRequestReads: Reads[WebsocketRequest[_]] =
     Reads { json: JsValue =>
       (json \ "type").validate[String].flatMap {
         case "Subscribe" => SubscribeReads.reads(json)
         case "Unsubscribe" => UnsubscribeReads.reads(json)
-        case "GetBosses" => JsSuccess(GetBosses)
+        case "GetRaidBosses" => JsSuccess(GetRaidBosses)
       }
     }
 
