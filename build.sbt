@@ -28,10 +28,11 @@ lazy val server = (project in file("server"))
   .settings(
     name := "granblue-raid-finder-server",
     libraryDependencies ++= Seq(
+      "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
       "com.typesafe.play" %% "play-netty-server" % Versions.Play
     )
   )
-  .dependsOn(core)
+  .dependsOn(core, protocol)
 
 lazy val root = (project in file("."))
   .aggregate(core, server)

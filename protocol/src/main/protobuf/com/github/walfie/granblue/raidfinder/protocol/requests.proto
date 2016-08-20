@@ -1,27 +1,27 @@
 syntax = "proto3";
 
-import "scalapb/scalapb.proto";
-
 package com.github.walfie.granblue.raidfinder.protocol;
 
+import "scalapb/scalapb.proto";
+
 option (scalapb.options) = {
+  preamble: "sealed trait Request"
   single_file: true
-  preamble: "sealed trait RequestMessage"
 };
 
-message Request {
+message RequestMessage {
   oneof data {
-    RaidBossesRequest raidBossesRequest = 1;
-    SubscriptionChangeRequest subscriptionChangeRequest = 2;
+    RaidBossesRequest raidBossesMessage = 1;
+    SubscriptionChangeRequest subscriptionChangeMessage = 2;
   }
 }
 
 message RaidBossesRequest {
-  option (scalapb.message).extends = "RequestMessage";
+  option (scalapb.message).extends = "Request";
 };
 
 message SubscriptionChangeRequest {
-  option (scalapb.message).extends = "RequestMessage";
+  option (scalapb.message).extends = "Request";
 
   enum SubscriptionAction {
     UNSUBSCRIBE = 0;
