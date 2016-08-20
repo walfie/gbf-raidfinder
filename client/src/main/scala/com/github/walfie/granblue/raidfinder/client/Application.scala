@@ -15,7 +15,7 @@ object Application extends JSApp {
   def main(): Unit = {
     val msg = RequestMessage().withRaidBossesMessage(RaidBossesRequest())
 
-    val socket = new dom.WebSocket("ws://localhost:9000/ws/raids")
+    val socket = new dom.WebSocket("ws://localhost:9000/ws/raids", js.Array("binary"))
     socket.binaryType = "arraybuffer"
 
     val bytes = {

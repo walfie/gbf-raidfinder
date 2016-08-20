@@ -8,10 +8,7 @@ import com.github.walfie.granblue.raidfinder.protocol.implicits._
 import monix.execution.{Cancelable, Scheduler}
 import com.github.walfie.granblue.raidfinder.protocol.SubscriptionChangeRequest.SubscriptionAction.{SUBSCRIBE, UNSUBSCRIBE}
 
-class WebsocketRaidsHandler(
-  out:        ActorRef,
-  raidFinder: RaidFinder
-) extends Actor {
+class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor {
   implicit val scheduler = Scheduler(context.system.dispatcher)
 
   var subscribed: Map[BossName, Cancelable] = Map.empty
