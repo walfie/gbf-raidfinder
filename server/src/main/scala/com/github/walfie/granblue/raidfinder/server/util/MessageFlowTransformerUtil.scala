@@ -10,15 +10,17 @@ import play.api.mvc.WebSocket.MessageFlowTransformer
 import scala.util.control.NonFatal
 
 object MessageFlowTransformerUtil {
+  private type ProtobufMessageFlowTransformer = MessageFlowTransformer[RequestMessage, ResponseMessage]
+
   // TODO: Handle errors
-  implicit val protobufJsonMessageFlowTransformer: MessageFlowTransformer[RequestMessage, ResponseMessage] = {
+  implicit val protobufJsonMessageFlowTransformer: ProtobufMessageFlowTransformer = {
     MessageFlowTransformer.stringMessageFlowTransformer.map(
       JsonFormat.fromJsonString[RequestMessage],
       JsonFormat.toJsonString(_)
     )
   }
 
-  implicit val protobufBinaryMessageFlowTransformer: MessageFlowTransformer[RequestMessage, ResponseMessage] = {
+  implicit val protobufBinaryMessageFlowTransformer: ProtobufMessageFlowTransformer = {
     MessageFlowTransformer.byteArrayMessageFlowTransformer.map(
       RequestMessage.parseFrom(_),
       _.toByteArray
