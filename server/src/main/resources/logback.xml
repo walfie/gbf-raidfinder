@@ -28,9 +28,9 @@
   <logger name="play" level="INFO" />
   <logger name="application" level="INFO" />
 
-  <root level="WARN">
-    <appender-ref ref="ASYNCFILE" />
+  <root level="INFO">
     <appender-ref ref="ASYNCSTDOUT" />
+    <appender-ref ref="ASYNCFILE" />
   </root>
 </configuration>
 
