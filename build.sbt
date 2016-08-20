@@ -36,6 +36,18 @@ lazy val server = (project in file("server"))
   )
   .dependsOn(core, protocolJVM)
 
+lazy val client = (project in file("client"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "granblue-raid-finder-client",
+    persistLauncher in Compile := true,
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "0.9.0"
+    )
+  )
+  .dependsOn(protocolJS)
+
 lazy val root = (project in file("."))
   .aggregate(core, server)
   .settings(aggregate in update := false)

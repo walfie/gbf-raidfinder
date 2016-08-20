@@ -15,10 +15,12 @@ class WebsocketController(
   raidFinder: RaidFinder
 )(implicit system: ActorSystem, materializer: Materializer) extends Controller {
   implicit val messageFlowTransformer =
-    MessageFlowTransformerUtil.protobufJsonMessageFlowTransformer
+    //MessageFlowTransformerUtil.protobufJsonMessageFlowTransformer
+    MessageFlowTransformerUtil.protobufBinaryMessageFlowTransformer
 
   def raids = WebSocket.accept[RequestMessage, ResponseMessage] { request =>
     ActorFlow.actorRef(out => WebsocketRaidsHandler.props(out, raidFinder))
   }
+
 }
 
