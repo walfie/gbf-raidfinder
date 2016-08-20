@@ -28,7 +28,7 @@ package object implicits {
   implicit class ResponseMessageOps(val message: ResponseMessage) extends AnyVal {
     import ResponseMessage.Data._
 
-    def toRequest(): Option[Response] = message.data match {
+    def toResponse(): Option[Response] = message.data match {
       case RaidTweetMessage(v) => Some(v)
       case RaidBossesMessage(v) => Some(v)
       case SubscriptionChangeMessage(v) => Some(v)

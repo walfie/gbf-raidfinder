@@ -4,8 +4,9 @@ import akka.actor._
 import com.github.walfie.granblue.raidfinder.domain._
 import com.github.walfie.granblue.raidfinder.RaidFinder
 import com.github.walfie.granblue.raidfinder.protocol._
-import monix.execution.Cancelable
-import monix.execution.Scheduler
+import com.github.walfie.granblue.raidfinder.protocol.implicits._
+import monix.execution.{Cancelable, Scheduler}
+import com.github.walfie.granblue.raidfinder.protocol.SubscriptionChangeRequest.SubscriptionAction.{SUBSCRIBE, UNSUBSCRIBE}
 
 class WebsocketRaidsHandler(
   out:        ActorRef,
@@ -16,18 +17,13 @@ class WebsocketRaidsHandler(
   var subscribed: Map[BossName, Cancelable] = Map.empty
 
   def receive: Receive = {
-    case RequestMessage(data) => handleRequest(data)
+    case r: RequestMessage => r.toRequest.foreach(handleRequest)
   }
 
-  import RequestMessage.{Data => RequestData}
-  import ResponseMessage.{Data => ResponseData}
-  import SubscriptionChangeRequest.SubscriptionAction._
-  def push(response: ResponseData): Unit = out ! ResponseMessage(data = response)
-  val handleRequest: PartialFunction[RequestData, _] = {
-    case RequestData.Empty =>
-      push(ResponseData.ErrorMessage(value = ErrorResponse())) // TODO: Specific error
+  def push(response: Response): Unit = out ! response.toMessage
 
-    case msg: RequestData.RaidBossesMessage =>
+  val handleRequest: PartialFunction[Request, _] = {
+    case r: RaidBossesRequest =>
       val bosses = raidFinder.getKnownBosses.values.map { rb: RaidBoss =>
         RaidBossesResponse.RaidBoss(
           bossName = rb.bossName,
@@ -35,9 +31,10 @@ class WebsocketRaidsHandler(
           lastSeen = rb.lastSeen
         )
       }
-      push(ResponseData.RaidBossesMessage(value = RaidBossesResponse(raidBosses = bosses.toSeq)))
 
-    case RequestData.SubscriptionChangeMessage(r) if r.action == SUBSCRIBE =>
+      this push RaidBossesResponse(raidBosses = bosses.toSeq)
+
+    case r: SubscriptionChangeRequest if r.action == SUBSCRIBE =>
       val cancelables = r.bossNames
         .filterNot(subscribed.keys.toSeq.contains)
         .map { bossName =>
@@ -52,12 +49,14 @@ class WebsocketRaidsHandler(
               text = r.text,
               createdAt = r.createdAt
             )
-            push(ResponseData.RaidTweetMessage(value = resp))
+
+            this push resp
           }
         }
+
       subscribed = subscribed ++ cancelables
 
-    case RequestData.SubscriptionChangeMessage(r) if r.action == UNSUBSCRIBE =>
+    case r: SubscriptionChangeRequest if r.action == UNSUBSCRIBE =>
       r.bossNames.map { bossName =>
         subscribed.get(bossName).foreach(_.cancel())
       }

@@ -1,15 +1,15 @@
 package com.github.walfie.granblue.raidfinder.client
 
 import com.github.walfie.granblue.raidfinder.protocol._
-import scala.scalajs.js.JSApp
+import com.github.walfie.granblue.raidfinder.protocol.implicits._
+import java.nio.ByteBuffer
 import org.scalajs.dom
 import scala.scalajs.js
-import js.typedarray.TypedArrayBufferOps.bufferOps
-import js.typedarray._
-import js.ArrayOps
+
 import js.JSConverters._
-import java.nio.ByteBuffer
-import org.scalajs.dom.raw.Blob
+import js.typedarray._
+import js.typedarray.TypedArrayBufferOps.bufferOps
+import js.{ArrayOps, JSApp}
 
 object Application extends JSApp {
   def main(): Unit = {
@@ -33,9 +33,8 @@ object Application extends JSApp {
       }
       val message = ResponseMessage.parseFrom(data) // TODO: validate
 
-      import ResponseMessage.Data._
-      message.data match {
-        case RaidBossesMessage(r) =>
+      message.toResponse.foreach {
+        case r: RaidBossesResponse =>
           r.raidBosses.foreach { rb =>
             println(rb.bossName)
           }
