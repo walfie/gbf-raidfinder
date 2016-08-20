@@ -13,8 +13,8 @@ message RequestMessage {
   oneof data {
     RaidBossesRequest raidBossesMessage = 1;
     SubscriptionChangeRequest subscriptionChangeMessage = 2;
-  }
-}
+  };
+};
 
 message RaidBossesRequest {
   option (scalapb.message).extends = "Request";

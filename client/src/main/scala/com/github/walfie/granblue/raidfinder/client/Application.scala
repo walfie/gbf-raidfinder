@@ -31,7 +31,7 @@ object Application extends JSApp {
         case buffer: ArrayBuffer =>
           new Int8Array(buffer).toArray
       }
-      val message = ResponseMessage.parseFrom(data)
+      val message = ResponseMessage.parseFrom(data) // TODO: validate
 
       import ResponseMessage.Data._
       message.data match {
