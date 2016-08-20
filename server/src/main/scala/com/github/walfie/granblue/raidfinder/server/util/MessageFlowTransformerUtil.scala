@@ -17,5 +17,12 @@ object MessageFlowTransformerUtil {
       JsonFormat.toJsonString(_)
     )
   }
+
+  implicit val protobufBinaryMessageFlowTransformer: MessageFlowTransformer[RequestMessage, ResponseMessage] = {
+    MessageFlowTransformer.byteArrayMessageFlowTransformer.map(
+      RequestMessage.parseFrom(_),
+      _.toByteArray
+    )
+  }
 }
 

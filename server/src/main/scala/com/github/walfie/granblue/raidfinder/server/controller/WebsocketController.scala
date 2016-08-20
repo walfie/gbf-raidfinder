@@ -4,8 +4,6 @@ import akka.actor._
 import akka.stream.Materializer
 import com.github.walfie.granblue.raidfinder.domain._
 import com.github.walfie.granblue.raidfinder.RaidFinder
-import com.github.walfie.granblue.raidfinder.server.json._ // TODO: Remove
-import com.github.walfie.granblue.raidfinder.server.protocol._ // TODO: remove
 import com.github.walfie.granblue.raidfinder.protocol._
 import monix.execution.Cancelable
 import monix.execution.Scheduler
