@@ -24,6 +24,10 @@ function websocketUrl() {
     ws.send(JSON.stringify({'raidBossesMessage': {}}));
   };
 
+  ws.onclose = function(event) {
+    console.log("WebSocket closed: " + event.reason + "(" + event.code + ")")
+  };
+
   ws.onmessage = function(event) {
     var envelope = JSON.parse(event.data);
     if (envelope.raidBossesMessage) {
@@ -37,6 +41,7 @@ function websocketUrl() {
           raidBoss.subscribed = !raidBoss.subscribed;
           var action = raidBoss.susbcribed ? 'UNSUBSCRIBE' : 'SUBSCRIBE';
           img.style.opacity = raidBoss.subscribed ? '1.0' : '0.5';
+          ws.send('ey');
           ws.send(JSON.stringify({
             subscriptionChangeMessage: {
               bossNames: [raidBoss.bossName],

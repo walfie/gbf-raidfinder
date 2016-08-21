@@ -8,21 +8,32 @@ import play.api.http.websocket._
 import play.api.libs.streams._
 import play.api.mvc.WebSocket.MessageFlowTransformer
 import scala.util.control.NonFatal
+import scala.util.Try
 
 object MessageFlowTransformerUtil {
   private type ProtobufMessageFlowTransformer = MessageFlowTransformer[RequestMessage, ResponseMessage]
 
-  // TODO: Handle errors
+  // Throwing a WebSocketCloseException doesn't seem to actually propagate the
+  // close reason to the client, despite what the ScalaDoc page says.
+  // https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.http.websocket.WebSocketCloseException
+  private val inputError = ErrorResponse(message = "Invalid input")
+  private def closeWebsocket(binary: Boolean): WebSocketCloseException = {
+    val reason = if (binary) new String(inputError.toByteArray) else JsonFormat.toJsonString(inputError)
+    val closeMessage = CloseMessage(Some(CloseCodes.InconsistentData), reason)
+    WebSocketCloseException(closeMessage)
+  }
+
   implicit val protobufJsonMessageFlowTransformer: ProtobufMessageFlowTransformer = {
     MessageFlowTransformer.stringMessageFlowTransformer.map(
-      JsonFormat.fromJsonString[RequestMessage],
+      s => Try(JsonFormat.fromJsonString[RequestMessage](s))
+        .getOrElse(throw closeWebsocket(binary = false)),
       JsonFormat.toJsonString(_)
     )
   }
 
   implicit val protobufBinaryMessageFlowTransformer: ProtobufMessageFlowTransformer = {
     MessageFlowTransformer.byteArrayMessageFlowTransformer.map(
-      RequestMessage.parseFrom(_),
+      RequestMessage.validate(_).getOrElse(throw closeWebsocket(binary = true)),
       _.toByteArray
     )
   }

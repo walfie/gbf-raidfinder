@@ -24,7 +24,7 @@ message ResponseMessage {
 message ErrorResponse {
   option (scalapb.message).extends = "Response";
 
-  // TODO
+  string message = 1;
 };
 
 message SubscriptionChangeResponse {
