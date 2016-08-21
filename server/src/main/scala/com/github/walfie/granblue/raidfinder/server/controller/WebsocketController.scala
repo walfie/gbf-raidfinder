@@ -2,66 +2,58 @@ package com.github.walfie.granblue.raidfinder.server.controller
 
 import akka.actor._
 import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
 import com.github.walfie.granblue.raidfinder.domain._
+import com.github.walfie.granblue.raidfinder.protocol._
 import com.github.walfie.granblue.raidfinder.RaidFinder
-import com.github.walfie.granblue.raidfinder.server.json._
-import com.github.walfie.granblue.raidfinder.server.protocol._
-import monix.execution.Cancelable
-import monix.execution.Scheduler
+import com.github.walfie.granblue.raidfinder.server.actor.WebsocketRaidsHandler
+import com.github.walfie.granblue.raidfinder.server.util.MessageFlowTransformerUtil
+import play.api.http.websocket.Message
 import play.api.libs.streams._
 import play.api.mvc._
 import play.api.mvc.WebSocket.MessageFlowTransformer
+import scala.concurrent.Future
 
 class WebsocketController(
   raidFinder: RaidFinder
 )(implicit system: ActorSystem, materializer: Materializer) extends Controller {
-  implicit val messageFlowTransformer = MessageFlowTransformer
-    .jsonMessageFlowTransformer[WebsocketRequest[_], WebsocketResponse]
+  private val jsonTransformer = MessageFlowTransformerUtil.protobufJsonMessageFlowTransformer
+  private val binaryTransformer = MessageFlowTransformerUtil.protobufBinaryMessageFlowTransformer
+  private val defaultTransformer = jsonTransformer
 
-  def raids = WebSocket.accept[WebsocketRequest[_], WebsocketResponse] { request =>
-    ActorFlow.actorRef(out => WebsocketRaidsHandler.props(out, raidFinder))
-  }
-}
+  /**
+    * Open a websocket channel, communicating in either binary or JSON protobuf.
+    * Accepts subprotocols "binary" and "json" (default to "json" if subprotocol unspecified).
+    * If an unknown subprotocol is specified, return status code 400.
+    */
+  def raids = WebSocket { request =>
+    // Subprotocols can either be comma-separated in the same header value,
+    // or specified across different header values.
+    val requestedProtocols = for {
+      headerValue <- request.headers.getAll("Sec-WebSocket-Protocol")
+      value <- headerValue.split(",")
+    } yield value.trim
 
-class WebsocketRaidsHandler(
-  out:        ActorRef,
-  raidFinder: RaidFinder
-) extends Actor {
-  implicit val scheduler = Scheduler(context.system.dispatcher)
-
-  var subscribed: Map[BossName, Cancelable] = Map.empty
-
-  def receive: Receive = {
-    case Subscribe(bossName) =>
-      // Only subscribe if not already subscribed
-      if (!subscribed.isDefinedAt(bossName)) {
-        val cancelable = raidFinder
-          .getRaidTweets(bossName)
-          .foreach(out ! RaidTweetWrapper(_))
-
-        subscribed = subscribed.updated(bossName, cancelable)
+    val transformerOpt: Option[MessageFlowTransformer[RequestMessage, ResponseMessage]] =
+      if (requestedProtocols.isEmpty) {
+        Some(defaultTransformer)
+      } else requestedProtocols.collectFirst {
+        case "binary" => binaryTransformer
+        case "json" => jsonTransformer
       }
-      out ! Subscribed(subscribed.keys.toSet)
 
-    case Unsubscribe(bossName) =>
-      subscribed.get(bossName).foreach { cancelable =>
-        cancelable.cancel()
-        subscribed = subscribed - bossName
+    val result: Either[Result, Flow[Message, Message, _]] = transformerOpt match {
+      case Some(transformer) => Right {
+        val flow = ActorFlow.actorRef(out => WebsocketRaidsHandler.props(out, raidFinder))
+        transformer.transform(flow)
       }
-      out ! Subscribed(subscribed.keys.toSet)
+      case None => Left {
+        val unsupportedProtocols = requestedProtocols.mkString("[", ", ", "]")
+        Results.BadRequest("Unsupported websocket subprotocols " + unsupportedProtocols)
+      }
+    }
 
-    case GetRaidBosses =>
-      out ! RaidBosses(raidFinder.getKnownBosses.values.toSeq)
+    Future.successful(result)
   }
-
-  override def postStop(): Unit = {
-    subscribed.values.foreach(_.cancel)
-  }
-}
-
-object WebsocketRaidsHandler {
-  def props(out: ActorRef, raidFinder: RaidFinder): Props = Props {
-    new WebsocketRaidsHandler(out, raidFinder)
-  }.withDeploy(Deploy.local)
 }
 

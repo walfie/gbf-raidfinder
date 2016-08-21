@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package com.github.walfie.granblue.raidfinder.protocol;
+
+import "google/protobuf/wrappers.proto";
+import "scalapb/scalapb.proto";
+
+option (scalapb.options) = {
+  import: "com.github.walfie.granblue.raidfinder.protocol.TypeMappers._"
+  preamble: "sealed trait Response"
+  primitive_wrappers: true
+  single_file: true
+};
+
+message ResponseMessage {
+  oneof data {
+    ErrorResponse errorMessage = 1;
+    SubscriptionChangeResponse subscriptionChangeMessage = 2;
+    RaidTweetResponse raidTweetMessage = 3;
+    RaidBossesResponse raidBossesMessage = 4;
+  }
+};
+
+message ErrorResponse {
+  option (scalapb.message).extends = "Response";
+
+  string message = 1;
+};
+
+message SubscriptionChangeResponse {
+  option (scalapb.message).extends = "Response";
+
+  repeated string subscribedBossNames = 1;
+};
+
+message RaidTweetResponse {
+  option (scalapb.message).extends = "Response";
+
+  string bossName = 1;
+  string raidId = 2;
+  string screenName = 3;
+  int64 tweetId = 4;
+  string profileImage = 5;
+  string text = 6;
+  int64 createdAt = 7 [(scalapb.field).type = "java.util.Date"];
+};
+
+message RaidBossesResponse {
+  option (scalapb.message).extends = "Response";
+
+  message RaidBoss {
+    string bossName = 1;
+    google.protobuf.StringValue image = 2;
+    int64 lastSeen = 3 [(scalapb.field).type = "java.util.Date"];
+  }
+
+  repeated RaidBoss raidBosses = 1;
+};
+
+// TODO: ShutdownResponse
+

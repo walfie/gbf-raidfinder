@@ -18,17 +18,38 @@ lazy val core = (project in file("core"))
     )
   )
 
+lazy val protocol = (crossProject.crossType(CrossType.Pure) in file("protocol"))
+  .settings(name := "granblue-raid-finder-protocol")
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings: _*)
+  .settings(ScalaPB.settings: _*)
+lazy val protocolJVM = protocol.jvm
+lazy val protocolJS = protocol.js
+
 lazy val server = (project in file("server"))
   .settings(commonSettings: _*)
   .settings(
     name := "granblue-raid-finder-server",
     libraryDependencies ++= Seq(
+      "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
       "com.typesafe.play" %% "play-netty-server" % Versions.Play
     )
   )
-  .dependsOn(core)
+  .dependsOn(core, protocolJVM)
+
+lazy val client = (project in file("client"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "granblue-raid-finder-client",
+    persistLauncher in Compile := true,
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "0.9.0"
+    )
+  )
+  .dependsOn(protocolJS)
 
 lazy val root = (project in file("."))
-  .aggregate(core, server)
+  .aggregate(client, core, server)
   .settings(aggregate in update := false)
 
