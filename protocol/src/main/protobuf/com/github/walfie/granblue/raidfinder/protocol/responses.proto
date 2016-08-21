@@ -17,7 +17,7 @@ message ResponseMessage {
     ErrorResponse errorMessage = 1;
     SubscriptionChangeResponse subscriptionChangeMessage = 2;
     RaidTweetResponse raidTweetMessage = 3;
-    RaidBossesResponse raidBossesMessage= 4;
+    RaidBossesResponse raidBossesMessage = 4;
   }
 };
 
