@@ -1,6 +1,6 @@
 package com.github.walfie.granblue.raidfinder
 
-import com.github.walfie.granblue.raidfinder.util.{BlockingIO, ObservableUtil}
+import com.github.walfie.granblue.raidfinder.util.BlockingIO
 import monix.eval.Task
 import monix.reactive._
 import scala.collection.JavaConverters._
@@ -36,13 +36,13 @@ class Twitter4jSearch(twitter: Twitter) extends TwitterSearch {
     * an empty page and the next attempt will retry the previous request.
     */
   def observable(searchTerm: String, sinceId: Option[SinceId], maxCount: Int): Observable[Seq[Status]] = {
-    ObservableUtil.fromAsyncStateAction[Option[SinceId], Seq[Status]](None) { sinceId =>
+    Observable.fromAsyncStateAction[Option[SinceId], Seq[Status]] { sinceId =>
       Task.fromFuture(search(searchTerm, sinceId, maxCount))
         .onErrorHandle { error: Throwable =>
           System.err.println(error) // TODO: Better handling?
           Seq.empty[Status] -> sinceId
         }
-    }
+    }(None)
   }
 
   private def search(

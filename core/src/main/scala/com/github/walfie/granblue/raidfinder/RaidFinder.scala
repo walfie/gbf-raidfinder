@@ -34,7 +34,7 @@ class DefaultRaidFinder(
   )
 
   private val raidInfos = statuses
-    .zipWith(timer)((statuses, _) => statuses)
+    .zipMap(timer)((statuses, _) => statuses)
     .flatMap(Observable.fromIterable)
     .collect(Function.unlift(StatusParser.parse))
     .publish

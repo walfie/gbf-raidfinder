@@ -1,5 +1,6 @@
 package com.github.walfie.granblue.raidfinder.protocol
 
+/** Convenience classes for dealing with Protobuf `oneof` messages */
 package object implicits {
   implicit class RequestMessageOps(val message: RequestMessage) extends AnyVal {
     import RequestMessage.Data._
