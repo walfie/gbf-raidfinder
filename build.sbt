@@ -19,9 +19,10 @@ lazy val core = (project in file("core"))
   )
 
 lazy val protocol = (crossProject.crossType(CrossType.Pure) in file("protocol"))
+  .settings(name := "granblue-raid-finder-protocol")
+  .enablePlugins(ScalaJSPlugin)
   .settings(commonSettings: _*)
   .settings(ScalaPB.settings: _*)
-  .settings(name := "granblue-raid-finder-protocol")
 lazy val protocolJVM = protocol.jvm
 lazy val protocolJS = protocol.js
 
@@ -49,7 +50,6 @@ lazy val client = (project in file("client"))
   .dependsOn(protocolJS)
 
 lazy val root = (project in file("."))
-  .aggregate(core, server)
+  .aggregate(client, core, server)
   .settings(aggregate in update := false)
-  .enablePlugins(ScalaJSPlugin)
 
