@@ -5,7 +5,6 @@ import monix.execution.{Cancelable, Scheduler}
 import walfie.gbf.raidfinder.domain._
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.implicits._
-import walfie.gbf.raidfinder.protocol.SubscriptionChangeRequest.SubscriptionAction.{SUBSCRIBE, UNSUBSCRIBE}
 import walfie.gbf.raidfinder.RaidFinder
 
 class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor {
@@ -31,7 +30,7 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
 
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
 
-    case r: SubscriptionChangeRequest if r.action == SUBSCRIBE =>
+    case r: SubscribeRequest =>
       val cancelables = r.bossNames
         .filterNot(subscribed.keys.toSeq.contains)
         .map { bossName =>
@@ -53,7 +52,7 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
 
       subscribed = subscribed ++ cancelables
 
-    case r: SubscriptionChangeRequest if r.action == UNSUBSCRIBE =>
+    case r: UnsubscribeRequest =>
       r.bossNames.map { bossName =>
         subscribed.get(bossName).foreach(_.cancel())
       }

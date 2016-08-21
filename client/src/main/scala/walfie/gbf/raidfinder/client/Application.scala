@@ -12,6 +12,7 @@ object Application extends JSApp {
     val url = "ws://localhost:9000/ws/raids"
     val client = new WebSocketRaidFinderClient(url, new DefaultResponseHandler)
     client.send(RaidBossesRequest())
+    client.send(SubscribeRequest(bossNames = Seq("Lv60 ユグドラシル・マグナ")))
   }
 }
 

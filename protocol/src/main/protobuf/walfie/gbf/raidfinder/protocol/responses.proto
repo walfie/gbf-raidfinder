@@ -15,10 +15,10 @@ option (scalapb.options) = {
 message ResponseMessage {
   oneof data {
     ErrorResponse errorMessage = 1;
-    SubscriptionChangeResponse subscriptionChangeMessage = 2;
+    SubscriptionStatusResponse subscriptionStatusMessage = 2;
     RaidTweetResponse raidTweetMessage = 3;
     RaidBossesResponse raidBossesMessage = 4;
-  }
+  };
 };
 
 message ErrorResponse {
@@ -27,7 +27,7 @@ message ErrorResponse {
   string message = 1;
 };
 
-message SubscriptionChangeResponse {
+message SubscriptionStatusResponse {
   option (scalapb.message).extends = "Response";
 
   repeated string subscribedBossNames = 1;
