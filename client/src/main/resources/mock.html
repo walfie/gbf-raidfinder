@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Granblue Raid Finder</title>
+
+</head>
+<body>
+
+<style>
+html, body {
+  height: 100%;
+  width: auto;
+}
+
+.gbfrf-main-content {
+  height: 100%;
+}
+
+.gbfrf-settings-fab__container {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+}
+
+.gbfrf-columns {
+  height: 100%;
+  overflow-x: scroll;
+  width: auto;
+  white-space: nowrap;
+  overflow-y: hidden;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+.gbfrf-column {
+  width: 350px;
+  height: 100%;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 460px) {
+  .gbfrf-column {
+    width: 90%;
+  }
+}
+
+.gbfrf-column__header {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+
+.gbfrf-column__header-row {
+  padding: 20px !important;
+}
+
+.gbfrf-tweets {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.gbfrf-tweet {
+  border-bottom: 1px dashed grey;
+  transition: background-color 0.3s ease;
+}
+
+.gbfrf-tweet:hover {
+  background-color: #e9e9e9;
+  cursor: pointer;
+}
+
+.gbfrf-tweet__raid-id {
+  font-weight: bold;
+}
+
+.gbfrf-tweet__text {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.gbfrf-tweet__timestamp {
+  font-size: small;
+}
+</style>
+
+
+<div class="gbfrf-main-content">
+
+  <div class="gbfrf-settings-fab__container">
+    <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--primary">
+      <i class="material-icons">add</i>
+    </button>
+  </div>
+
+
+  <div class="gbfrf-columns">
+
+    <div class="gbfrf-column mdl-shadow--4dp">
+      <div class="mdl-layout mdl-layout--fixed-header">
+
+        <header class="mdl-layout__header">
+          <div class="mdl-layout__header-row gbfrf-column__header-row">
+            <div class="mdl-layout-title gbfrf-column__header">Lv60 ユグドラシル・マグナ</div>
+            <div class="mdl-layout-spacer"></div>
+            <button class="mdl-button mdl-js-button mdl-button--icon" id="SOME_UNIQUE_ID_HERE">
+              <i class="material-icons">more_vert</i>
+            </button>
+
+
+
+<ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+    for="SOME_UNIQUE_ID_HERE">
+  <li class="mdl-menu__item">
+    <i class="material-icons">delete</i>
+    <span>Delete</span>
+  </li>
+  <li class="mdl-menu__item">
+    <i class="material-icons">keyboard_arrow_left</i>
+    <span>Move Left</span>
+  </li>
+  <li class="mdl-menu__item">
+    <i class="material-icons">keyboard_arrow_right</i>
+    <span>Move Right</span>
+  </li>
+</ul>
+
+          </div>
+        </header>
+
+
+        <div class="mdl-layout__content">
+          <ul class="mdl-list gbfrf-tweets">
+
+            <li class="mdl-list__item mdl-list__item--two-line gbfrf-tweet">
+              <span class="mdl-list__item-primary-content">
+                <img class="mdl-list__item-avatar" src="https://pbs.twimg.com/profile_images/682789386161762304/HjcoNtaU_normal.png">
+                <span>walfieee</span>
+                <span class="gbfrf-tweet__timestamp">1m</span>
+                <span class="mdl-list__item-sub-title gbfrf-tweet__text">help this is some kinda long text</span>
+              </span>
+              <span class="mdl-list__item-secondary-content gbfrf-tweet__raid-id">
+                ABCD1234
+              </span>
+            </li>
+
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="gbfrf-column">
+      <div class="mdl-layout mdl-layout--fixed-header">
+        <header class="mdl-layout__header">
+          <div class="mdl-layout__header-row gbfrf-column__header-row">
+            <div class="mdl-layout-title gbfrf-column__header">Lv60 ユグドラシル・マグナ</div>
+            <div class="mdl-layout-spacer"></div>
+            <div class="mdl-button mdl-js-button mdl-button--icon">
+              <i class="material-icons">more_vert</i>
+            </div>
+          </div>
+        </header>
+        <div class="mdl-layout__content">
+          <div style="height:1000px">Hello</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.2.0/material.min.js"></script>
+
+  </body>
+</html>
+

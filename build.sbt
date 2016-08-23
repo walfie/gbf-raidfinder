@@ -1,3 +1,5 @@
+// TODO: Put all dependencies in a Dependencies.scala file with versions
+
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
   organization := "com.github.walfie",
@@ -44,7 +46,9 @@ lazy val client = (project in file("client"))
     name := "gbf-raidfinder-client",
     persistLauncher in Compile := true,
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "0.9.0"
+      "org.scala-js" %%% "scalajs-dom" % "0.9.0",
+      "com.thoughtworks.binding" %%% "dom" % "8.0.0",
+      compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
     )
   )
   .dependsOn(protocolJS)
