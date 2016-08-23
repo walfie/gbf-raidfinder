@@ -67,6 +67,10 @@ html, body {
   font-weight: bold;
 }
 
+img.gbfrf-tweet__avatar {
+  border-radius: initial;
+}
+
 .gbfrf-tweet__text {
   text-overflow: ellipsis;
   overflow: hidden;

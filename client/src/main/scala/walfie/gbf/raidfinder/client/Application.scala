@@ -20,7 +20,7 @@ object Application extends JSApp {
     client.send(RaidBossesRequest())
     client.send(SubscribeRequest(bossNames = Seq("Lv60 ユグドラシル・マグナ")))
 
-    js.Dynamic.global.moment.locale(
+    js.Dynamic.global.moment.updateLocale(
       "en",
       js.Dictionary(
         "relativeTime" -> js.Dictionary(

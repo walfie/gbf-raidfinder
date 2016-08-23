@@ -36,10 +36,11 @@ object RaidTweets {
   def raidTweetListItem(raidTweet: RaidTweetResponse): Binding[HTMLLIElement] = {
     <li class="mdl-list__item mdl-list__item--two-line gbfrf-tweet">
       <span class="mdl-list__item-primary-content">
-        <img class="mdl-list__item-avatar" src={ raidTweet.profileImage }/>
+        <!-- // TODO: Handle long names. Exclude second row if no extra text. -->
+        <img class="gbfrf-tweet__avatar mdl-list__item-avatar" src={ raidTweet.profileImage }/>
         <span>{ raidTweet.screenName }</span>
+        <!-- // TODO: Better relative datetime -->
         <span class="gbfrf-tweet__timestamp">{ Moment(raidTweet.createdAt.getTime).fromNow(true) }</span>
-        <!-- // TODO: Relative datetime -->
         <span class="mdl-list__item-sub-title gbfrf-tweet__text">{ raidTweet.text }</span>
       </span>
       <span class="mdl-list__item-secondary-content gbfrf-tweet__raid-id">
