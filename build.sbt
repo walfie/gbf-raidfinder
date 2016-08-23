@@ -47,7 +47,8 @@ lazy val client = (project in file("client"))
     persistLauncher in Compile := true,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.0",
-      "com.thoughtworks.binding" %%% "dom" % "8.0.0",
+      "com.thoughtworks.binding" %%% "dom" % "9.0.0",
+      "io.github.widok" %%% "scala-js-momentjs" % "0.1.5",
       compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
     )
   )

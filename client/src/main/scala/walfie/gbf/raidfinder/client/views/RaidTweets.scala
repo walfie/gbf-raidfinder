@@ -4,6 +4,7 @@ import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom.raw._
+import org.widok.moment._
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.RaidBossesResponse.RaidBoss
 
@@ -14,9 +15,7 @@ object RaidTweets {
       <div class="mdl-layout mdl-layout--fixed-header">
         { raidBossHeader(bossName).bind }
         <div class="mdl-layout__content">
-          <ul class="mdl-list gbfrf-tweets">
-            { raidTweetList(raidTweets).bind }
-          </ul>
+          { raidTweetList(raidTweets).bind }
         </div>
       </div>
     </div>
@@ -25,14 +24,12 @@ object RaidTweets {
   @binding.dom
   def raidTweetList(
     raidTweets: BindingSeq[RaidTweetResponse]
-  ): Binding[HTMLDivElement] = {
-    <div class="mdl-layout__content">
-      <ul class="mdl-list gbfrf-tweets">
-        {
-          for (rt <- raidTweets) yield raidTweetListItem(rt).bind
-        }
-      </ul>
-    </div>
+  ): Binding[HTMLUListElement] = {
+    <ul class="mdl-list gbfrf-tweets">
+      {
+        for (rt <- raidTweets) yield raidTweetListItem(rt).bind
+      }
+    </ul>
   }
 
   @binding.dom
@@ -41,7 +38,7 @@ object RaidTweets {
       <span class="mdl-list__item-primary-content">
         <img class="mdl-list__item-avatar" src={ raidTweet.profileImage }/>
         <span>{ raidTweet.screenName }</span>
-        <span class="gbfrf-tweet__timestamp">{ raidTweet.createdAt.toString }</span>
+        <span class="gbfrf-tweet__timestamp">{ Moment(raidTweet.createdAt.getTime).fromNow(true) }</span>
         <!-- // TODO: Relative datetime -->
         <span class="mdl-list__item-sub-title gbfrf-tweet__text">{ raidTweet.text }</span>
       </span>
