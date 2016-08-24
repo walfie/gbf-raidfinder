@@ -5,6 +5,7 @@ import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom.raw._
 import org.widok.moment._
+import walfie.gbf.raidfinder.client.util.MaterialDesignLiteUtil.HTMLElementOps
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.RaidBossesResponse.RaidBoss
 
@@ -19,7 +20,7 @@ object RaidTweets {
         </div>
       </div>
     </div>
-  }
+  }.mdl
 
   @binding.dom
   def raidTweetList(
@@ -49,7 +50,7 @@ object RaidTweets {
     </li>
   }
 
-  private def menuId(bossName: String): String = "menu_" + bossName
+  private def menuId(bossName: String): String = "menu_" + bossName.replace(" ", "_")
 
   @binding.dom
   def raidBossHeader(bossName: String): Binding[HTMLElement] = {
@@ -68,20 +69,19 @@ object RaidTweets {
   @binding.dom
   def raidBossHeaderMenu(bossName: String): Binding[HTMLUListElement] = {
     <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" data:for={ menuId(bossName) }>
-      <li class="mdl-menu__item">
-        <i class="material-icons">delete</i>
-        <!-- // TODO: onclick -->
-        <span>Delete</span>
-      </li>
-      <li class="mdl-menu__item">
-        <i class="material-icons">keyboard_arrow_left</i>
-        <span>Move Left</span>
-      </li>
-      <li class="mdl-menu__item">
-        <i class="material-icons">keyboard_arrow_right</i>
-        <span>Move Right</span>
-      </li>
+      { menuItem("Delete", "delete").bind }
+      { menuItem("Clear", "clear_all").bind }
+      { menuItem("Move Left", "keyboard_arrow_left").bind }
+      { menuItem("Move Right", "keyboard_arrow_right").bind }
     </ul>
+  }
+
+  @binding.dom
+  def menuItem(text: String, icon: String): Binding[HTMLLIElement] = {
+    <li class="mdl-menu__item">
+      <i class="material-icons">{ icon }</i>
+      <span>{ text }</span>
+    </li>
   }
 }
 
