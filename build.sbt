@@ -14,7 +14,7 @@ lazy val core = (project in file("core"))
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-agent" % Versions.Akka,
       "io.monix" %% "monix" % Versions.Monix,
-      "org.twitter4j" % "twitter4j-core" % Versions.Twitter4j,
+      "org.twitter4j" % "twitter4j-stream" % Versions.Twitter4j,
       "org.scalatest" %% "scalatest" % Versions.ScalaTest % "test",
       "org.mockito" % "mockito-all" % Versions.Mockito % "test"
     )
