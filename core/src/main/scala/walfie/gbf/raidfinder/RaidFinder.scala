@@ -1,5 +1,6 @@
 package walfie.gbf.raidfinder
 
+import monix.eval.Task
 import monix.execution.{Cancelable, Scheduler}
 import monix.reactive._
 import scala.concurrent.duration._
@@ -34,12 +35,21 @@ object RaidFinder {
   )(implicit scheduler: Scheduler): DefaultRaidFinder = {
     import TwitterSearcher._
 
-    val backlog = TwitterSearcher(twitter, TwitterSearcher.ReverseChronological)
-      .observable(DefaultSearchTerm, None, MaxCount)
-      .flatMap(Observable.fromIterable)
-      .take(backlogSize)
-    val newStatuses = TwitterStreamer(twitterStream).observable
-    new DefaultRaidFinder(backlog ++ newStatuses, cacheSizePerBoss) {
+    // Get backlog of tweets, then sort them by earliest first
+    // TODO: This is getting kinda complex -- should write a test
+    val backlogTask: Task[Seq[Status]] =
+      TwitterSearcher(twitter, TwitterSearcher.ReverseChronological)
+        .observable(DefaultSearchTerm, None, MaxCount)
+        .flatMap(Observable.fromIterable)
+        .take(backlogSize)
+        .toListL
+        .map(_.sortBy(_.getCreatedAt)) // earliest first
+
+    // Once the backlog is populated, new tweets will stream in
+    val backlogObservable = Observable.fromTask(backlogTask).flatMap(Observable.fromIterable)
+    val newStatusesObservable = TwitterStreamer(twitterStream).observable
+
+    new DefaultRaidFinder(backlogObservable ++ newStatusesObservable, cacheSizePerBoss) {
       override def onShutdown(): Unit = {
         twitterStream.cleanUp()
         twitterStream.shutdown()
