@@ -14,28 +14,22 @@ trait RaidFinder {
 
 object RaidFinder {
   def default(
-    twitter:          Twitter        = TwitterFactory.getSingleton,
-    cacheSizePerBoss: Int            = 50,
-    pollingInterval:  FiniteDuration = 10.seconds,
-    searchTerm:       String         = TwitterSearcher.DefaultSearchTerm
+    twitterStream:    TwitterStream = TwitterStreamFactory.getSingleton,
+    cacheSizePerBoss: Int           = 50
   )(implicit scheduler: Scheduler): DefaultRaidFinder =
-    new DefaultRaidFinder(twitter, cacheSizePerBoss, pollingInterval, searchTerm)
+    new DefaultRaidFinder(twitterStream, cacheSizePerBoss)
 }
 
 class DefaultRaidFinder(
-  twitter:          Twitter,
-  cacheSizePerBoss: Int,
-  pollingInterval:  FiniteDuration,
-  searchTerm:       String
+  twitterStream:    TwitterStream,
+  cacheSizePerBoss: Int
 )(implicit scheduler: Scheduler) extends RaidFinder {
-  private val timer = Observable.timerRepeated(0.seconds, pollingInterval, ())
-  private val statuses = TwitterSearcher(twitter).observable(
-    searchTerm, None, TwitterSearcher.MaxCount
-  )
+  private val statuses = TwitterStreamer(
+    twitterStream,
+    TwitterStreamer.DefaultFilterTerms
+  ).observable
 
   private val raidInfos = statuses
-    .zipMap(timer)((statuses, _) => statuses)
-    .flatMap(Observable.fromIterable)
     .collect(Function.unlift(StatusParser.parse))
     .publish
 

@@ -14,7 +14,7 @@ object TwitterStreamer {
   val DefaultFilterTerms = (15 to 150 by 5).map("Lv" + _)
 
   def apply(
-    twitterStream: twitter4j.TwitterStream = new TwitterStreamFactory().getInstance(),
+    twitterStream: twitter4j.TwitterStream = TwitterStreamFactory.getSingleton,
     filterTerms:   Seq[String]             = DefaultFilterTerms
   )(implicit scheduler: Scheduler): Twitter4jStreamer =
     new Twitter4jStreamer(twitterStream, filterTerms)
