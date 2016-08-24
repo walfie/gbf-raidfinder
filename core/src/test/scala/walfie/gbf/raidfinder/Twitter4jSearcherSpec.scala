@@ -18,43 +18,68 @@ import walfie.gbf.raidfinder.util.TestObserver
 
 class Twitter4jSearcherSpec extends Twitter4jSearcherSpecHelpers {
   "observable" - {
-    "return tweets in pages" in new TwitterFixture {
-      val searchTerm = "searchy-search"
-      val maxCount = 5
+    "return tweets in pages" - {
+      "chronologically" in new TwitterFixture(TwitterSearcher.Chronological) {
+        val searchTerm = "searchy-search"
+        val maxCount = 5
 
-      val query1 = new Query(searchTerm).count(maxCount)
-      val statuses1 = mockStatuses(5)
-      val result1 = mockQueryResult(Some(123), statuses1)
-      when(twitter.search(query1)) thenReturn result1
+        val query1 = new Query(searchTerm).count(maxCount)
+        val statuses1 = mockStatuses(5)
+        val result1 = mockQueryResult(maxId = Some(123), tweets = statuses1)
+        when(twitter.search(query1)) thenReturn result1
 
-      val query2 = new Query(searchTerm).count(maxCount).sinceId(123)
-      val statuses2 = mockStatuses(4)
-      val result2 = mockQueryResult(Some(456), statuses2)
-      when(twitter.search(query2)) thenReturn result2
+        val query2 = new Query(searchTerm).count(maxCount).sinceId(123)
+        val statuses2 = mockStatuses(4)
+        val result2 = mockQueryResult(maxId = Some(456), tweets = statuses2)
+        when(twitter.search(query2)) thenReturn result2
 
-      val observable = search.observable(searchTerm, None, maxCount)
+        val observable = search.observable(searchTerm, None, maxCount)
 
-      val resultF = observable.take(2).toListL.runAsync
-      resultF.futureValue shouldBe Seq(
-        statuses1.sortBy(_.getCreatedAt),
-        statuses2.sortBy(_.getCreatedAt)
-      )
+        val resultF = observable.take(2).toListL.runAsync
+        resultF.futureValue shouldBe Seq(
+          statuses1.sortBy(_.getCreatedAt),
+          statuses2.sortBy(_.getCreatedAt)
+        )
+      }
+
+      "reverse chronologically" in new TwitterFixture(TwitterSearcher.ReverseChronological) {
+        val searchTerm = "searchy-search-in-reverse"
+        val maxCount = 5
+
+        val query1 = new Query(searchTerm).count(maxCount)
+        val statuses1 = mockStatuses(5)
+        val result1 = mockQueryResult(sinceId = Some(456), tweets = statuses1)
+        when(twitter.search(query1)) thenReturn result1
+
+        val query2 = new Query(searchTerm).count(maxCount).maxId(456)
+        val statuses2 = mockStatuses(4)
+        val result2 = mockQueryResult(sinceId = Some(123), tweets = statuses2)
+        when(twitter.search(query2)) thenReturn result2
+
+        val observable = search.observable(searchTerm, None, maxCount)
+
+        val resultF = observable.take(2).toListL.runAsync
+        resultF.futureValue shouldBe Seq(
+          statuses1.sortBy(-_.getCreatedAt.getTime),
+          statuses2.sortBy(-_.getCreatedAt.getTime)
+        )
+      }
     }
 
-    "continue on error" in new TwitterFixture {
+    "continue on error" in new TwitterFixture(TwitterSearcher.Chronological) {
       val searchTerm = "ai! katsu!"
       val maxCount = 10
 
       // First query returns success
       val query1 = new Query(searchTerm).count(maxCount)
       val statuses1 = mockStatuses(5)
-      val result1 = mockQueryResult(Some(5), statuses1)
+      val result1 = mockQueryResult(maxId = Some(5), tweets = statuses1)
       when(twitter.search(query1)).thenReturn(result1)
 
       // Second query fails once and then succeeds the second try
       val query2 = new Query(searchTerm).count(maxCount).sinceId(5)
       val statuses2 = mockStatuses(2)
-      val result2 = mockQueryResult(Some(7), statuses2)
+      val result2 = mockQueryResult(maxId = Some(7), tweets = statuses2)
       when(twitter.search(query2))
         .thenThrow(new RuntimeException("Oh no!!"))
         .thenReturn(result2)
@@ -82,17 +107,21 @@ trait Twitter4jSearcherSpecHelpers extends FreeSpec
     timeout = Span(5, Seconds), interval = Span(100, Millis)
   )
 
-  trait TwitterFixture {
+  class TwitterFixture(paginationType: TwitterSearcher.PaginationType) {
     implicit val scheduler = Scheduler.Implicits.global
-    val paginationType = TwitterSearcher.Chronological
     val twitter = mock[Twitter]
     lazy val search = TwitterSearcher(twitter, paginationType)
   }
 
-  def mockQueryResult(maxId: Option[Long], tweets: Seq[Status]): QueryResult = {
+  def mockQueryResult(
+    maxId:   Option[Long] = None,
+    sinceId: Option[Long] = None,
+    tweets:  Seq[Status]
+  ): QueryResult = {
     val result = mock[QueryResult]
     when(result.getTweets) thenReturn tweets.asJava
     maxId.foreach(when(result.getMaxId) thenReturn _)
+    sinceId.foreach(when(result.getSinceId) thenReturn _)
     result
   }
 

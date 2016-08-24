@@ -46,7 +46,9 @@ class Twitter4jSearcher(
     */
   def observable(searchTerm: String, initialTweet: Option[TweetId], maxCount: Int): Observable[Seq[Status]] = {
     Observable.fromAsyncStateAction[Option[TweetId], Seq[Status]] { sinceId =>
-      Task.fromFuture(searchFunction(searchTerm, sinceId, maxCount))
+      val query = new Query(searchTerm).count(maxCount)
+
+      Task.fromFuture(searchFunction(query, sinceId, maxCount))
         .onErrorHandle { error: Throwable =>
           System.err.println(error) // TODO: Better handling?
           Seq.empty[Status] -> sinceId
@@ -60,11 +62,10 @@ class Twitter4jSearcher(
   }
 
   private def searchChronological(
-    searchTerm:   String,
+    query:        Query,
     initialTweet: Option[TweetId],
     maxCount:     Int
   ): Future[(Seq[Status], Option[TweetId])] = {
-    val query = new Query(searchTerm).count(maxCount)
     initialTweet.foreach(query.setSinceId)
 
     BlockingIO.future {
@@ -75,11 +76,10 @@ class Twitter4jSearcher(
   }
 
   private def searchReverseChronological(
-    searchTerm:   String,
+    query:        Query,
     initialTweet: Option[TweetId],
     maxCount:     Int
   ): Future[(Seq[Status], Option[TweetId])] = {
-    val query = new Query(searchTerm).count(maxCount)
     initialTweet.foreach(query.setMaxId)
 
     BlockingIO.future {
