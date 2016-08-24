@@ -75,7 +75,7 @@ class Twitter4jSearcherSpec extends Twitter4jSearcherSpecHelpers {
   }
 }
 
-trait Twitter4jSearchSpecHelpers extends FreeSpec
+trait Twitter4jSearcherSpecHelpers extends FreeSpec
   with ScalaFutures with MockitoSugar with PatienceConfiguration {
 
   implicit override val patienceConfig = PatienceConfig(
@@ -84,8 +84,9 @@ trait Twitter4jSearchSpecHelpers extends FreeSpec
 
   trait TwitterFixture {
     implicit val scheduler = Scheduler.Implicits.global
+    val paginationType = TwitterSearcher.Chronological
     val twitter = mock[Twitter]
-    val search = TwitterSearcher(twitter)
+    lazy val search = TwitterSearcher(twitter, paginationType)
   }
 
   def mockQueryResult(maxId: Option[Long], tweets: Seq[Status]): QueryResult = {

@@ -34,9 +34,7 @@ object RaidFinder {
   )(implicit scheduler: Scheduler): DefaultRaidFinder = {
     import TwitterSearcher._
 
-    // TODO: This actually doesn't work as expected for backlog sizes greater
-    // than 1 page, since TwitterSearcher searches forward in time
-    val backlog = TwitterSearcher(twitter)
+    val backlog = TwitterSearcher(twitter, TwitterSearcher.ReverseChronological)
       .observable(DefaultSearchTerm, None, MaxCount)
       .flatMap(Observable.fromIterable)
       .take(backlogSize)

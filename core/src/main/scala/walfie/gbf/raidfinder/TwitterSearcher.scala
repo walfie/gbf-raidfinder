@@ -6,38 +6,47 @@ import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.concurrent.Future
 import twitter4j._
+import walfie.gbf.raidfinder.TwitterSearcher.PaginationType
 import walfie.gbf.raidfinder.util.BlockingIO
 
 trait TwitterSearcher {
-  import TwitterSearcher.SinceId
+  import TwitterSearcher.TweetId
 
   def observable(
-    searchTerm: String,
-    sinceId:    Option[SinceId],
-    maxCount:   Int
+    searchTerm:   String,
+    initialTweet: Option[TweetId],
+    maxCount:     Int
   ): Observable[Seq[Status]]
 }
 
 object TwitterSearcher {
-  type SinceId = Long
+  sealed trait PaginationType
+  case object Chronological extends PaginationType
+  case object ReverseChronological extends PaginationType
+
+  type TweetId = Long
 
   /** The maximum number of search results returned from the twitter API is 100 */
   val MaxCount = 100
   val DefaultSearchTerm = "参加者募集！参戦ID："
 
-  def apply(twitter: Twitter): Twitter4jSearcher = new Twitter4jSearcher(twitter)
+  def apply(twitter: Twitter, paginationType: PaginationType): Twitter4jSearcher =
+    new Twitter4jSearcher(twitter, paginationType)
 }
 
-class Twitter4jSearcher(twitter: Twitter) extends TwitterSearcher {
-  import TwitterSearcher.SinceId
+class Twitter4jSearcher(
+  twitter:        Twitter,
+  paginationType: PaginationType
+) extends TwitterSearcher {
+  import TwitterSearcher._
 
   /**
     * Create an observable that fetches pages of tweets. On error, returns
     * an empty page and the next attempt will retry the previous request.
     */
-  def observable(searchTerm: String, sinceId: Option[SinceId], maxCount: Int): Observable[Seq[Status]] = {
-    Observable.fromAsyncStateAction[Option[SinceId], Seq[Status]] { sinceId =>
-      Task.fromFuture(search(searchTerm, sinceId, maxCount))
+  def observable(searchTerm: String, initialTweet: Option[TweetId], maxCount: Int): Observable[Seq[Status]] = {
+    Observable.fromAsyncStateAction[Option[TweetId], Seq[Status]] { sinceId =>
+      Task.fromFuture(searchFunction(searchTerm, sinceId, maxCount))
         .onErrorHandle { error: Throwable =>
           System.err.println(error) // TODO: Better handling?
           Seq.empty[Status] -> sinceId
@@ -45,19 +54,38 @@ class Twitter4jSearcher(twitter: Twitter) extends TwitterSearcher {
     }(None)
   }
 
-  private def search(
-    searchTerm: String,
-    sinceId:    Option[SinceId],
-    maxCount:   Int
-  ): Future[(Seq[Status], Option[SinceId])] = {
-    val query = new Query(searchTerm).count(maxCount)
-    sinceId.foreach(query.setSinceId)
+  private val searchFunction = paginationType match {
+    case Chronological => searchChronological _
+    case ReverseChronological => searchReverseChronological _
+  }
 
-    // TODO: Refactor this so it doesn't time out on unit tests
+  private def searchChronological(
+    searchTerm:   String,
+    initialTweet: Option[TweetId],
+    maxCount:     Int
+  ): Future[(Seq[Status], Option[TweetId])] = {
+    val query = new Query(searchTerm).count(maxCount)
+    initialTweet.foreach(query.setSinceId)
+
     BlockingIO.future {
       val queryResult = twitter.search(query)
       val sortedTweets = queryResult.getTweets.asScala.sortBy(_.getCreatedAt) // Earliest first
       sortedTweets -> Option(queryResult.getMaxId)
+    }
+  }
+
+  private def searchReverseChronological(
+    searchTerm:   String,
+    initialTweet: Option[TweetId],
+    maxCount:     Int
+  ): Future[(Seq[Status], Option[TweetId])] = {
+    val query = new Query(searchTerm).count(maxCount)
+    initialTweet.foreach(query.setMaxId)
+
+    BlockingIO.future {
+      val queryResult = twitter.search(query)
+      val sortedTweets = queryResult.getTweets.asScala.sortBy(-_.getCreatedAt.getTime) // Latest first
+      sortedTweets -> Option(queryResult.getSinceId)
     }
   }
 }
