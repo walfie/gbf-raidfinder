@@ -13,23 +13,51 @@ trait RaidFinder {
 }
 
 object RaidFinder {
-  def default(
+  val DefaultCacheSizePerBoss = 50
+  val DefaultBacklogSize = 100
+
+  /** Stream tweets without looking up old tweets first */
+  def withoutBacklog(
     twitterStream:    TwitterStream = TwitterStreamFactory.getSingleton,
-    cacheSizePerBoss: Int           = 50
-  )(implicit scheduler: Scheduler): DefaultRaidFinder =
-    new DefaultRaidFinder(twitterStream, cacheSizePerBoss)
+    cacheSizePerBoss: Int           = DefaultCacheSizePerBoss
+  )(implicit scheduler: Scheduler): DefaultRaidFinder = {
+    val statuses = TwitterStreamer(twitterStream).observable
+    new DefaultRaidFinder(statuses, cacheSizePerBoss)
+  }
+
+  /** Search for old tweets first before streaming new tweets */
+  def withBacklog(
+    twitter:          Twitter       = TwitterFactory.getSingleton,
+    twitterStream:    TwitterStream = TwitterStreamFactory.getSingleton,
+    backlogSize:      Int           = DefaultBacklogSize,
+    cacheSizePerBoss: Int           = DefaultCacheSizePerBoss
+  )(implicit scheduler: Scheduler): DefaultRaidFinder = {
+    import TwitterSearcher._
+
+    // TODO: This actually doesn't work as expected for backlog sizes greater
+    // than 1 page, since TwitterSearcher searches forward in time
+    val backlog = TwitterSearcher(twitter)
+      .observable(DefaultSearchTerm, None, MaxCount)
+      .flatMap(Observable.fromIterable)
+      .take(backlogSize)
+    val newStatuses = TwitterStreamer(twitterStream).observable
+    new DefaultRaidFinder(backlog ++ newStatuses, cacheSizePerBoss) {
+      override def onShutdown(): Unit = {
+        twitterStream.cleanUp()
+        twitterStream.shutdown()
+      }
+    }
+  }
 }
 
 class DefaultRaidFinder(
-  twitterStream:    TwitterStream,
-  cacheSizePerBoss: Int
+  statusesObservable: Observable[Status],
+  cacheSizePerBoss:   Int
 )(implicit scheduler: Scheduler) extends RaidFinder {
-  private val statuses = TwitterStreamer(
-    twitterStream,
-    TwitterStreamer.DefaultFilterTerms
-  ).observable
+  /** Override this to perform additional cleanup on shutdown */
+  protected def onShutdown(): Unit = ()
 
-  private val raidInfos = statuses
+  private val raidInfos = statusesObservable
     .collect(Function.unlift(StatusParser.parse))
     .publish
 
@@ -47,6 +75,7 @@ class DefaultRaidFinder(
       partitionerCancelable,
       knownBossesCancelable
     ).foreach(_.cancel)
+    onShutdown()
   }
 
   def shutdown(): Unit = cancelable.cancel()

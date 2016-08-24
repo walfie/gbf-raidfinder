@@ -17,7 +17,7 @@ import walfie.gbf.raidfinder.RaidFinder
 
 object Application {
   def main(args: Array[String]): Unit = {
-    val raidFinder = RaidFinder.default()
+    val raidFinder = RaidFinder.withBacklog()
 
     val components = new Components(raidFinder)
     val server = components.server
