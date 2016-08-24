@@ -68,7 +68,7 @@ html, body {
 }
 
 img.gbfrf-tweet__avatar {
-  border-radius: initial;
+  border-radius: 10%;
 }
 
 .gbfrf-tweet__text {

@@ -8,8 +8,8 @@ import scala.concurrent.Future
 import twitter4j._
 import walfie.gbf.raidfinder.util.BlockingIO
 
-trait TwitterSearch {
-  import TwitterSearch.SinceId
+trait TwitterSearcher {
+  import TwitterSearcher.SinceId
 
   def observable(
     searchTerm: String,
@@ -18,18 +18,18 @@ trait TwitterSearch {
   ): Observable[Seq[Status]]
 }
 
-object TwitterSearch {
+object TwitterSearcher {
   type SinceId = Long
 
   /** The maximum number of search results returned from the twitter API is 100 */
   val MaxCount = 100
   val DefaultSearchTerm = "参加者募集！参戦ID："
 
-  def apply(twitter: Twitter): Twitter4jSearch = new Twitter4jSearch(twitter)
+  def apply(twitter: Twitter): Twitter4jSearcher = new Twitter4jSearcher(twitter)
 }
 
-class Twitter4jSearch(twitter: Twitter) extends TwitterSearch {
-  import TwitterSearch.SinceId
+class Twitter4jSearcher(twitter: Twitter) extends TwitterSearcher {
+  import TwitterSearcher.SinceId
 
   /**
     * Create an observable that fetches pages of tweets. On error, returns

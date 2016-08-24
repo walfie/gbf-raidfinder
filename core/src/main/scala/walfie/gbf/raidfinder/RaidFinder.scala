@@ -17,7 +17,7 @@ object RaidFinder {
     twitter:          Twitter        = TwitterFactory.getSingleton,
     cacheSizePerBoss: Int            = 50,
     pollingInterval:  FiniteDuration = 10.seconds,
-    searchTerm:       String         = TwitterSearch.DefaultSearchTerm
+    searchTerm:       String         = TwitterSearcher.DefaultSearchTerm
   )(implicit scheduler: Scheduler): DefaultRaidFinder =
     new DefaultRaidFinder(twitter, cacheSizePerBoss, pollingInterval, searchTerm)
 }
@@ -29,8 +29,8 @@ class DefaultRaidFinder(
   searchTerm:       String
 )(implicit scheduler: Scheduler) extends RaidFinder {
   private val timer = Observable.timerRepeated(0.seconds, pollingInterval, ())
-  private val statuses = TwitterSearch(twitter).observable(
-    searchTerm, None, TwitterSearch.MaxCount
+  private val statuses = TwitterSearcher(twitter).observable(
+    searchTerm, None, TwitterSearcher.MaxCount
   )
 
   private val raidInfos = statuses

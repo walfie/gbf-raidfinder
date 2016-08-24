@@ -16,7 +16,7 @@ import scala.util.Random
 import twitter4j._
 import walfie.gbf.raidfinder.util.TestObserver
 
-class Twitter4jSearchSpec extends Twitter4jSearchSpecHelpers {
+class Twitter4jSearcherSpec extends Twitter4jSearcherSpecHelpers {
   "observable" - {
     "return tweets in pages" in new TwitterFixture {
       val searchTerm = "searchy-search"
@@ -85,7 +85,7 @@ trait Twitter4jSearchSpecHelpers extends FreeSpec
   trait TwitterFixture {
     implicit val scheduler = Scheduler.Implicits.global
     val twitter = mock[Twitter]
-    val search = TwitterSearch(twitter)
+    val search = TwitterSearcher(twitter)
   }
 
   def mockQueryResult(maxId: Option[Long], tweets: Seq[Status]): QueryResult = {
