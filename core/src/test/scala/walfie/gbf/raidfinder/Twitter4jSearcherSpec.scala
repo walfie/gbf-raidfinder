@@ -47,13 +47,13 @@ class Twitter4jSearcherSpec extends Twitter4jSearcherSpecHelpers {
         val maxCount = 5
 
         val query1 = new Query(searchTerm).count(maxCount)
-        val statuses1 = mockStatuses(5)
-        val result1 = mockQueryResult(sinceId = Some(456), tweets = statuses1)
+        val statuses1 = (6L to 10L).map(mockStatus)
+        val result1 = mockQueryResult(tweets = statuses1)
         when(twitter.search(query1)) thenReturn result1
 
-        val query2 = new Query(searchTerm).count(maxCount).maxId(456)
-        val statuses2 = mockStatuses(4)
-        val result2 = mockQueryResult(sinceId = Some(123), tweets = statuses2)
+        val query2 = new Query(searchTerm).count(maxCount).maxId(6)
+        val statuses2 = (1L to 5L).map(mockStatus)
+        val result2 = mockQueryResult(tweets = statuses2)
         when(twitter.search(query2)) thenReturn result2
 
         val observable = search.observable(searchTerm, None, maxCount)
@@ -81,7 +81,7 @@ class Twitter4jSearcherSpec extends Twitter4jSearcherSpecHelpers {
       val statuses2 = mockStatuses(2)
       val result2 = mockQueryResult(maxId = Some(7), tweets = statuses2)
       when(twitter.search(query2))
-        .thenThrow(new RuntimeException("Oh no!!"))
+        .thenThrow(new RuntimeException("Don't worry, this is supposed to happen."))
         .thenReturn(result2)
 
       val observable = search.observable(searchTerm, None, maxCount)
@@ -114,22 +114,22 @@ trait Twitter4jSearcherSpecHelpers extends FreeSpec
   }
 
   def mockQueryResult(
-    maxId:   Option[Long] = None,
-    sinceId: Option[Long] = None,
-    tweets:  Seq[Status]
+    maxId:  Option[Long] = None,
+    tweets: Seq[Status]
   ): QueryResult = {
     val result = mock[QueryResult]
     when(result.getTweets) thenReturn tweets.asJava
     maxId.foreach(when(result.getMaxId) thenReturn _)
-    sinceId.foreach(when(result.getSinceId) thenReturn _)
     result
   }
 
-  def mockStatus(): Status = {
+  def mockStatus(tweetId: Long): Status = {
     val status = mock[Status]
-    when(status.getCreatedAt) thenReturn (new Date(Random.nextInt.abs.toLong * 1000))
+    when(status.getId) thenReturn tweetId
+    when(status.getCreatedAt) thenReturn (new Date(tweetId))
+    when(status.toString) thenReturn s"Status($tweetId)"
     status
   }
-  def mockStatuses(count: Int): Seq[Status] = (1 to count).map(_ => mockStatus())
+  def mockStatuses(count: Int): Seq[Status] = (1 to count).map(i => mockStatus(i))
 }
 

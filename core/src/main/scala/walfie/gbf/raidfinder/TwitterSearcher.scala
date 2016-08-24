@@ -45,13 +45,13 @@ class Twitter4jSearcher(
     * an empty page and the next attempt will retry the previous request.
     */
   def observable(searchTerm: String, initialTweet: Option[TweetId], maxCount: Int): Observable[Seq[Status]] = {
-    Observable.fromAsyncStateAction[Option[TweetId], Seq[Status]] { sinceId =>
+    Observable.fromAsyncStateAction[Option[TweetId], Seq[Status]] { tweetId =>
       val query = new Query(searchTerm).count(maxCount)
 
-      Task.fromFuture(searchFunction(query, sinceId, maxCount))
+      Task.fromFuture(searchFunction(query, tweetId, maxCount))
         .onErrorHandle { error: Throwable =>
           System.err.println(error) // TODO: Better handling?
-          Seq.empty[Status] -> sinceId
+          Seq.empty[Status] -> tweetId
         }
     }(None)
   }
@@ -70,8 +70,8 @@ class Twitter4jSearcher(
 
     BlockingIO.future {
       val queryResult = twitter.search(query)
-      val sortedTweets = queryResult.getTweets.asScala.sortBy(_.getCreatedAt) // Earliest first
-      sortedTweets -> Option(queryResult.getMaxId)
+      val tweetsEarliestFirst = queryResult.getTweets.asScala.sortBy(_.getCreatedAt) // Earliest first
+      tweetsEarliestFirst -> Option(queryResult.getMaxId)
     }
   }
 
@@ -84,8 +84,8 @@ class Twitter4jSearcher(
 
     BlockingIO.future {
       val queryResult = twitter.search(query)
-      val sortedTweets = queryResult.getTweets.asScala.sortBy(-_.getCreatedAt.getTime) // Latest first
-      sortedTweets -> Option(queryResult.getSinceId)
+      val tweetsLatestFirst = queryResult.getTweets.asScala.sortBy(-_.getCreatedAt.getTime) // Latest first
+      tweetsLatestFirst -> tweetsLatestFirst.lastOption.map(_.getId) // queryResult.getSinceId returns 0
     }
   }
 }
