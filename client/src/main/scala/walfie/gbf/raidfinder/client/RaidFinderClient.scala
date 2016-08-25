@@ -2,7 +2,6 @@ package walfie.gbf.raidfinder.client
 
 import java.nio.ByteBuffer
 import org.scalajs.dom
-import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.implicits._
@@ -20,14 +19,18 @@ trait RaidFinderClient {
 class WebSocketRaidFinderClient(
   websocketUrl:    String,
   responseHandler: ResponseHandler
-)(implicit ec: ExecutionContext) {
-  private val websocketP = Promise[dom.WebSocket]
-  private val websocketF = websocketP.future
+) {
+  private var websocketIsOpen = false
+  private var websocketSendQueue = js.Array[ArrayBuffer]()
 
   private val websocket = new dom.WebSocket(websocketUrl, js.Array("binary"))
   websocket.binaryType = "arraybuffer"
 
-  websocket.onopen = (_: dom.Event) => websocketP.success(websocket)
+  websocket.onopen = { _: dom.Event =>
+    websocketIsOpen = true
+    websocketSendQueue.foreach(websocket.send)
+    websocketSendQueue = js.Array()
+  }
 
   websocket.onmessage = { e: dom.MessageEvent =>
     val data = e.data match {
@@ -41,7 +44,9 @@ class WebSocketRaidFinderClient(
   def send(request: Request): Unit = {
     val messageBytes = request.toMessage.toByteArray.toJSArray
     val buffer = TypedArrayBuffer.wrap(new Int8Array(messageBytes)).arrayBuffer
-    websocketF.foreach(_.send(buffer))
+
+    if (websocketIsOpen) websocket.send(buffer)
+    else websocketSendQueue.push(buffer)
   }
 
   def close(): Unit = websocket.close()
