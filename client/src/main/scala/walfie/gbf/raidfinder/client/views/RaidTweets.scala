@@ -20,7 +20,7 @@ object RaidTweets {
         </div>
       </div>
     </div>
-  }.mdl
+  }
 
   @binding.dom
   def raidTweetList(
@@ -64,7 +64,7 @@ object RaidTweets {
         { raidBossHeaderMenu(bossName).bind }
       </div>
     </header>
-  }
+  }.mdl
 
   @binding.dom
   def raidBossHeaderMenu(bossName: String): Binding[HTMLUListElement] = {

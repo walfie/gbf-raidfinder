@@ -6,7 +6,10 @@ import scala.scalajs.js
 object MaterialDesignLiteUtil {
   implicit class HTMLElementOps[T <: HTMLElement](val elem: T) extends AnyVal {
     def mdl(): T = {
-      js.Dynamic.global.componentHandler.upgradeElement(elem)
+      // This is such a hack
+      js.timers.setTimeout(1000) {
+        js.Dynamic.global.componentHandler.upgradeElement(elem)
+      }
       elem
     }
   }
