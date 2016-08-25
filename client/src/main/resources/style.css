@@ -46,6 +46,11 @@ html, body {
 
 .gbfrf-column__header-row {
   padding: 20px !important;
+  background-size: 100% !important;
+}
+
+.gbfrf-column__header-row-icon {
+  vertical-align: middle;
 }
 
 .gbfrf-tweets {

@@ -51,12 +51,14 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
         }
 
       subscribed = subscribed ++ cancelables
+      this push SubscriptionStatusResponse(subscribed.keys.toSeq)
 
     case r: UnsubscribeRequest =>
       r.bossNames.map { bossName =>
         subscribed.get(bossName).foreach(_.cancel())
       }
       subscribed = subscribed -- r.bossNames
+      this push SubscriptionStatusResponse(subscribed.keys.toSeq)
   }
 
   override def postStop(): Unit = {

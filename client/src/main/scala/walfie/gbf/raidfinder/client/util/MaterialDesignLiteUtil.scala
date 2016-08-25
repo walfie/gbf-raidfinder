@@ -7,9 +7,12 @@ object MaterialDesignLiteUtil {
   implicit class HTMLElementOps[T <: HTMLElement](val elem: T) extends AnyVal {
     def mdl(): T = {
       // This is such a hack
-      js.timers.setTimeout(1000) {
-        js.Dynamic.global.componentHandler.upgradeElement(elem)
+      (1 to 10).foreach { i =>
+        js.timers.setTimeout(i * 500) {
+          js.Dynamic.global.componentHandler.upgradeElement(elem)
+        }
       }
+
       elem
     }
   }

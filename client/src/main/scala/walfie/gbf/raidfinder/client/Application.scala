@@ -12,8 +12,6 @@ import js.JSApp
 
 object Application extends JSApp {
   def main(): Unit = {
-    import scala.concurrent.ExecutionContext.Implicits.global
-
     val url = "ws://localhost:9000/ws/raids"
     val handler = new DefaultResponseHandler
     val client = new WebSocketRaidFinderClient(url, handler)

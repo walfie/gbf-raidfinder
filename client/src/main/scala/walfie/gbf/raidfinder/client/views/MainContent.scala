@@ -17,7 +17,7 @@ object MainContent {
         {
           bossColumns.map { bossColumn =>
             RaidTweets.raidTweetColumn(
-              bossColumn.bossName,
+              bossColumn.raidBoss,
               bossColumn.raidTweets
             ).bind
           }.bind
