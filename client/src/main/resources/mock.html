@@ -7,88 +7,11 @@
 <title>Granblue Raid Finder</title>
 
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.4/dialog-polyfill.min.js"></script>
 <body>
 
-<style>
-html, body {
-  height: 100%;
-  width: auto;
-}
-
-.gbfrf-main-content {
-  height: 100%;
-}
-
-.gbfrf-settings-fab__container {
-  position: absolute;
-  bottom: 24px;
-  right: 24px;
-}
-
-.gbfrf-columns {
-  height: 100%;
-  overflow-x: scroll;
-  width: auto;
-  white-space: nowrap;
-  overflow-y: hidden;
-
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-}
-
-.gbfrf-column {
-  width: 350px;
-  height: 100%;
-  flex: 0 0 auto;
-}
-
-@media (max-width: 460px) {
-  .gbfrf-column {
-    width: 90%;
-  }
-}
-
-.gbfrf-column__header {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 90%;
-}
-
-.gbfrf-column__header-row {
-  padding: 20px !important;
-}
-
-.gbfrf-tweets {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.gbfrf-tweet {
-  border-bottom: 1px dashed grey;
-  transition: background-color 0.3s ease;
-}
-
-.gbfrf-tweet:hover {
-  background-color: #e9e9e9;
-  cursor: pointer;
-}
-
-.gbfrf-tweet__raid-id {
-  font-weight: bold;
-}
-
-.gbfrf-tweet__text {
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-.gbfrf-tweet__timestamp {
-  font-size: small;
-}
-</style>
-
-
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="scrollbar.css">
 <div class="gbfrf-main-content">
 
   <div class="gbfrf-settings-fab__container">
@@ -178,6 +101,58 @@ html, body {
 
 
 
+
+
+<dialog class="mdl-dialog gbfrf-follow__dialog">
+  <div class="gbfrf-follow mdl-layout mdl-layout--fixed-header">
+
+    <header class="mdl-layout__header">
+      <div class="mdl-layout__header-row gbfrf-column__header-row">
+        <div class="mdl-layout-title gbfrf-column__header">Follow</div>
+        <div class="mdl-layout-spacer"></div>
+        <div class="mdl-button mdl-js-button mdl-button--icon material-icons js-close-dialog">
+          <i class="material-icons">clear</i>
+        </div>
+      </div>
+    </header>
+
+    <div class="gbfrf-follow__content">
+
+
+
+<ul class="mdl-list" style="padding: 0; margin: 0;">
+  <li class="gbfrf-follow__boss_box mdl-list__item mdl-shadow--2dp">
+    <span class="gbfrf-follow__boss_text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
+  </li>
+
+  <li class="gbfrf-follow__boss_box mdl-list__item mdl-shadow--2dp">
+    <span class="gbfrf-follow__boss_text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
+  </li>
+</ul>
+      <div style="height:1000px;"></div>
+
+
+    </div>
+    <hr style="margin: 0;" />
+    <div class="mdl-dialog__actions">
+      <button type="button" class="mdl-button js-close-dialog">Cancel</button>
+    </div>
+  </div>
+</dialog>
+<script>
+var dialog = document.querySelector('dialog');
+var showDialogButton = document.querySelector('.gbfrf-settings-fab__container');
+if (! dialog.showModal) {
+  dialogPolyfill.registerDialog(dialog);
+}
+showDialogButton.addEventListener('click', function() {
+  dialog.showModal();
+});
+dialog.querySelector('.js-close-dialog').addEventListener('click', function() {
+  dialog.close();
+});
+dialog.showModal();
+</script>
 
 
 

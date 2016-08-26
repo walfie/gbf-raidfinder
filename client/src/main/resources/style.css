@@ -85,3 +85,37 @@ img.gbfrf-tweet__avatar {
   font-size: small;
 }
 
+.gbfrf-follow__dialog {
+  max-width: 80%;
+  height: 80%;
+  width: 400px !important;
+  padding: 0;
+}
+
+.gbfrf-follow {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gbfrf-follow__content {
+  overflow-y: scroll;
+  max-height: 100%;
+  flex: 1 1;
+}
+
+.gbfrf-follow__boss_box {
+  background: linear-gradient( rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2) ), url(https://pbs.twimg.com/media/CT6cDD3UkAEnP8Y.jpg:small);
+  background-size: cover;
+  margin: 5px;
+}
+
+.gbfrf-follow__boss_box:hover {
+  cursor: pointer;
+}
+
+.gbfrf-follow__boss_text {
+  color: white;
+  font-size: 20px;
+}
+
