@@ -7,7 +7,6 @@ import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidBossColumn // TODO: Move this
 import walfie.gbf.raidfinder.protocol._
-import walfie.gbf.raidfinder.protocol.RaidBossesResponse.RaidBoss
 
 object MainContent {
   @binding.dom

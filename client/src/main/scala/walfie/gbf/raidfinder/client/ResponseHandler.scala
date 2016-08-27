@@ -1,7 +1,6 @@
 package walfie.gbf.raidfinder.client
 
 import walfie.gbf.raidfinder.protocol._
-import walfie.gbf.raidfinder.protocol.RaidBossesResponse.RaidBoss
 import com.thoughtworks.binding.Binding._
 
 trait ResponseHandler {

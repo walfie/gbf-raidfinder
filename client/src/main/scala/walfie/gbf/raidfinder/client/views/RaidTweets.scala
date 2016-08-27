@@ -7,7 +7,6 @@ import org.scalajs.dom.raw._
 import org.widok.moment._
 import walfie.gbf.raidfinder.client.syntax.HTMLElementOps
 import walfie.gbf.raidfinder.protocol._
-import walfie.gbf.raidfinder.protocol.RaidBossesResponse.RaidBoss
 
 object RaidTweets {
   @binding.dom

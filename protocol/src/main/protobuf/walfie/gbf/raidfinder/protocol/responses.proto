@@ -2,13 +2,12 @@ syntax = "proto3";
 
 package walfie.gbf.raidfinder.protocol;
 
-import "google/protobuf/wrappers.proto";
 import "scalapb/scalapb.proto";
+import "walfie/gbf/raidfinder/protocol/domain.proto";
 
 option (scalapb.options) = {
   import: "walfie.gbf.raidfinder.protocol.TypeMappers._"
   preamble: "sealed trait Response"
-  primitive_wrappers: true
   single_file: true
 };
 
@@ -47,12 +46,6 @@ message RaidTweetResponse {
 
 message RaidBossesResponse {
   option (scalapb.message).extends = "Response";
-
-  message RaidBoss {
-    string bossName = 1;
-    google.protobuf.StringValue image = 2;
-    int64 lastSeen = 3 [(scalapb.field).type = "java.util.Date"];
-  }
 
   repeated RaidBoss raidBosses = 1;
 };
