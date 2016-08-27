@@ -15,13 +15,8 @@ object Application extends JSApp {
     val url = "ws://localhost:9000/ws/raids"
     val handler = new DefaultResponseHandler
     val client = new WebSocketRaidFinderClient(url, handler)
-    client.send(RaidBossesRequest())
-    client.send(SubscribeRequest(
-      bossNames = Seq(
-        "Lv60 ユグドラシル・マグナ",
-        "Lv75 シュヴァリエ・マグナ"
-      )
-    ))
+    client.getBosses()
+    client.follow("Lv60 ユグドラシル・マグナ", "Lv75 シュヴァリエ・マグナ")
 
     js.Dynamic.global.moment.updateLocale(
       "en",

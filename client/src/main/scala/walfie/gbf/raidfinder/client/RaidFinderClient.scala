@@ -12,7 +12,9 @@ import js.typedarray._
 import js.typedarray.TypedArrayBufferOps.bufferOps
 
 trait RaidFinderClient {
+  def getBosses(): Unit
   def send(request: Request): Unit
+  def follow(bossNames: BossName*): Unit
   def close(): Unit
 }
 
@@ -47,6 +49,14 @@ class WebSocketRaidFinderClient(
 
     if (websocketIsOpen) websocket.send(buffer)
     else websocketSendQueue.push(buffer)
+  }
+
+  def getBosses(): Unit = {
+    send(RaidBossesRequest())
+  }
+
+  def follow(bossNames: BossName*): Unit = {
+    send(SubscribeRequest(bossNames = bossNames))
   }
 
   def close(): Unit = websocket.close()
