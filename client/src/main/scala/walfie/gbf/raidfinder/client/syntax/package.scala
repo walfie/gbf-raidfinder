@@ -19,10 +19,10 @@ package object syntax {
     }
 
     /** Add a cover background image, slightly darkened */
-    def backgroundImage(imageUrl: String, opacity: Double): T = {
+    def backgroundImage(imageUrl: String, opacity: Double, cover: Boolean): T = {
       val color = s"rgba(0, 0, 0, $opacity)"
-      elem.style.background = s"linear-gradient($color, $color), url('$imageUrl')"
-      elem.style.backgroundSize = "cover"
+      elem.style.backgroundImage = s"linear-gradient($color, $color), url('$imageUrl')"
+      if (cover) elem.style.backgroundSize = "cover"
       elem
     }
   }

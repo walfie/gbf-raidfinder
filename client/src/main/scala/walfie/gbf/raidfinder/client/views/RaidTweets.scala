@@ -64,7 +64,7 @@ object RaidTweets {
         { raidBossHeaderMenu(raidBoss.bossName).bind }
       </div>
 
-    raidBoss.image.foreach(image => headerRow.backgroundImage(image, 0.25))
+    raidBoss.image.foreach(image => headerRow.backgroundImage(image, 0.25, cover = true))
 
     <header class="mdl-layout__header">
       { headerRow }

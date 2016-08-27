@@ -65,7 +65,7 @@ object BossSelectorDialog {
         <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">{ bossName }</span>
       </li>
 
-    image.foreach(i => elem.backgroundImage(i, 0.2))
+    image.foreach(elem.backgroundImage(_, 0.2, cover = false))
 
     elem
   }
