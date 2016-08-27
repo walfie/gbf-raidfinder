@@ -54,7 +54,7 @@ object RaidTweets {
 
   @binding.dom
   def raidBossHeader(raidBoss: RaidBoss): Binding[HTMLElement] = {
-    val headerRow = {
+    val headerRow =
       <div class="mdl-layout__header-row gbfrf-column__header-row">
         <div class="mdl-layout-title gbfrf-column__header">{ raidBoss.bossName }</div>
         <div class="mdl-layout-spacer"></div>
@@ -63,7 +63,6 @@ object RaidTweets {
         </button>
         { raidBossHeaderMenu(raidBoss.bossName).bind }
       </div>
-    }
 
     raidBoss.image.foreach(image => headerRow.backgroundImage(image, 0.25))
 

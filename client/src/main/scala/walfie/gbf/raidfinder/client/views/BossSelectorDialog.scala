@@ -12,7 +12,7 @@ import walfie.gbf.raidfinder.protocol._
 
 object BossSelectorDialog {
   @binding.dom
-  def dialogElement(): Binding[Element] = {
+  def dialogElement(raidBosses: BindingSeq[RaidBoss]): Binding[Element] = {
     val elem = dom.document.createElement("dialog")
     elem.classList.add("mdl-dialog")
     elem.classList.add("gbfrf-follow__dialog")
@@ -23,7 +23,11 @@ object BossSelectorDialog {
         { dialogHeader(onClose = closeModal).bind }
         <div class="gbfrf-follow__content">
           <ul class="mdl-list" style="padding: 0; margin: 0;">
-            { bossListItem.bind }
+            {
+              raidBosses.map { boss =>
+                bossListItem(boss.bossName, boss.image).bind
+              }
+            }
           </ul>
         </div>
         <hr style="margin: 0;"/>
@@ -55,10 +59,15 @@ object BossSelectorDialog {
   }
 
   @binding.dom
-  def bossListItem(): Binding[HTMLLIElement] = {
-    <li class="gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp">
-      <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
-    </li>
-  }.backgroundImage("https://pbs.twimg.com/media/CT6cDD3UkAEnP8Y.jpg:small", 0.2) // TODO: less hardcoding
+  def bossListItem(bossName: String, image: Option[String]): Binding[HTMLLIElement] = {
+    val elem =
+      <li class="gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp">
+        <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">{ bossName }</span>
+      </li>
+
+    image.foreach(i => elem.backgroundImage(i, 0.2))
+
+    elem
+  }
 }
 

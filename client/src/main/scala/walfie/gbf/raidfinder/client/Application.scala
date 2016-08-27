@@ -47,7 +47,7 @@ object Application extends JSApp {
 
     binding.dom.render(
       dom.document.body,
-      views.MainContent.mainContent(handler.raidBossColumns)
+      views.MainContent.mainContent(handler.raidBossColumns, handler.allBosses)
     )
   }
 }

@@ -21,6 +21,7 @@ object RaidBossColumn {
 
 class DefaultResponseHandler extends ResponseHandler {
   val raidBossColumns: Vars[RaidBossColumn] = Vars.empty
+  val allBosses: Vars[RaidBoss] = Vars.empty
   private var raidBossColumnsMap: Map[BossName, RaidBossColumn] = Map.empty
 
   private def addColumn(bossName: String): Unit = {
@@ -37,6 +38,8 @@ class DefaultResponseHandler extends ResponseHandler {
 
   def handleResponse(response: Response): Unit = response match {
     case r: RaidBossesResponse =>
+      allBosses.get.clear()
+      allBosses.get ++= r.raidBosses.sortBy(_.bossName)
       r.raidBosses.foreach { raidBoss =>
         val bossName = raidBoss.bossName
         raidBossColumnsMap.get(bossName) match {

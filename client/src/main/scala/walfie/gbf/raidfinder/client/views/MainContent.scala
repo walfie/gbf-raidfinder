@@ -10,12 +10,17 @@ import walfie.gbf.raidfinder.protocol._
 
 object MainContent {
   @binding.dom
-  def mainContent(bossColumns: BindingSeq[RaidBossColumn]): Binding[HTMLDivElement] = {
-    val dialog = BossSelectorDialog.dialogElement.bind
+  def mainContent(
+    bossColumns: BindingSeq[RaidBossColumn],
+    allBosses:   BindingSeq[RaidBoss]
+  ): Binding[HTMLDivElement] = {
+    val dialog = Binding {
+      BossSelectorDialog.dialogElement(allBosses).bind
+    }
 
     <div class="gbfrf-main-content">
-      { dialog }
-      { floatingActionButton(dialog).bind }
+      { dialog.bind }
+      { floatingActionButton(dialog.bind).bind }
       <div class="gbfrf-columns">
         {
           bossColumns.map { bossColumn =>
