@@ -5,7 +5,7 @@ import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom.raw._
 import org.widok.moment._
-import walfie.gbf.raidfinder.client.util.MaterialDesignLiteUtil.HTMLElementOps
+import walfie.gbf.raidfinder.client.syntax.HTMLElementOps
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.RaidBossesResponse.RaidBoss
 
@@ -55,15 +55,8 @@ object RaidTweets {
 
   @binding.dom
   def raidBossHeader(raidBoss: RaidBoss): Binding[HTMLElement] = {
-    def linearGradient(opacity: String) =
-      s"linear-gradient(rgba(0, 0, 0, $opacity), rgba(0, 0, 0, $opacity))"
-
-    val headerStyle = raidBoss.image.fold("") { imageUrl =>
-      s"""background: ${linearGradient("0.25")}, url('${imageUrl}:small');"""
-    }
-
-    <header class="mdl-layout__header">
-      <div class="mdl-layout__header-row gbfrf-column__header-row" style={ headerStyle }>
+    val headerRow = {
+      <div class="mdl-layout__header-row gbfrf-column__header-row">
         <div class="mdl-layout-title gbfrf-column__header">{ raidBoss.bossName }</div>
         <div class="mdl-layout-spacer"></div>
         <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(raidBoss.bossName) }>
@@ -71,6 +64,12 @@ object RaidTweets {
         </button>
         { raidBossHeaderMenu(raidBoss.bossName).bind }
       </div>
+    }
+
+    raidBoss.image.foreach(image => headerRow.backgroundImage(image, 0.25))
+
+    <header class="mdl-layout__header">
+      { headerRow }
     </header>
   }.mdl
 

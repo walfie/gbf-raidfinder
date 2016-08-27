@@ -104,17 +104,15 @@ img.gbfrf-tweet__avatar {
   flex: 1 1;
 }
 
-.gbfrf-follow__boss_box {
-  background: linear-gradient( rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2) ), url(https://pbs.twimg.com/media/CT6cDD3UkAEnP8Y.jpg:small);
-  background-size: cover;
+.gbfrf-follow__boss-box {
   margin: 5px;
 }
 
-.gbfrf-follow__boss_box:hover {
+.gbfrf-follow__boss-box:hover {
   cursor: pointer;
 }
 
-.gbfrf-follow__boss_text {
+.gbfrf-follow__boss-text {
   color: white;
   font-size: 20px;
 }

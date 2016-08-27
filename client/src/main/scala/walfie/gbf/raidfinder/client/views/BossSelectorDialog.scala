@@ -7,6 +7,7 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidBossColumn // TODO: Move this
+import walfie.gbf.raidfinder.client.syntax.HTMLElementOps
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.RaidBossesResponse.RaidBoss
 
@@ -56,9 +57,9 @@ object BossSelectorDialog {
 
   @binding.dom
   def bossListItem(): Binding[HTMLLIElement] = {
-    <li class="gbfrf-follow__boss_box mdl-list__item mdl-shadow--2dp">
-      <span class="gbfrf-follow__boss_text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
+    <li class="gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp">
+      <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
     </li>
-  }
+  }.backgroundImage("https://pbs.twimg.com/media/CT6cDD3UkAEnP8Y.jpg:small", 0.2) // TODO: less hardcoding
 }
 
