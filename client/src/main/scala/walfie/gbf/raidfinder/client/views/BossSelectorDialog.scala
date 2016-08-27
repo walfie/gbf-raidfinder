@@ -25,7 +25,7 @@ object BossSelectorDialog {
         <div class="gbfrf-follow__content">
           <ul class="mdl-list" style="padding: 0; margin: 0;">
             {
-              // TODO: Don't include bosses we're already following
+              // TODO: Don't include bosses we're already following, or old bosses
               // TODO: Sort bosses by level
               client.state.allBosses.map { bossColumn =>
                 val boss = bossColumn.raidBoss.bind
