@@ -10,9 +10,9 @@ import walfie.gbf.raidfinder.protocol._
 
 object MainContent {
   @binding.dom
-  def mainContent(handler: ResponseHandler, client: RaidFinderClient): Binding[HTMLDivElement] = {
+  def mainContent(client: RaidFinderClient): Binding[HTMLDivElement] = {
     val dialog = Binding {
-      BossSelectorDialog.dialogElement(handler, client).bind
+      BossSelectorDialog.dialogElement(client).bind
     }
 
     <div class="gbfrf-main-content">
@@ -20,12 +20,9 @@ object MainContent {
       { floatingActionButton(dialog.bind).bind }
       <div class="gbfrf-columns">
         {
-          handler.raidBossColumns.map { bossColumn =>
-            RaidTweets.raidTweetColumn(
-              bossColumn.raidBoss,
-              bossColumn.raidTweets
-            ).bind
-          }.bind
+          client.state.following.map { column =>
+            RaidTweets.raidTweetColumn(column.raidBoss, column.raidTweets).bind
+          }
         }
       </div>
     </div>

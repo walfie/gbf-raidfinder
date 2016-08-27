@@ -13,10 +13,9 @@ import js.JSApp
 object Application extends JSApp {
   def main(): Unit = {
     val url = "ws://localhost:9000/ws/raids"
-    val handler = new DefaultResponseHandler
-    val client = new WebSocketRaidFinderClient(url, handler)
-    client.getBosses()
-    client.follow("Lv60 ユグドラシル・マグナ", "Lv75 シュヴァリエ・マグナ")
+    val websocket = new BinaryProtobufWebSocketClient(url)
+    val client = new WebSocketRaidFinderClient(websocket)
+    client.updateBosses()
 
     js.Dynamic.global.moment.updateLocale(
       "en",
@@ -42,7 +41,7 @@ object Application extends JSApp {
 
     binding.dom.render(
       dom.document.body,
-      views.MainContent.mainContent(handler, client)
+      views.MainContent.mainContent(client)
     )
   }
 }

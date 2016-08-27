@@ -12,7 +12,7 @@ import walfie.gbf.raidfinder.protocol._
 
 object BossSelectorDialog {
   @binding.dom
-  def dialogElement(handler: ResponseHandler, client: RaidFinderClient): Binding[Element] = {
+  def dialogElement(client: RaidFinderClient): Binding[Element] = {
     // TODO: Use implicit view to allow HTML literal <dialog> element
     val elem = dom.document.createElement("dialog")
     elem.classList.add("mdl-dialog")
@@ -26,12 +26,12 @@ object BossSelectorDialog {
           <ul class="mdl-list" style="padding: 0; margin: 0;">
             {
               // TODO: Don't include bosses we're already following
-              handler.allBosses.map { boss =>
-                // TODO: Combine addColumn and follow
+              // TODO: Sort bosses by level
+              client.state.allBosses.map { bossColumn =>
+                val boss = bossColumn.raidBoss.bind
                 val onClick = { e: Event =>
                   // TODO: local storage
                   client.follow(boss.bossName)
-                  handler.addColumn(boss.bossName)
                   closeModal(e) // TODO: Change this to not require an event
                 }
                 bossListItem(boss.bossName, boss.image, onClick).bind
