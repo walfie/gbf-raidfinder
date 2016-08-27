@@ -5,17 +5,14 @@ import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom.raw._
 import scala.scalajs.js
-import walfie.gbf.raidfinder.client.RaidBossColumn // TODO: Move this
+import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.protocol._
 
 object MainContent {
   @binding.dom
-  def mainContent(
-    bossColumns: BindingSeq[RaidBossColumn],
-    allBosses:   BindingSeq[RaidBoss]
-  ): Binding[HTMLDivElement] = {
+  def mainContent(handler: ResponseHandler, client: RaidFinderClient): Binding[HTMLDivElement] = {
     val dialog = Binding {
-      BossSelectorDialog.dialogElement(allBosses).bind
+      BossSelectorDialog.dialogElement(handler, client).bind
     }
 
     <div class="gbfrf-main-content">
@@ -23,7 +20,7 @@ object MainContent {
       { floatingActionButton(dialog.bind).bind }
       <div class="gbfrf-columns">
         {
-          bossColumns.map { bossColumn =>
+          handler.raidBossColumns.map { bossColumn =>
             RaidTweets.raidTweetColumn(
               bossColumn.raidBoss,
               bossColumn.raidTweets

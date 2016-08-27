@@ -21,7 +21,7 @@ trait RaidFinderClient {
 class WebSocketRaidFinderClient(
   websocketUrl:    String,
   responseHandler: ResponseHandler
-) {
+) extends RaidFinderClient {
   private var websocketIsOpen = false
   private var websocketSendQueue = js.Array[ArrayBuffer]()
 

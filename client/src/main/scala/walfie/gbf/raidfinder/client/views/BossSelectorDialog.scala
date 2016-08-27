@@ -6,13 +6,13 @@ import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
-import walfie.gbf.raidfinder.client.RaidBossColumn // TODO: Move this
+import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.client.syntax.HTMLElementOps
 import walfie.gbf.raidfinder.protocol._
 
 object BossSelectorDialog {
   @binding.dom
-  def dialogElement(raidBosses: BindingSeq[RaidBoss]): Binding[Element] = {
+  def dialogElement(handler: ResponseHandler, client: RaidFinderClient): Binding[Element] = {
     // TODO: Use implicit view to allow HTML literal <dialog> element
     val elem = dom.document.createElement("dialog")
     elem.classList.add("mdl-dialog")
@@ -25,8 +25,16 @@ object BossSelectorDialog {
         <div class="gbfrf-follow__content">
           <ul class="mdl-list" style="padding: 0; margin: 0;">
             {
-              raidBosses.map { boss =>
-                bossListItem(boss.bossName, boss.image).bind
+              // TODO: Don't include bosses we're already following
+              handler.allBosses.map { boss =>
+                // TODO: Combine addColumn and follow
+                val onClick = { e: Event =>
+                  // TODO: local storage
+                  client.follow(boss.bossName)
+                  handler.addColumn(boss.bossName)
+                  closeModal(e) // TODO: Change this to not require an event
+                }
+                bossListItem(boss.bossName, boss.image, onClick).bind
               }
             }
           </ul>
@@ -60,9 +68,9 @@ object BossSelectorDialog {
   }
 
   @binding.dom
-  def bossListItem(bossName: String, image: Option[String]): Binding[HTMLLIElement] = {
+  def bossListItem(bossName: String, image: Option[String], onClick: Event => Unit): Binding[HTMLLIElement] = {
     val elem =
-      <li class="gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp">
+      <li class="gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp" onclick={ onClick }>
         <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">{ bossName }</span>
       </li>
 
