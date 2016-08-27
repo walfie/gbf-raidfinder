@@ -77,7 +77,7 @@ class WebSocketRaidFinderClient(
 
     val following = state.following.get
     val index = following.indexWhere(_.raidBoss.get.bossName == bossName)
-    following.remove(index)
+    if (index >= 0) following.remove(index)
     allBossesMap.get(bossName).foreach(_.clear())
   }
 

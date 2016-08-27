@@ -74,7 +74,7 @@ object RaidTweets {
   @binding.dom
   def raidBossHeaderMenu(bossName: String): Binding[HTMLUListElement] = {
     <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" data:for={ menuId(bossName) }>
-      { menuItem("Delete", "delete").bind }
+      { menuItem("Unfollow", "delete").bind }
       { menuItem("Clear", "clear_all").bind }
       { menuItem("Move Left", "keyboard_arrow_left").bind }
       { menuItem("Move Right", "keyboard_arrow_right").bind }
