@@ -6,6 +6,7 @@ machine:
 dependencies:
   cache_directories:
     - "~/.sbt"
+    - "~/.coursier/cache"
     - "target/resolution-cache"
     - "target/streams"
     - "project/target/resolution-cache"
