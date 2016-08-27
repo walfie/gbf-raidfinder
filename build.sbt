@@ -1,3 +1,5 @@
+// TODO: Put all dependencies in a Dependencies.scala file with versions
+
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
   organization := "com.github.walfie",
@@ -12,7 +14,7 @@ lazy val core = (project in file("core"))
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-agent" % Versions.Akka,
       "io.monix" %% "monix" % Versions.Monix,
-      "org.twitter4j" % "twitter4j-core" % Versions.Twitter4j,
+      "org.twitter4j" % "twitter4j-stream" % Versions.Twitter4j,
       "org.scalatest" %% "scalatest" % Versions.ScalaTest % "test",
       "org.mockito" % "mockito-all" % Versions.Mockito % "test"
     )
@@ -44,7 +46,10 @@ lazy val client = (project in file("client"))
     name := "gbf-raidfinder-client",
     persistLauncher in Compile := true,
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "0.9.0"
+      "org.scala-js" %%% "scalajs-dom" % "0.9.0",
+      "com.thoughtworks.binding" %%% "dom" % "9.0.0",
+      "io.github.widok" %%% "scala-js-momentjs" % "0.1.5",
+      compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
     )
   )
   .dependsOn(protocolJS)

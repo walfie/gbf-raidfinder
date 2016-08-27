@@ -9,7 +9,8 @@ package object implicits {
     // but it doesn't check for exhaustive matches, so we'll use this verbose way
     def toRequest(): Option[Request] = message.data match {
       case RaidBossesMessage(v) => Some(v)
-      case SubscriptionChangeMessage(v) => Some(v)
+      case SubscribeMessage(v) => Some(v)
+      case UnsubscribeMessage(v) => Some(v)
       case Empty => None
     }
   }
@@ -20,7 +21,8 @@ package object implicits {
     def toMessage(): RequestMessage = {
       val data = request match {
         case v: RaidBossesRequest => RaidBossesMessage(v)
-        case v: SubscriptionChangeRequest => SubscriptionChangeMessage(v)
+        case v: SubscribeRequest => SubscribeMessage(v)
+        case v: UnsubscribeRequest => UnsubscribeMessage(v)
       }
       RequestMessage(data = data)
     }
@@ -32,7 +34,7 @@ package object implicits {
     def toResponse(): Option[Response] = message.data match {
       case RaidTweetMessage(v) => Some(v)
       case RaidBossesMessage(v) => Some(v)
-      case SubscriptionChangeMessage(v) => Some(v)
+      case SubscriptionStatusMessage(v) => Some(v)
       case ErrorMessage(v) => Some(v)
       case Empty => None
     }
@@ -45,7 +47,7 @@ package object implicits {
       val data = response match {
         case v: RaidTweetResponse => RaidTweetMessage(v)
         case v: RaidBossesResponse => RaidBossesMessage(v)
-        case v: SubscriptionChangeResponse => SubscriptionChangeMessage(v)
+        case v: SubscriptionStatusResponse => SubscriptionStatusMessage(v)
         case v: ErrorResponse => ErrorMessage(v)
       }
       ResponseMessage(data = data)

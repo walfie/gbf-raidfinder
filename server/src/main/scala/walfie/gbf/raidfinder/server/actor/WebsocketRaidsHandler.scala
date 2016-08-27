@@ -3,9 +3,9 @@ package walfie.gbf.raidfinder.server.actor
 import akka.actor._
 import monix.execution.{Cancelable, Scheduler}
 import walfie.gbf.raidfinder.domain._
-import walfie.gbf.raidfinder.protocol._
+import walfie.gbf.raidfinder.protocol
+import walfie.gbf.raidfinder.protocol.{RaidBoss => _, _}
 import walfie.gbf.raidfinder.protocol.implicits._
-import walfie.gbf.raidfinder.protocol.SubscriptionChangeRequest.SubscriptionAction.{SUBSCRIBE, UNSUBSCRIBE}
 import walfie.gbf.raidfinder.RaidFinder
 
 class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor {
@@ -22,7 +22,7 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
   val handleRequest: PartialFunction[Request, _] = {
     case r: RaidBossesRequest =>
       val bosses = raidFinder.getKnownBosses.values.map { rb: RaidBoss =>
-        RaidBossesResponse.RaidBoss(
+        protocol.RaidBoss(
           bossName = rb.bossName,
           image = rb.image,
           lastSeen = rb.lastSeen
@@ -31,7 +31,7 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
 
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
 
-    case r: SubscriptionChangeRequest if r.action == SUBSCRIBE =>
+    case r: SubscribeRequest =>
       val cancelables = r.bossNames
         .filterNot(subscribed.keys.toSeq.contains)
         .map { bossName =>
@@ -52,12 +52,14 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
         }
 
       subscribed = subscribed ++ cancelables
+      this push SubscriptionStatusResponse(subscribed.keys.toSeq)
 
-    case r: SubscriptionChangeRequest if r.action == UNSUBSCRIBE =>
+    case r: UnsubscribeRequest =>
       r.bossNames.map { bossName =>
         subscribed.get(bossName).foreach(_.cancel())
       }
       subscribed = subscribed -- r.bossNames
+      this push SubscriptionStatusResponse(subscribed.keys.toSeq)
   }
 
   override def postStop(): Unit = {

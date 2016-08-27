@@ -12,7 +12,8 @@ option (scalapb.options) = {
 message RequestMessage {
   oneof data {
     RaidBossesRequest raidBossesMessage = 1;
-    SubscriptionChangeRequest subscriptionChangeMessage = 2;
+    SubscribeRequest subscribeMessage = 2;
+    UnsubscribeRequest unsubscribeMessage = 3;
   };
 };
 
@@ -20,15 +21,15 @@ message RaidBossesRequest {
   option (scalapb.message).extends = "Request";
 };
 
-message SubscriptionChangeRequest {
+message SubscribeRequest {
   option (scalapb.message).extends = "Request";
 
-  enum SubscriptionAction {
-    UNSUBSCRIBE = 0;
-    SUBSCRIBE = 1;
-  }
+  repeated string bossNames = 1;
+};
+
+message UnsubscribeRequest {
+  option (scalapb.message).extends = "Request";
 
   repeated string bossNames = 1;
-  SubscriptionAction action = 2;
 };
 

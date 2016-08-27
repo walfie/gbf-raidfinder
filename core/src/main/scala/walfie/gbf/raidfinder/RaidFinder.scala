@@ -1,5 +1,6 @@
 package walfie.gbf.raidfinder
 
+import monix.eval.Task
 import monix.execution.{Cancelable, Scheduler}
 import monix.reactive._
 import scala.concurrent.duration._
@@ -13,29 +14,58 @@ trait RaidFinder {
 }
 
 object RaidFinder {
-  def default(
-    twitter:          Twitter        = TwitterFactory.getSingleton,
-    cacheSizePerBoss: Int            = 50,
-    pollingInterval:  FiniteDuration = 10.seconds,
-    searchTerm:       String         = TwitterSearch.DefaultSearchTerm
-  )(implicit scheduler: Scheduler): DefaultRaidFinder =
-    new DefaultRaidFinder(twitter, cacheSizePerBoss, pollingInterval, searchTerm)
+  val DefaultCacheSizePerBoss = 50
+  val DefaultBacklogSize = 100
+
+  /** Stream tweets without looking up old tweets first */
+  def withoutBacklog(
+    twitterStream:    TwitterStream = TwitterStreamFactory.getSingleton,
+    cacheSizePerBoss: Int           = DefaultCacheSizePerBoss
+  )(implicit scheduler: Scheduler): DefaultRaidFinder = {
+    val statuses = TwitterStreamer(twitterStream).observable
+    new DefaultRaidFinder(statuses, cacheSizePerBoss)
+  }
+
+  /** Search for old tweets first before streaming new tweets */
+  def withBacklog(
+    twitter:          Twitter       = TwitterFactory.getSingleton,
+    twitterStream:    TwitterStream = TwitterStreamFactory.getSingleton,
+    backlogSize:      Int           = DefaultBacklogSize,
+    cacheSizePerBoss: Int           = DefaultCacheSizePerBoss
+  )(implicit scheduler: Scheduler): DefaultRaidFinder = {
+    import TwitterSearcher._
+
+    // Get backlog of tweets, then sort them by earliest first
+    // TODO: This is getting kinda complex -- should write a test
+    val backlogTask: Task[Seq[Status]] =
+      TwitterSearcher(twitter, TwitterSearcher.ReverseChronological)
+        .observable(DefaultSearchTerm, None, MaxCount)
+        .flatMap(Observable.fromIterable)
+        .take(backlogSize)
+        .toListL
+        .map(_.sortBy(_.getCreatedAt)) // earliest first
+
+    // Once the backlog is populated, new tweets will stream in
+    val backlogObservable = Observable.fromTask(backlogTask).flatMap(Observable.fromIterable)
+    val newStatusesObservable = TwitterStreamer(twitterStream).observable
+
+    new DefaultRaidFinder(backlogObservable ++ newStatusesObservable, cacheSizePerBoss) {
+      override def onShutdown(): Unit = {
+        twitterStream.cleanUp()
+        twitterStream.shutdown()
+      }
+    }
+  }
 }
 
 class DefaultRaidFinder(
-  twitter:          Twitter,
-  cacheSizePerBoss: Int,
-  pollingInterval:  FiniteDuration,
-  searchTerm:       String
+  statusesObservable: Observable[Status],
+  cacheSizePerBoss:   Int
 )(implicit scheduler: Scheduler) extends RaidFinder {
-  private val timer = Observable.timerRepeated(0.seconds, pollingInterval, ())
-  private val statuses = TwitterSearch(twitter).observable(
-    searchTerm, None, TwitterSearch.MaxCount
-  )
+  /** Override this to perform additional cleanup on shutdown */
+  protected def onShutdown(): Unit = ()
 
-  private val raidInfos = statuses
-    .zipMap(timer)((statuses, _) => statuses)
-    .flatMap(Observable.fromIterable)
+  private val raidInfos = statusesObservable
     .collect(Function.unlift(StatusParser.parse))
     .publish
 
@@ -53,6 +83,7 @@ class DefaultRaidFinder(
       partitionerCancelable,
       knownBossesCancelable
     ).foreach(_.cancel)
+    onShutdown()
   }
 
   def shutdown(): Unit = cancelable.cancel()
