@@ -102,6 +102,7 @@ html, body {
   border-radius: 6px;
   background: #eaeaea;
   position: relative;
+  word-break: break-word;
 }
 
 /**
