@@ -20,7 +20,7 @@ object MainContent {
       { floatingActionButton(dialog.bind).bind }
       <div class="gbfrf-columns">
         {
-          client.state.following.map { column =>
+          client.state.followedBosses.map { column =>
             RaidTweets.raidTweetColumn(column.raidBoss, column.raidTweets, client).bind
           }
         }

@@ -31,18 +31,18 @@ class WebSocketRaidFinderClient(
 
   private var allBossesMap: Map[BossName, RaidBossColumn] = Map.empty
 
-  private val FollowingStorageKey = "following"
+  private val followedBossesStorageKey = "followedBosses"
 
-  // TODO: Initialize following to value in local storage
-  val state = State(allBosses = Vars.empty, following = Vars.empty)
-  Option(storage.getItem(FollowingStorageKey)).foreach(_.split(",").foreach(follow))
+  // Set initial state to empty, then load from localStorage
+  val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
+  Option(storage.getItem(followedBossesStorageKey)).foreach(_.split(",").foreach(follow))
 
   private def updateLocalStorage(): Unit = {
-    val bossNames = state.following.get.map(_.raidBoss.get.bossName)
+    val bossNames = state.followedBosses.get.map(_.raidBoss.get.bossName)
     if (bossNames.isEmpty)
-      storage.removeItem(FollowingStorageKey)
+      storage.removeItem(followedBossesStorageKey)
     else
-      storage.setItem(FollowingStorageKey, bossNames.mkString(","))
+      storage.setItem(followedBossesStorageKey, bossNames.mkString(","))
   }
 
   def updateBosses(): Unit = {
@@ -51,7 +51,7 @@ class WebSocketRaidFinderClient(
 
   /** Get the column number associated with a raid boss */
   private def columnIndex(bossName: BossName): Option[Int] = {
-    val index = state.following.get.indexWhere(_.raidBoss.get.bossName == bossName)
+    val index = state.followedBosses.get.indexWhere(_.raidBoss.get.bossName == bossName)
     if (index < 0) None else Some(index)
   }
 
@@ -67,15 +67,15 @@ class WebSocketRaidFinderClient(
       newColumn
     })
 
-    state.following.get += column
+    state.followedBosses.get += column
     updateLocalStorage()
   }
 
   def unfollow(bossName: BossName): Unit = {
     websocket.send(UnsubscribeRequest(bossNames = List(bossName)))
 
-    val following = state.following.get
-    columnIndex(bossName).foreach(following.remove)
+    val followedBosses = state.followedBosses.get
+    columnIndex(bossName).foreach(followedBosses.remove)
     allBossesMap.get(bossName).foreach(_.clear())
 
     updateLocalStorage()
@@ -86,15 +86,15 @@ class WebSocketRaidFinderClient(
   }
 
   def move(bossName: BossName, displacement: Int): Unit = {
-    val following = state.following.get
+    val followedBosses = state.followedBosses.get
     columnIndex(bossName).foreach { index =>
       val destinationIndex = index + displacement
 
-      if (destinationIndex >= 0 && destinationIndex < following.size) {
-        val thisColumn = following(index)
-        val thatColumn = following(destinationIndex)
-        following.update(destinationIndex, thisColumn)
-        following.update(index, thatColumn)
+      if (destinationIndex >= 0 && destinationIndex < followedBosses.size) {
+        val thisColumn = followedBosses(index)
+        val thatColumn = followedBosses(destinationIndex)
+        followedBosses.update(destinationIndex, thisColumn)
+        followedBosses.update(index, thatColumn)
       }
     }
   }
@@ -137,8 +137,8 @@ object RaidFinderClient {
   }
 
   case class State(
-    allBosses: Vars[RaidBossColumn],
-    following: Vars[RaidBossColumn]
+    allBosses:      Vars[RaidBossColumn],
+    followedBosses: Vars[RaidBossColumn]
   )
 }
 
