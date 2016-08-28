@@ -8,7 +8,7 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidFinderClient
-import walfie.gbf.raidfinder.client.syntax.{HTMLElementOps, StringOps}
+import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps, StringOps}
 import walfie.gbf.raidfinder.protocol._
 
 object RaidTweets {
@@ -40,29 +40,17 @@ object RaidTweets {
       </ul>
 
     list.addEventListener("click", { e: Event =>
-      val targetOpt = Option(e.target) match {
-        case Some(e: Element) => Some(e)
-        case _ => None
-      }
-
       // TODO: Put these IDs in a central place instead of hardcoding them
-      for {
-        target <- targetOpt
-        element <- findParent(target, _.classList.contains("gbfrf-js-tweet"))
+      val raidId = for {
+        target <- e.targetElement
+        element <- target.findParent(_.classList.contains("gbfrf-js-tweet"))
         raidId <- Option(element.getAttribute("data-raidId"))
       } yield raidId
+
+      println(raidId)
     })
 
     list
-  }
-
-  @annotation.tailrec
-  private def findParent(element: Element, predicate: Element => Boolean): Option[Element] = {
-    if (predicate(element)) Some(element)
-    else Option(element.parentNode) match {
-      case Some(parentElement: Element) => findParent(parentElement, predicate)
-      case _ => None
-    }
   }
 
   @binding.dom

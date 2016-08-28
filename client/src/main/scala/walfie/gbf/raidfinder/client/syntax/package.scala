@@ -4,7 +4,7 @@ import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
-import org.scalajs.dom.raw.{HTMLElement, HTMLImageElement}
+import org.scalajs.dom.raw._
 import scala.collection.mutable.Buffer
 import scala.scalajs.js
 
@@ -29,6 +29,20 @@ package object syntax {
         elem.style.backgroundImage = s"linear-gradient($color, $color), url('$imageUrl')"
       }
       elem
+    }
+  }
+
+  implicit class ElementOps[T <: Element](val elem: T) extends AnyVal {
+    import walfie.gbf.raidfinder.client.Util
+
+    def findParent(predicate: Element => Boolean): Option[Element] =
+      Util.findParent(elem, predicate)
+  }
+
+  implicit class EventOps(val event: Event) extends AnyVal {
+    def targetElement(): Option[Element] = Option(event.target) match {
+      case Some(e: Element) => Some(e)
+      case _ => None
     }
   }
 
