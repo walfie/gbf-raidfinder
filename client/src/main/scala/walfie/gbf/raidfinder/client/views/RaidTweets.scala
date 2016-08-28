@@ -49,7 +49,10 @@ object RaidTweets {
         element <- target.findParent(_.classList.contains("gbfrf-js-tweet"))
         raidId <- Option(element.getAttribute("data-raidId"))
       } yield {
-        if (Util.copy(raidId)) notification.enqueue(s"Copied $raidId to clipboard")
+        if (Util.copy(raidId)) {
+          element.classList.toggle("gbfrf-tweet--copied")
+          notification.enqueue(s"$raidId copied to clipboard")
+        }
       }
     })
 

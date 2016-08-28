@@ -69,6 +69,10 @@ html, body {
   cursor: copy;
 }
 
+.gbfrf-tweet--copied {
+  opacity: 0.2;
+}
+
 .gbfrf-tweet__raid-id {
   font-weight: bold;
 }
