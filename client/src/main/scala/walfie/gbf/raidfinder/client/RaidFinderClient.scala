@@ -49,8 +49,13 @@ class WebSocketRaidFinderClient(
     websocket.send(RaidBossesRequest())
   }
 
-  def follow(bossName: BossName): Unit = {
-    // TODO: Check if already following
+  /** Get the column number associated with a raid boss */
+  private def columnIndex(bossName: BossName): Option[Int] = {
+    val index = state.following.get.indexWhere(_.raidBoss.get.bossName == bossName)
+    if (index < 0) None else Some(index)
+  }
+
+  def follow(bossName: BossName): Unit = if (columnIndex(bossName).isEmpty) {
     websocket.send(SubscribeRequest(bossNames = List(bossName)))
 
     // If it's not a boss we know about, create an empty column for it
@@ -70,8 +75,7 @@ class WebSocketRaidFinderClient(
     websocket.send(UnsubscribeRequest(bossNames = List(bossName)))
 
     val following = state.following.get
-    val index = following.indexWhere(_.raidBoss.get.bossName == bossName)
-    if (index >= 0) following.remove(index)
+    columnIndex(bossName).foreach(following.remove)
     allBossesMap.get(bossName).foreach(_.clear())
 
     updateLocalStorage()
@@ -83,14 +87,15 @@ class WebSocketRaidFinderClient(
 
   def move(bossName: BossName, displacement: Int): Unit = {
     val following = state.following.get
-    val index = following.indexWhere(_.raidBoss.get.bossName == bossName)
-    val destinationIndex = index + displacement
+    columnIndex(bossName).foreach { index =>
+      val destinationIndex = index + displacement
 
-    if (destinationIndex >= 0 && destinationIndex < following.size) {
-      val thisColumn = following(index)
-      val thatColumn = following(destinationIndex)
-      following.update(destinationIndex, thisColumn)
-      following.update(index, thatColumn)
+      if (destinationIndex >= 0 && destinationIndex < following.size) {
+        val thisColumn = following(index)
+        val thatColumn = following(destinationIndex)
+        following.update(destinationIndex, thisColumn)
+        following.update(index, thatColumn)
+      }
     }
   }
 
