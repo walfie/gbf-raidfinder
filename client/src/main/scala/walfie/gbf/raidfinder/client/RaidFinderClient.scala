@@ -108,8 +108,8 @@ class WebSocketRaidFinderClient(
         allBossesMap.get(bossName) match {
           // New raid boss that we don't yet know about
           case None =>
-            val column = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
-            allBossesMap = allBossesMap.updated(bossName, column)
+            val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+            allBossesMap = allBossesMap.updated(bossName, newColumn)
             state.allBosses.get := allBossesMap.values
 
           // Update existing raid boss data

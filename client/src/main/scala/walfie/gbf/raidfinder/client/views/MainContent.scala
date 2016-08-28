@@ -11,13 +11,11 @@ import walfie.gbf.raidfinder.protocol._
 object MainContent {
   @binding.dom
   def mainContent(client: RaidFinderClient): Binding[HTMLDivElement] = {
-    val dialog = Binding {
-      BossSelectorDialog.dialogElement(client).bind
-    }
+    val dialog = Binding(BossSelectorDialog.dialogElement(client).bind)
 
     <div class="gbfrf-main-content">
       { dialog.bind }
-      { floatingActionButton(dialog.bind).bind }
+      { floatingActionButton(dialog.bind, client).bind }
       <div class="gbfrf-columns">
         {
           client.state.followedBosses.map { column =>
@@ -29,8 +27,12 @@ object MainContent {
   }
 
   @binding.dom
-  def floatingActionButton(dialog: Element): Binding[HTMLDivElement] = {
-    val showModal = (e: Event) => dialog.asInstanceOf[js.Dynamic].showModal()
+  def floatingActionButton(dialog: Element, client: RaidFinderClient): Binding[HTMLDivElement] = {
+    val showModal = { e: Event =>
+      client.updateBosses()
+      dialog.asInstanceOf[js.Dynamic].showModal()
+    }
+
     <div class="gbfrf-settings-fab__container" onclick={ showModal }>
       <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--primary">
         <i class="material-icons">add</i>
