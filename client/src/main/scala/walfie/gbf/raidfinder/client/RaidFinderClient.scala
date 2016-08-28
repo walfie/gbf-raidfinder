@@ -97,6 +97,8 @@ class WebSocketRaidFinderClient(
         followedBosses.update(index, thatColumn)
       }
     }
+
+    updateLocalStorage()
   }
 
   override def onWebSocketMessage(message: Response): Unit = message match {

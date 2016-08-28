@@ -46,6 +46,7 @@ html, body {
 
 .gbfrf-column__header-row {
   padding: 20px !important;
+  background-position-y: 20%;
   background-size: 100% !important;
 }
 

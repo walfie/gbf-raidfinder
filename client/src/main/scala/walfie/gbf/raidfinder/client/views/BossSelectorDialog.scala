@@ -29,12 +29,12 @@ object BossSelectorDialog {
               // TODO: Sort bosses by level
               client.state.allBosses.map { bossColumn =>
                 val boss = bossColumn.raidBoss.bind
+                val smallImage = boss.image.map(_ + ":thumb")
                 val onClick = { e: Event =>
-                  // TODO: local storage
                   client.follow(boss.bossName)
-                  closeModal(e) // TODO: Change this to not require an event
+                  closeModal(e)
                 }
-                bossListItem(boss.bossName, boss.image, onClick).bind
+                bossListItem(boss.bossName, smallImage, onClick).bind
               }
             }
           </ul>
@@ -74,7 +74,7 @@ object BossSelectorDialog {
         <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">{ bossName }</span>
       </li>
 
-    image.foreach(elem.backgroundImage(_, 0.2, cover = false))
+    image.foreach(elem.backgroundImage(_, 0.25, cover = false))
 
     elem
   }
