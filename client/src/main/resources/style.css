@@ -18,7 +18,6 @@ html, body {
   height: 100%;
   overflow-x: scroll;
   width: auto;
-  white-space: nowrap;
   overflow-y: hidden;
 
   display: flex;
@@ -74,16 +73,26 @@ html, body {
 }
 
 img.gbfrf-tweet__avatar {
+  width: 24px;
+  height: 24px;
   border-radius: 10%;
+  margin-right: 10px;
+  float: left;
+}
+
+.gbfrf-tweet__content {
+  display: flex;
+  flex-direction: column;
 }
 
 .gbfrf-tweet__text {
   text-overflow: ellipsis;
-  overflow: hidden;
+  padding-top: 0.5em;
 }
 
 .gbfrf-tweet__timestamp {
   font-size: small;
+  padding-left: 0.5em;
 }
 
 .gbfrf-follow__dialog {

@@ -37,18 +37,26 @@ object RaidTweets {
 
   @binding.dom
   def raidTweetListItem(raidTweet: RaidTweetResponse): Binding[HTMLLIElement] = {
-    <li class="mdl-list__item mdl-list__item--two-line gbfrf-tweet">
-      <span class="mdl-list__item-primary-content">
-        <!-- // TODO: Handle long names/text. Exclude second row if no extra text. -->
-        <img class="gbfrf-tweet__avatar" src={ raidTweet.profileImage.replace("_normal.", "_mini.") }/>
-        <span>{ raidTweet.screenName }</span>
-        <!-- // TODO: Better relative datetime -->
-        <span class="gbfrf-tweet__timestamp">{ Moment(raidTweet.createdAt.getTime).fromNow(true) }</span>
-        <span class="mdl-list__item-sub-title gbfrf-tweet__text">{ raidTweet.text }</span>
-      </span>
-      <span class="mdl-list__item-secondary-content gbfrf-tweet__raid-id">
+    val avatar = raidTweet.profileImage.replace("_normal.", "_mini.")
+    val timestamp = Moment(raidTweet.createdAt.getTime).fromNow(true)
+
+    <li class="gbfrf-tweet mdl-list__item">
+      <div class="mdl-list__item-primary-content">
+        <img class="gbfrf-tweet__avatar" src={ avatar }/>
+        <div class="gbfrf-tweet__content">
+          <div>
+            <span>{ raidTweet.screenName }</span>
+            <span class="gbfrf-tweet__timestamp">{ timestamp }</span>
+          </div>
+          {
+            if (raidTweet.text.nonEmpty) List(<div class="gbfrf-tweet__text">{ raidTweet.text }</div>)
+            else List.empty
+          }
+        </div>
+      </div>
+      <div class="gbfrf-tweet__raid-id">
         { raidTweet.raidId }
-      </span>
+      </div>
     </li>
   }
 

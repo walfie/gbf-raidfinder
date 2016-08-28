@@ -59,16 +59,32 @@
         <div class="mdl-layout__content">
           <ul class="mdl-list gbfrf-tweets">
 
-            <li class="mdl-list__item mdl-list__item--two-line gbfrf-tweet">
+
+            <li class="gbfrf-tweet mdl-list__item">
               <span class="mdl-list__item-primary-content">
-                <img class="mdl-list__item-avatar" src="https://pbs.twimg.com/profile_images/682789386161762304/HjcoNtaU_normal.png">
-                <span>walfieee</span>
-                <span class="gbfrf-tweet__timestamp">1m</span>
-                <span class="mdl-list__item-sub-title gbfrf-tweet__text">help this is some kinda long text</span>
+                <img src="https://abs.twimg.com/sticky/default_profile_images/default_profile_3_mini.png" class="gbfrf-tweet__avatar">
+                <span>egg1</span>
+                <span class="gbfrf-tweet__timestamp">11m</span>
               </span>
               <span class="mdl-list__item-secondary-content gbfrf-tweet__raid-id">
-                ABCD1234
+                3B547916
               </span>
+            </li>
+
+            <li class="gbfrf-tweet mdl-list__item">
+              <div class="mdl-list__item-primary-content">
+                <img class="gbfrf-tweet__avatar" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_4_mini.png">
+                <div class="gbfrf-tweet__content">
+                  <div>
+                    <span>egg2</span>
+                    <span class="gbfrf-tweet__timestamp">11m</span>
+                  </div>
+                  <div class="gbfrf-tweet__text">hey hey hey hey hey this text is pretty long.</div>
+                </div>
+              </div>
+              <div class="gbfrf-tweet__raid-id">
+                2B543578
+              </div>
             </li>
 
           </ul>
@@ -77,22 +93,6 @@
       </div>
     </div>
 
-    <div class="gbfrf-column">
-      <div class="mdl-layout mdl-layout--fixed-header">
-        <header class="mdl-layout__header">
-          <div class="mdl-layout__header-row gbfrf-column__header-row">
-            <div class="mdl-layout-title gbfrf-column__header">Lv60 ユグドラシル・マグナ</div>
-            <div class="mdl-layout-spacer"></div>
-            <div class="mdl-button mdl-js-button mdl-button--icon">
-              <i class="material-icons">more_vert</i>
-            </div>
-          </div>
-        </header>
-        <div class="mdl-layout__content">
-          <div style="height:1000px">Hello</div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -151,7 +151,6 @@ showDialogButton.addEventListener('click', function() {
 dialog.querySelector('.js-close-dialog').addEventListener('click', function() {
   dialog.close();
 });
-dialog.showModal();
 </script>
 
 
