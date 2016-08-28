@@ -3,7 +3,7 @@ package walfie.gbf.raidfinder.client
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
-import org.widok.moment._
+import com.momentjs.Moment
 import scala.scalajs.js
 import walfie.gbf.raidfinder.protocol._
 
@@ -17,13 +17,15 @@ object Application extends JSApp {
     val client = new WebSocketRaidFinderClient(websocket, dom.window.localStorage)
     client.updateBosses()
 
-    js.Dynamic.global.moment.updateLocale(
-      "en",
+    // TODO: Put this somewhere else
+    Moment.defineLocale(
+      "en-short",
       js.Dictionary(
+        "parentLocale" -> "en",
         "relativeTime" -> js.Dictionary(
           "future" -> "in %s",
           "past" -> "%s ago",
-          "s" -> "1s",
+          "s" -> "now",
           "ss" -> "%ss",
           "m" -> "1m",
           "mm" -> "%dm",
@@ -39,9 +41,13 @@ object Application extends JSApp {
       )
     )
 
+    // Update currentTime every 30 seconds
+    val currentTime: Var[Double] = Var(js.Date.now())
+    js.timers.setInterval(30000)(currentTime := js.Date.now())
+
     binding.dom.render(
       dom.document.body,
-      views.MainContent.mainContent(client)
+      views.MainContent.mainContent(client, currentTime)
     )
   }
 }

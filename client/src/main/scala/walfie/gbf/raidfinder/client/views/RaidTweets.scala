@@ -1,10 +1,11 @@
 package walfie.gbf.raidfinder.client.views
 
+import com.momentjs.Moment
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom.raw._
-import org.widok.moment._
+import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidFinderClient
 import walfie.gbf.raidfinder.client.syntax.HTMLElementOps
 import walfie.gbf.raidfinder.protocol._
@@ -12,15 +13,16 @@ import walfie.gbf.raidfinder.protocol._
 object RaidTweets {
   @binding.dom
   def raidTweetColumn(
-    raidBoss:   Binding[RaidBoss],
-    raidTweets: BindingSeq[RaidTweetResponse],
-    client:     RaidFinderClient
+    raidBoss:    Binding[RaidBoss],
+    raidTweets:  BindingSeq[RaidTweetResponse],
+    currentTime: Binding[Double],
+    client:      RaidFinderClient
   ): Binding[HTMLDivElement] = {
     <div class="gbfrf-column mdl-shadow--4dp">
       <div class="mdl-layout mdl-layout--fixed-header">
         { raidBossHeader(raidBoss.bind, client).bind }
         <div class="mdl-layout__content">
-          { raidTweetList(raidTweets).bind }
+          { raidTweetList(raidTweets, currentTime).bind }
         </div>
       </div>
     </div>
@@ -28,25 +30,27 @@ object RaidTweets {
 
   @binding.dom
   def raidTweetList(
-    raidTweets: BindingSeq[RaidTweetResponse]
+    raidTweets:  BindingSeq[RaidTweetResponse],
+    currentTime: Binding[Double]
   ): Binding[HTMLUListElement] = {
     <ul class="mdl-list gbfrf-tweets">
-      { for (rt <- raidTweets) yield raidTweetListItem(rt).bind }
+      { raidTweets.map(raidTweet => raidTweetListItem(raidTweet, currentTime).bind) }
     </ul>
   }
 
   @binding.dom
-  def raidTweetListItem(raidTweet: RaidTweetResponse): Binding[HTMLLIElement] = {
+  def raidTweetListItem(raidTweet: RaidTweetResponse, currentTime: Binding[Double]): Binding[HTMLLIElement] = {
     val avatar = raidTweet.profileImage.replace("_normal.", "_mini.")
-    val timestamp = Moment(raidTweet.createdAt.getTime).fromNow(true)
 
     <li class="gbfrf-tweet mdl-list__item">
       <div class="mdl-list__item-primary-content">
         <img class="gbfrf-tweet__avatar" src={ avatar }/>
         <div class="gbfrf-tweet__content">
           <div>
-            <span>{ raidTweet.screenName }</span>
-            <span class="gbfrf-tweet__timestamp">{ timestamp }</span>
+            <span class="gbfrf-tweet__username">{ raidTweet.screenName }</span>
+            <span class="gbfrf-tweet__timestamp">
+              { Moment(raidTweet.createdAt.getTime).from(currentTime.bind, true) }
+            </span>
           </div>
           {
             if (raidTweet.text.nonEmpty) List(<div class="gbfrf-tweet__text">{ raidTweet.text }</div>)

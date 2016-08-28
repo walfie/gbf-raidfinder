@@ -48,8 +48,13 @@ lazy val client = (project in file("client"))
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.1",
       "com.thoughtworks.binding" %%% "dom" % "9.0.0",
-      "io.github.widok" %%% "scala-js-momentjs" % "0.1.5",
+      "org.webjars.npm" % "moment" % Versions.MomentJS,
       compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+    ),
+    jsDependencies ++= Seq(
+      "org.webjars.npm" % "moment" % Versions.MomentJS
+        /         s"${Versions.MomentJS}/moment.js"
+        minified "min/moment.min.js"
     )
   )
   .dependsOn(protocolJS)

@@ -61,6 +61,7 @@ html, body {
 .gbfrf-tweet {
   border-bottom: 1px dashed grey;
   transition: background-color 0.3s ease;
+  letter-spacing: 0.02em !important;
 }
 
 .gbfrf-tweet:hover {
@@ -83,6 +84,10 @@ img.gbfrf-tweet__avatar {
 .gbfrf-tweet__content {
   display: flex;
   flex-direction: column;
+}
+
+.gbfrf-tweet__username {
+  /** Nothing. But it exists. */
 }
 
 .gbfrf-tweet__text {

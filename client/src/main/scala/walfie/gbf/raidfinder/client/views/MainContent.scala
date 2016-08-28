@@ -10,7 +10,7 @@ import walfie.gbf.raidfinder.protocol._
 
 object MainContent {
   @binding.dom
-  def mainContent(client: RaidFinderClient): Binding[HTMLDivElement] = {
+  def mainContent(client: RaidFinderClient, currentTime: Binding[Double]): Binding[HTMLDivElement] = {
     val dialog = Binding(BossSelectorDialog.dialogElement(client).bind)
 
     <div class="gbfrf-main-content">
@@ -19,7 +19,7 @@ object MainContent {
       <div class="gbfrf-columns">
         {
           client.state.followedBosses.map { column =>
-            RaidTweets.raidTweetColumn(column.raidBoss, column.raidTweets, client).bind
+            RaidTweets.raidTweetColumn(column.raidBoss, column.raidTweets, currentTime, client).bind
           }
         }
       </div>
