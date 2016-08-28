@@ -12,8 +12,7 @@ import walfie.gbf.raidfinder.protocol._
 
 object BossSelectorDialog {
   @binding.dom
-  def dialogElement(handler: ResponseHandler, client: RaidFinderClient): Binding[Element] = {
-    // TODO: Use implicit view to allow HTML literal <dialog> element
+  def dialogElement(client: RaidFinderClient): Binding[Element] = {
     val elem = dom.document.createElement("dialog")
     elem.classList.add("mdl-dialog")
     elem.classList.add("gbfrf-follow__dialog")
@@ -25,16 +24,16 @@ object BossSelectorDialog {
         <div class="gbfrf-follow__content">
           <ul class="mdl-list" style="padding: 0; margin: 0;">
             {
-              // TODO: Don't include bosses we're already following
-              handler.allBosses.map { boss =>
-                // TODO: Combine addColumn and follow
+              // TODO: Don't include bosses we're already following, or old bosses
+              // TODO: Sort bosses by level
+              client.state.allBosses.map { bossColumn =>
+                val boss = bossColumn.raidBoss.bind
+                val smallImage = boss.image.map(_ + ":thumb")
                 val onClick = { e: Event =>
-                  // TODO: local storage
                   client.follow(boss.bossName)
-                  handler.addColumn(boss.bossName)
-                  closeModal(e) // TODO: Change this to not require an event
+                  closeModal(e)
                 }
-                bossListItem(boss.bossName, boss.image, onClick).bind
+                bossListItem(boss.bossName, smallImage, onClick).bind
               }
             }
           </ul>
@@ -67,6 +66,7 @@ object BossSelectorDialog {
     </div>
   }
 
+  // TODO: Use event delegation on the parent instead of onclick
   @binding.dom
   def bossListItem(bossName: String, image: Option[String], onClick: Event => Unit): Binding[HTMLLIElement] = {
     val elem =
@@ -74,7 +74,7 @@ object BossSelectorDialog {
         <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">{ bossName }</span>
       </li>
 
-    image.foreach(elem.backgroundImage(_, 0.2, cover = false))
+    image.foreach(elem.backgroundImage(_, 0.25))
 
     elem
   }

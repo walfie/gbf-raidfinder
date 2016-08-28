@@ -1,64 +1,157 @@
 package walfie.gbf.raidfinder.client
 
+import com.thoughtworks.binding.Binding._
 import java.nio.ByteBuffer
 import org.scalajs.dom
+import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
+import walfie.gbf.raidfinder.client.syntax.BufferOps
 import walfie.gbf.raidfinder.protocol._
-import walfie.gbf.raidfinder.protocol.implicits._
-
-import js.ArrayOps
-import js.JSConverters._
-import js.typedarray._
-import js.typedarray.TypedArrayBufferOps.bufferOps
 
 trait RaidFinderClient {
-  def getBosses(): Unit
-  def send(request: Request): Unit
-  def follow(bossNames: BossName*): Unit
-  def close(): Unit
+  def state: RaidFinderClient.State
+
+  def updateBosses(): Unit
+  def follow(bossName: BossName): Unit
+  def unfollow(bossName: BossName): Unit
+  def clear(bossName: BossName): Unit
+  def move(bossName: BossName, displacement: Int): Unit
+
+  def truncateColumns(maxColumnSize: Int): Unit
 }
 
 class WebSocketRaidFinderClient(
-  websocketUrl:    String,
-  responseHandler: ResponseHandler
-) extends RaidFinderClient {
-  private var websocketIsOpen = false
-  private var websocketSendQueue = js.Array[ArrayBuffer]()
+  websocket: WebSocketClient, storage: Storage
+) extends RaidFinderClient with WebSocketSubscriber {
+  import RaidFinderClient._
 
-  private val websocket = new dom.WebSocket(websocketUrl, js.Array("binary"))
-  websocket.binaryType = "arraybuffer"
+  websocket.setSubscriber(Some(this))
 
-  websocket.onopen = { _: dom.Event =>
-    websocketIsOpen = true
-    websocketSendQueue.foreach(websocket.send)
-    websocketSendQueue = js.Array()
+  override def onWebSocketClose(): Unit = {
+    println("Websocket closed") // TODO: Better handling
   }
 
-  websocket.onmessage = { e: dom.MessageEvent =>
-    val data = e.data match {
-      case buffer: ArrayBuffer => new Int8Array(buffer).toArray
+  private var allBossesMap: Map[BossName, RaidBossColumn] = Map.empty
+
+  private val followedBossesStorageKey = "followedBosses"
+
+  // Set initial state to empty, then load from localStorage
+  val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
+  Option(storage.getItem(followedBossesStorageKey)).foreach(_.split(",").foreach(follow))
+
+  private def updateLocalStorage(): Unit = {
+    val bossNames = state.followedBosses.get.map(_.raidBoss.get.bossName)
+    if (bossNames.isEmpty)
+      storage.removeItem(followedBossesStorageKey)
+    else
+      storage.setItem(followedBossesStorageKey, bossNames.mkString(","))
+  }
+
+  def updateBosses(): Unit = {
+    websocket.send(RaidBossesRequest())
+  }
+
+  /** Get the column number associated with a raid boss */
+  private def columnIndex(bossName: BossName): Option[Int] = {
+    val index = state.followedBosses.get.indexWhere(_.raidBoss.get.bossName == bossName)
+    if (index < 0) None else Some(index)
+  }
+
+  def follow(bossName: BossName): Unit = if (columnIndex(bossName).isEmpty) {
+    websocket.send(SubscribeRequest(bossNames = List(bossName)))
+
+    // If it's not a boss we know about, create an empty column for it
+    val column: RaidBossColumn = allBossesMap.getOrElse(bossName, {
+      val newColumn = RaidBossColumn.empty(bossName)
+      allBossesMap = allBossesMap.updated(bossName, newColumn)
+
+      state.allBosses.get := allBossesMap.values
+      newColumn
+    })
+
+    state.followedBosses.get += column
+    updateLocalStorage()
+  }
+
+  def unfollow(bossName: BossName): Unit = {
+    websocket.send(UnsubscribeRequest(bossNames = List(bossName)))
+
+    val followedBosses = state.followedBosses.get
+    columnIndex(bossName).foreach(followedBosses.remove)
+    allBossesMap.get(bossName).foreach(_.clear())
+
+    updateLocalStorage()
+  }
+
+  def clear(bossName: BossName): Unit = {
+    allBossesMap.get(bossName).foreach(_.clear())
+  }
+
+  def move(bossName: BossName, displacement: Int): Unit = {
+    val followedBosses = state.followedBosses.get
+    columnIndex(bossName).foreach { index =>
+      val destinationIndex = index + displacement
+
+      if (destinationIndex >= 0 && destinationIndex < followedBosses.size) {
+        val thisColumn = followedBosses(index)
+        val thatColumn = followedBosses(destinationIndex)
+        followedBosses.update(destinationIndex, thisColumn)
+        followedBosses.update(index, thatColumn)
+      }
     }
-    val message = ResponseMessage.parseFrom(data) // TODO: validate
 
-    message.toResponse.foreach(responseHandler.handleResponse)
+    updateLocalStorage()
   }
 
-  def send(request: Request): Unit = {
-    val messageBytes = request.toMessage.toByteArray.toJSArray
-    val buffer = TypedArrayBuffer.wrap(new Int8Array(messageBytes)).arrayBuffer
-
-    if (websocketIsOpen) websocket.send(buffer)
-    else websocketSendQueue.push(buffer)
+  def truncateColumns(maxColumnSize: Int): Unit = {
+    allBossesMap.values.foreach { column =>
+      val tweets = column.raidTweets.get
+      if (tweets.length > maxColumnSize) {
+        tweets := tweets.take(maxColumnSize)
+      }
+    }
   }
 
-  def getBosses(): Unit = {
-    send(RaidBossesRequest())
+  override def onWebSocketMessage(message: Response): Unit = message match {
+    case r: RaidBossesResponse =>
+      r.raidBosses.foreach { raidBoss =>
+        val bossName = raidBoss.bossName
+        allBossesMap.get(bossName) match {
+          // New raid boss that we don't yet know about
+          case None =>
+            val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+            allBossesMap = allBossesMap.updated(bossName, newColumn)
+            state.allBosses.get := allBossesMap.values
+
+          // Update existing raid boss data
+          case Some(column) => column.raidBoss := raidBoss
+        }
+      }
+
+    case r: SubscriptionStatusResponse =>
+    // Ignore. Also TODO: Figure out why this doesn't come back consistently
+
+    case r: RaidTweetResponse =>
+      allBossesMap.get(r.bossName).foreach(column => r +=: column.raidTweets.get)
+  }
+}
+
+object RaidFinderClient {
+  case class RaidBossColumn(
+    raidBoss:   Var[RaidBoss],
+    raidTweets: Vars[RaidTweetResponse]
+  ) { def clear(): Unit = raidTweets.get.clear() }
+
+  object RaidBossColumn {
+    def empty(bossName: BossName): RaidBossColumn = {
+      val raidBoss = RaidBoss(bossName = bossName)
+      RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+    }
   }
 
-  def follow(bossNames: BossName*): Unit = {
-    send(SubscribeRequest(bossNames = bossNames))
-  }
-
-  def close(): Unit = websocket.close()
+  case class State(
+    allBosses:      Vars[RaidBossColumn],
+    followedBosses: Vars[RaidBossColumn]
+  )
 }
 

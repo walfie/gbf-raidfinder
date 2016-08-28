@@ -3,7 +3,7 @@ package walfie.gbf.raidfinder.client
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
-import org.widok.moment._
+import com.momentjs.Moment
 import scala.scalajs.js
 import walfie.gbf.raidfinder.protocol._
 
@@ -13,18 +13,19 @@ import js.JSApp
 object Application extends JSApp {
   def main(): Unit = {
     val url = "ws://localhost:9000/ws/raids"
-    val handler = new DefaultResponseHandler
-    val client = new WebSocketRaidFinderClient(url, handler)
-    client.getBosses()
-    client.follow("Lv60 ユグドラシル・マグナ", "Lv75 シュヴァリエ・マグナ")
+    val websocket = new BinaryProtobufWebSocketClient(url)
+    val client = new WebSocketRaidFinderClient(websocket, dom.window.localStorage)
+    client.updateBosses()
 
-    js.Dynamic.global.moment.updateLocale(
-      "en",
+    // TODO: Put this somewhere else
+    Moment.defineLocale(
+      "en-short",
       js.Dictionary(
+        "parentLocale" -> "en",
         "relativeTime" -> js.Dictionary(
           "future" -> "in %s",
           "past" -> "%s ago",
-          "s" -> "1s",
+          "s" -> "now",
           "ss" -> "%ss",
           "m" -> "1m",
           "mm" -> "%dm",
@@ -40,9 +41,18 @@ object Application extends JSApp {
       )
     )
 
+    val notification = new views.SnackbarNotification
+
+    // Update currentTime every 30 seconds
+    val currentTime: Var[Double] = Var(js.Date.now())
+    js.timers.setInterval(30000) {
+      client.truncateColumns(50)
+      currentTime := js.Date.now()
+    }
+
     binding.dom.render(
       dom.document.body,
-      views.MainContent.mainContent(handler, client)
+      views.MainContent.mainContent(client, notification, currentTime)
     )
   }
 }
