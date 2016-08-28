@@ -40,7 +40,7 @@ object RaidTweets {
     <li class="mdl-list__item mdl-list__item--two-line gbfrf-tweet">
       <span class="mdl-list__item-primary-content">
         <!-- // TODO: Handle long names/text. Exclude second row if no extra text. -->
-        <img class="gbfrf-tweet__avatar mdl-list__item-avatar" src={ raidTweet.profileImage }/>
+        <img class="gbfrf-tweet__avatar" src={ raidTweet.profileImage.replace("_normal.", "_mini.") }/>
         <span>{ raidTweet.screenName }</span>
         <!-- // TODO: Better relative datetime -->
         <span class="gbfrf-tweet__timestamp">{ Moment(raidTweet.createdAt.getTime).fromNow(true) }</span>
