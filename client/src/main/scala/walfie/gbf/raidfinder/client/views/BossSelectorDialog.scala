@@ -66,6 +66,7 @@ object BossSelectorDialog {
     </div>
   }
 
+  // TODO: Use event delegation on the parent instead of onclick
   @binding.dom
   def bossListItem(bossName: String, image: Option[String], onClick: Event => Unit): Binding[HTMLLIElement] = {
     val elem =

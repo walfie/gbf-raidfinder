@@ -48,11 +48,9 @@ object RaidTweets {
       // TODO: Put these IDs in a central place instead of hardcoding them
       for {
         target <- targetOpt
-        parent <- findParent(target, _.classList.contains("gbfrf-js-tweet"))
-        raidIdNode <- Option(parent.querySelector(".gbfrf-js-raidId"))
-      } {
-        println(raidIdNode.innerHTML.trim)
-      }
+        element <- findParent(target, _.classList.contains("gbfrf-js-tweet"))
+        raidId <- Option(element.getAttribute("data-raidId"))
+      } yield raidId
     })
 
     list
@@ -76,7 +74,7 @@ object RaidTweets {
       <img class={ imageClass } src={ url }/>
     }
 
-    <li class="gbfrf-tweet gbfrf-js-tweet mdl-list__item">
+    <li class="gbfrf-tweet gbfrf-js-tweet mdl-list__item" data:data-raidId={ raidTweet.raidId }>
       <div class="mdl-list__item-primary-content">
         { avatar }
         <div class="gbfrf-tweet__content">
@@ -92,7 +90,7 @@ object RaidTweets {
           }
         </div>
       </div>
-      <div class="gbfrf-tweet__raid-id gbfrf-js-raidId">
+      <div class="gbfrf-tweet__raid-id">
         { raidTweet.raidId }
       </div>
     </li>
