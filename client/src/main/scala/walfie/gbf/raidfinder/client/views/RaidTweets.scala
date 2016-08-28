@@ -4,6 +4,7 @@ import com.momentjs.Moment
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
+import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidFinderClient
@@ -33,9 +34,37 @@ object RaidTweets {
     raidTweets:  BindingSeq[RaidTweetResponse],
     currentTime: Binding[Double]
   ): Binding[HTMLUListElement] = {
-    <ul class="mdl-list gbfrf-tweets">
-      { raidTweets.map(raidTweet => raidTweetListItem(raidTweet, currentTime).bind) }
-    </ul>
+    val list =
+      <ul class="mdl-list gbfrf-tweets">
+        { raidTweets.map(raidTweet => raidTweetListItem(raidTweet, currentTime).bind) }
+      </ul>
+
+    list.addEventListener("click", { e: Event =>
+      val targetOpt = Option(e.target) match {
+        case Some(e: Element) => Some(e)
+        case _ => None
+      }
+
+      // TODO: Put these IDs in a central place instead of hardcoding them
+      for {
+        target <- targetOpt
+        parent <- findParent(target, _.classList.contains("gbfrf-js-tweet"))
+        raidIdNode <- Option(parent.querySelector(".gbfrf-js-raidId"))
+      } {
+        println(raidIdNode.innerHTML.trim)
+      }
+    })
+
+    list
+  }
+
+  @annotation.tailrec
+  private def findParent(element: Element, predicate: Element => Boolean): Option[Element] = {
+    if (predicate(element)) Some(element)
+    else Option(element.parentNode) match {
+      case Some(parentElement: Element) => findParent(parentElement, predicate)
+      case _ => None
+    }
   }
 
   @binding.dom
@@ -47,7 +76,7 @@ object RaidTweets {
       <img class={ imageClass } src={ url }/>
     }
 
-    <li class="gbfrf-tweet mdl-list__item">
+    <li class="gbfrf-tweet gbfrf-js-tweet mdl-list__item">
       <div class="mdl-list__item-primary-content">
         { avatar }
         <div class="gbfrf-tweet__content">
@@ -63,7 +92,7 @@ object RaidTweets {
           }
         </div>
       </div>
-      <div class="gbfrf-tweet__raid-id">
+      <div class="gbfrf-tweet__raid-id gbfrf-js-raidId">
         { raidTweet.raidId }
       </div>
     </li>
