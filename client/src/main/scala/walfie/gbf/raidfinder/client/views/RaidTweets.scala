@@ -78,8 +78,8 @@ object RaidTweets {
     <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" data:for={ menuId(bossName) }>
       { menuItem("Clear", "clear_all", _ => client.clear(bossName)).bind }
       { menuItem("Unfollow", "delete", _ => client.unfollow(bossName)).bind }
-      { menuItem("Move Left", "keyboard_arrow_left", _ => ()).bind }
-      { menuItem("Move Right", "keyboard_arrow_right", _ => ()).bind }
+      { menuItem("Move Left", "keyboard_arrow_left", _ => client.move(bossName, -1)).bind }
+      { menuItem("Move Right", "keyboard_arrow_right", _ => client.move(bossName, 1)).bind }
     </ul>
   }
 

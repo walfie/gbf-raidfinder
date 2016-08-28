@@ -14,27 +14,7 @@ trait RaidFinderClient {
   def follow(bossName: BossName): Unit
   def unfollow(bossName: BossName): Unit
   def clear(bossName: BossName): Unit
-}
-
-object RaidFinderClient {
-  case class RaidBossColumn(
-    raidBoss:   Var[RaidBoss],
-    raidTweets: Vars[RaidTweetResponse]
-  ) {
-    def clear(): Unit = raidTweets.get.clear()
-  }
-
-  object RaidBossColumn {
-    def empty(bossName: BossName): RaidBossColumn = {
-      val raidBoss = RaidBoss(bossName = bossName)
-      RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
-    }
-  }
-
-  case class State(
-    allBosses: Vars[RaidBossColumn],
-    following: Vars[RaidBossColumn]
-  )
+  def move(bossName: BossName, displacement: Int): Unit
 }
 
 class WebSocketRaidFinderClient(
@@ -83,7 +63,20 @@ class WebSocketRaidFinderClient(
   }
 
   def clear(bossName: BossName): Unit = {
-    allBossesMap.get(bossName).foreach(_.clear)
+    allBossesMap.get(bossName).foreach(_.clear())
+  }
+
+  def move(bossName: BossName, displacement: Int): Unit = {
+    val following = state.following.get
+    val index = following.indexWhere(_.raidBoss.get.bossName == bossName)
+    val destinationIndex = index + displacement
+
+    if (destinationIndex >= 0 && destinationIndex < following.size) {
+      val thisColumn = following(index)
+      val thatColumn = following(destinationIndex)
+      following.update(destinationIndex, thisColumn)
+      following.update(index, thatColumn)
+    }
   }
 
   override def onWebSocketMessage(message: Response): Unit = message match {
@@ -106,8 +99,26 @@ class WebSocketRaidFinderClient(
     // Ignore. Also TODO: Figure out why this doesn't come back consistently
 
     case r: RaidTweetResponse =>
-      // TODO: Check if following
       allBossesMap.get(r.bossName).foreach(column => r +=: column.raidTweets.get)
   }
+}
+
+object RaidFinderClient {
+  case class RaidBossColumn(
+    raidBoss: Var[RaidBoss],
+    raidTweets: Vars[RaidTweetResponse]
+  ) { def clear(): Unit = raidTweets.get.clear() }
+
+  object RaidBossColumn {
+    def empty(bossName: BossName): RaidBossColumn = {
+      val raidBoss = RaidBoss(bossName = bossName)
+      RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+    }
+  }
+
+  case class State(
+    allBosses: Vars[RaidBossColumn],
+    following: Vars[RaidBossColumn]
+  )
 }
 
