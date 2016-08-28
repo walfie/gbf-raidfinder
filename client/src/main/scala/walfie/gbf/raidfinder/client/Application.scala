@@ -43,7 +43,10 @@ object Application extends JSApp {
 
     // Update currentTime every 30 seconds
     val currentTime: Var[Double] = Var(js.Date.now())
-    js.timers.setInterval(30000)(currentTime := js.Date.now())
+    js.timers.setInterval(30000) {
+      client.truncateColumns(50)
+      currentTime := js.Date.now()
+    }
 
     binding.dom.render(
       dom.document.body,

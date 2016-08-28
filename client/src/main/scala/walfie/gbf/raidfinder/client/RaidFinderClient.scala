@@ -16,6 +16,8 @@ trait RaidFinderClient {
   def unfollow(bossName: BossName): Unit
   def clear(bossName: BossName): Unit
   def move(bossName: BossName, displacement: Int): Unit
+
+  def truncateColumns(maxColumnSize: Int): Unit
 }
 
 class WebSocketRaidFinderClient(
@@ -99,6 +101,15 @@ class WebSocketRaidFinderClient(
     }
 
     updateLocalStorage()
+  }
+
+  def truncateColumns(maxColumnSize: Int): Unit = {
+    allBossesMap.values.foreach { column =>
+      val tweets = column.raidTweets.get
+      if (tweets.length > maxColumnSize) {
+        tweets := tweets.take(maxColumnSize)
+      }
+    }
   }
 
   override def onWebSocketMessage(message: Response): Unit = message match {
