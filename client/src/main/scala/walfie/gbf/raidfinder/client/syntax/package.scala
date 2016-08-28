@@ -29,10 +29,16 @@ package object syntax {
   }
 
   implicit class BufferOps[T](val buffer: Buffer[T]) extends AnyVal {
-    def :=(elements: TraversableOnce[T]) = {
+    /** Overwrite the contents of a buffer */
+    def :=(elements: TraversableOnce[T]): Buffer[T] = {
       buffer.clear()
       buffer ++= elements
     }
+  }
+
+  implicit class StringOps(val string: String) extends AnyVal {
+    def addIf(condition: Boolean, s: String): String =
+      if (condition) s"$string $s" else string
   }
 }
 

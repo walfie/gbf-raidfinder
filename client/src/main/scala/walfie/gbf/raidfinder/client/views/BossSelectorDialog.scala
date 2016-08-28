@@ -13,7 +13,6 @@ import walfie.gbf.raidfinder.protocol._
 object BossSelectorDialog {
   @binding.dom
   def dialogElement(client: RaidFinderClient): Binding[Element] = {
-    // TODO: Use implicit view to allow HTML literal <dialog> element
     val elem = dom.document.createElement("dialog")
     elem.classList.add("mdl-dialog")
     elem.classList.add("gbfrf-follow__dialog")

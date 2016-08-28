@@ -7,7 +7,7 @@ import com.thoughtworks.binding.Binding._
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidFinderClient
-import walfie.gbf.raidfinder.client.syntax.HTMLElementOps
+import walfie.gbf.raidfinder.client.syntax.{HTMLElementOps, StringOps}
 import walfie.gbf.raidfinder.protocol._
 
 object RaidTweets {
@@ -40,11 +40,16 @@ object RaidTweets {
 
   @binding.dom
   def raidTweetListItem(raidTweet: RaidTweetResponse, currentTime: Binding[Double]): Binding[HTMLLIElement] = {
-    val avatar = raidTweet.profileImage.replace("_normal.", "_mini.")
+    val hasText = raidTweet.text.nonEmpty
+    val avatar = {
+      val url = raidTweet.profileImage.replace("_normal.", "_mini.")
+      val imageClass = "gbfrf-tweet__avatar".addIf(hasText, "gbfrf-tweet__avatar--offset")
+      <img class={ imageClass } src={ url }/>
+    }
 
     <li class="gbfrf-tweet mdl-list__item">
       <div class="mdl-list__item-primary-content">
-        <img class="gbfrf-tweet__avatar" src={ avatar }/>
+        { avatar }
         <div class="gbfrf-tweet__content">
           <div>
             <span class="gbfrf-tweet__username">{ raidTweet.screenName }</span>
@@ -53,7 +58,7 @@ object RaidTweets {
             </span>
           </div>
           {
-            if (raidTweet.text.nonEmpty) List(<div class="gbfrf-tweet__text">{ raidTweet.text }</div>)
+            if (hasText) List(<div class="gbfrf-tweet__text mdl-shadow--2dp">{ raidTweet.text }</div>)
             else List.empty
           }
         </div>

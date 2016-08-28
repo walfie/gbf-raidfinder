@@ -44,7 +44,7 @@ object Application extends JSApp {
     // Update currentTime every 30 seconds
     val currentTime: Var[Double] = Var(js.Date.now())
     js.timers.setInterval(30000) {
-      client.truncateColumns(50)
+      client.truncateColumns(100)
       currentTime := js.Date.now()
     }
 
