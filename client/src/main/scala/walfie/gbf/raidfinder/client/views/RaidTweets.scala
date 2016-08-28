@@ -9,6 +9,7 @@ import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidFinderClient
 import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps, StringOps}
+import walfie.gbf.raidfinder.client.Util
 import walfie.gbf.raidfinder.protocol._
 
 object RaidTweets {
@@ -41,13 +42,11 @@ object RaidTweets {
 
     list.addEventListener("click", { e: Event =>
       // TODO: Put these IDs in a central place instead of hardcoding them
-      val raidId = for {
+      for {
         target <- e.targetElement
         element <- target.findParent(_.classList.contains("gbfrf-js-tweet"))
         raidId <- Option(element.getAttribute("data-raidId"))
-      } yield raidId
-
-      println(raidId)
+      } yield Util.copy(raidId) // TODO: Popup on success
     })
 
     list

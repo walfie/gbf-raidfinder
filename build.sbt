@@ -53,7 +53,7 @@ lazy val client = (project in file("client"))
     ),
     jsDependencies ++= Seq(
       "org.webjars.npm" % "moment" % Versions.MomentJS
-        /         s"${Versions.MomentJS}/moment.js"
+        /        s"${Versions.MomentJS}/moment.js"
         minified "min/moment.min.js"
     )
   )
