@@ -14,7 +14,7 @@ object Application extends JSApp {
   def main(): Unit = {
     val url = "ws://localhost:9000/ws/raids"
     val websocket = new BinaryProtobufWebSocketClient(url)
-    val client = new WebSocketRaidFinderClient(websocket)
+    val client = new WebSocketRaidFinderClient(websocket, dom.window.localStorage)
     client.updateBosses()
 
     js.Dynamic.global.moment.updateLocale(

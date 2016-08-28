@@ -3,6 +3,7 @@ package walfie.gbf.raidfinder.client
 import com.thoughtworks.binding.Binding._
 import java.nio.ByteBuffer
 import org.scalajs.dom
+import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.syntax.BufferOps
 import walfie.gbf.raidfinder.protocol._
@@ -18,7 +19,7 @@ trait RaidFinderClient {
 }
 
 class WebSocketRaidFinderClient(
-  websocket: WebSocketClient
+  websocket: WebSocketClient, storage: Storage
 ) extends RaidFinderClient with WebSocketSubscriber {
   import RaidFinderClient._
 
@@ -30,8 +31,19 @@ class WebSocketRaidFinderClient(
 
   private var allBossesMap: Map[BossName, RaidBossColumn] = Map.empty
 
+  private val FollowingStorageKey = "following"
+
   // TODO: Initialize following to value in local storage
   val state = State(allBosses = Vars.empty, following = Vars.empty)
+  Option(storage.getItem(FollowingStorageKey)).foreach(_.split(",").foreach(follow))
+
+  private def updateLocalStorage(): Unit = {
+    val bossNames = state.following.get.map(_.raidBoss.get.bossName)
+    if (bossNames.isEmpty)
+      storage.removeItem(FollowingStorageKey)
+    else
+      storage.setItem(FollowingStorageKey, bossNames.mkString(","))
+  }
 
   def updateBosses(): Unit = {
     websocket.send(RaidBossesRequest())
@@ -51,6 +63,7 @@ class WebSocketRaidFinderClient(
     })
 
     state.following.get += column
+    updateLocalStorage()
   }
 
   def unfollow(bossName: BossName): Unit = {
@@ -60,6 +73,8 @@ class WebSocketRaidFinderClient(
     val index = following.indexWhere(_.raidBoss.get.bossName == bossName)
     if (index >= 0) following.remove(index)
     allBossesMap.get(bossName).foreach(_.clear())
+
+    updateLocalStorage()
   }
 
   def clear(bossName: BossName): Unit = {
@@ -105,7 +120,7 @@ class WebSocketRaidFinderClient(
 
 object RaidFinderClient {
   case class RaidBossColumn(
-    raidBoss: Var[RaidBoss],
+    raidBoss:   Var[RaidBoss],
     raidTweets: Vars[RaidTweetResponse]
   ) { def clear(): Unit = raidTweets.get.clear() }
 
