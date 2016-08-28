@@ -41,6 +41,8 @@ object Application extends JSApp {
       )
     )
 
+    val notification = new views.SnackbarNotification
+
     // Update currentTime every 30 seconds
     val currentTime: Var[Double] = Var(js.Date.now())
     js.timers.setInterval(30000) {
@@ -50,7 +52,7 @@ object Application extends JSApp {
 
     binding.dom.render(
       dom.document.body,
-      views.MainContent.mainContent(client, currentTime)
+      views.MainContent.mainContent(client, notification, currentTime)
     )
   }
 }

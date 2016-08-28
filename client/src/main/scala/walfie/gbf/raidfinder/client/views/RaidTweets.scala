@@ -15,16 +15,17 @@ import walfie.gbf.raidfinder.protocol._
 object RaidTweets {
   @binding.dom
   def raidTweetColumn(
-    raidBoss:    Binding[RaidBoss],
-    raidTweets:  BindingSeq[RaidTweetResponse],
-    currentTime: Binding[Double],
-    client:      RaidFinderClient
+    raidBoss:     Binding[RaidBoss],
+    raidTweets:   BindingSeq[RaidTweetResponse],
+    currentTime:  Binding[Double],
+    client:       RaidFinderClient,
+    notification: Notification
   ): Binding[HTMLDivElement] = {
     <div class="gbfrf-column mdl-shadow--4dp">
       <div class="mdl-layout mdl-layout--fixed-header">
         { raidBossHeader(raidBoss.bind, client).bind }
         <div class="mdl-layout__content">
-          { raidTweetList(raidTweets, currentTime).bind }
+          { raidTweetList(raidTweets, currentTime, notification).bind }
         </div>
       </div>
     </div>
@@ -32,8 +33,9 @@ object RaidTweets {
 
   @binding.dom
   def raidTweetList(
-    raidTweets:  BindingSeq[RaidTweetResponse],
-    currentTime: Binding[Double]
+    raidTweets:   BindingSeq[RaidTweetResponse],
+    currentTime:  Binding[Double],
+    notification: Notification
   ): Binding[HTMLUListElement] = {
     val list =
       <ul class="mdl-list gbfrf-tweets">
@@ -46,7 +48,9 @@ object RaidTweets {
         target <- e.targetElement
         element <- target.findParent(_.classList.contains("gbfrf-js-tweet"))
         raidId <- Option(element.getAttribute("data-raidId"))
-      } yield Util.copy(raidId) // TODO: Popup on success
+      } yield {
+        if (Util.copy(raidId)) notification.enqueue(s"Copied $raidId to clipboard")
+      }
     })
 
     list
@@ -107,10 +111,10 @@ object RaidTweets {
   @binding.dom
   def raidBossHeaderMenu(bossName: String, client: RaidFinderClient): Binding[HTMLUListElement] = {
     <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" data:for={ menuId(bossName) }>
-      { menuItem("Clear", "clear_all", _ => client.clear(bossName)).bind }
-      { menuItem("Unfollow", "delete", _ => client.unfollow(bossName)).bind }
       { menuItem("Move Left", "keyboard_arrow_left", _ => client.move(bossName, -1)).bind }
       { menuItem("Move Right", "keyboard_arrow_right", _ => client.move(bossName, 1)).bind }
+      { menuItem("Clear", "clear_all", _ => client.clear(bossName)).bind }
+      { menuItem("Unfollow", "delete", _ => client.unfollow(bossName)).bind }
     </ul>
   }
 
