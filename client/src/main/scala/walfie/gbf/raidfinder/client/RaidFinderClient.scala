@@ -13,6 +13,7 @@ trait RaidFinderClient {
   def updateBosses(): Unit
   def follow(bossName: BossName): Unit
   def unfollow(bossName: BossName): Unit
+  def clear(bossName: BossName): Unit
 }
 
 object RaidFinderClient {
@@ -79,6 +80,10 @@ class WebSocketRaidFinderClient(
     val index = following.indexWhere(_.raidBoss.get.bossName == bossName)
     if (index >= 0) following.remove(index)
     allBossesMap.get(bossName).foreach(_.clear())
+  }
+
+  def clear(bossName: BossName): Unit = {
+    allBossesMap.get(bossName).foreach(_.clear)
   }
 
   override def onWebSocketMessage(message: Response): Unit = message match {
