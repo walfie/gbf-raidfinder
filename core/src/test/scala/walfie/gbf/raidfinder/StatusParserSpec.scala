@@ -21,10 +21,15 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       createdAt = now
     )
 
-    val expectedImageUrl = "http://example.com/raid-image.png"
+    val expectedRaidBoss = RaidBoss(
+      name = "Lv60 Ozorotter",
+      level = 60,
+      image = Some("http://example.com/raid-image.png"),
+      lastSeen = now
+    )
 
     StatusParser.parse(mockStatus()) shouldBe Some {
-      RaidInfo(expectedRaidTweet, Some(expectedImageUrl))
+      RaidInfo(expectedRaidTweet, expectedRaidBoss)
     }
   }
 
@@ -43,7 +48,7 @@ class StatusParserSpec extends StatusParserSpecHelpers {
 
     val parsed = StatusParser.parse(status)
     parsed should not be empty
-    parsed.get.image shouldBe empty
+    parsed.foreach(_.boss.image shouldBe empty)
   }
 
   "return None if non-official client" in {

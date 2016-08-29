@@ -2,10 +2,14 @@ package walfie.gbf.raidfinder
 
 import twitter4j._
 import walfie.gbf.raidfinder.domain._
+import scala.util.Try
 
 object StatusParser {
   /** Regex to match Japanese raid request tweets */
   val RaidRegex = "(.*)参加者募集！参戦ID：([0-9A-F]+)\n(.+)\n?.*".r
+
+  /** Regex to get boss level from full name */
+  val BossRegex = "Lvl?([0-9]+) (.*)".r
 
   /** The source value for the official Granblue Twitter app */
   val GranblueSource =
@@ -27,9 +31,21 @@ object StatusParser {
         createdAt = status.getCreatedAt
       )
 
-      val image = getImageFromStatus(status)
+      val defaultLevel = 0
+      val bossLevel = bossName match {
+        case BossRegex(level, name) =>
+          Try(level.toInt).toOption.getOrElse(defaultLevel)
+        case _ => defaultLevel
+      }
 
-      Some(RaidInfo(raidTweet, image))
+      val raidBoss = RaidBoss(
+        name = bossName,
+        level = bossLevel,
+        image = getImageFromStatus(status),
+        lastSeen = status.getCreatedAt
+      )
+
+      Some(RaidInfo(raidTweet, raidBoss))
 
     case _ => None
   }

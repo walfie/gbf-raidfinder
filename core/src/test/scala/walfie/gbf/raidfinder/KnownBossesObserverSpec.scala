@@ -30,7 +30,7 @@ class KnownBossesObserverSpec extends KnownBossesObserverSpecHelpers {
     observer.get shouldBe Map(
       "A" -> bosses1.last,
       "B" -> bosses2.last
-    ).mapValues(RaidBoss.fromRaidInfo)
+    ).mapValues(_.boss)
     cancelable.cancel()
   }
 }
@@ -46,7 +46,8 @@ trait KnownBossesObserverSpecHelpers extends FreeSpec with MockitoSugar with Eve
     val tweet = mock[RaidTweet]
     when(tweet.bossName) thenReturn bossName
     when(tweet.createdAt) thenReturn (new Date(Random.nextLong.abs * 1000))
-    RaidInfo(tweet, None)
+    val boss = mock[RaidBoss]
+    RaidInfo(tweet, boss)
   }
 }
 

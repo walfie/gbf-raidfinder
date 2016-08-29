@@ -11,7 +11,7 @@ package object domain {
 package domain {
   case class RaidInfo(
     tweet: RaidTweet,
-    image: Option[RaidImage]
+    boss:  RaidBoss
   )
 
   case class RaidTweet(
@@ -25,17 +25,10 @@ package domain {
   )
 
   case class RaidBoss(
-    bossName: BossName,
+    name:     BossName,
+    level:    Int,
     image:    Option[RaidImage],
     lastSeen: Date
   )
-
-  object RaidBoss {
-    def fromRaidInfo(raidInfo: RaidInfo): RaidBoss = RaidBoss(
-      bossName = raidInfo.tweet.bossName,
-      image = raidInfo.image,
-      lastSeen = raidInfo.tweet.createdAt
-    )
-  }
 }
 
