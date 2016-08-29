@@ -113,27 +113,34 @@ class WebSocketRaidFinderClient(
   }
 
   override def onWebSocketMessage(message: Response): Unit = message match {
-    // TODO: Exclude old bosses
     case r: RaidBossesResponse =>
-      r.raidBosses.foreach { raidBoss =>
-        val bossName = raidBoss.name
-        allBossesMap.get(bossName) match {
-          // New raid boss that we don't yet know about
-          case None =>
-            val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
-            allBossesMap = allBossesMap.updated(bossName, newColumn)
-            state.allBosses.get := allBossesMap.values.toArray.sortBy(_.raidBoss.get.level)
-
-          // Update existing raid boss data
-          case Some(column) => column.raidBoss := raidBoss
-        }
-      }
+      handleRaidBossesResponse(r.raidBosses)
 
     case r: FollowStatusResponse =>
     // Ignore. Also TODO: Figure out why this doesn't come back consistently
 
     case r: RaidTweetResponse =>
       allBossesMap.get(r.bossName).foreach(column => r +=: column.raidTweets.get)
+  }
+
+  // TODO: Exclude old bosses
+  private def handleRaidBossesResponse(
+    raidBosses: Seq[RaidBoss]
+  ): Unit = raidBosses.foreach { raidBoss =>
+    val bossName = raidBoss.name
+    allBossesMap.get(bossName) match {
+      // New raid boss that we don't yet know about
+      case None =>
+        val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+        allBossesMap = allBossesMap.updated(bossName, newColumn)
+        state.allBosses.get := allBossesMap.values.toArray.sortBy { column =>
+          val boss = column.raidBoss.get
+          (boss.level, boss.name)
+        }
+
+      // Update existing raid boss data
+      case Some(column) => column.raidBoss := raidBoss
+    }
   }
 }
 
