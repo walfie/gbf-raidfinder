@@ -23,7 +23,7 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
     case r: RaidBossesRequest =>
       val bosses = raidFinder.getKnownBosses.values.map { rb: RaidBoss =>
         protocol.RaidBoss(
-          bossName = rb.name,
+          name = rb.name,
           level = rb.level,
           image = rb.image,
           lastSeen = rb.lastSeen

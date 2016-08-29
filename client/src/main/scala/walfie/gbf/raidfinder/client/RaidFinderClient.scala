@@ -40,7 +40,7 @@ class WebSocketRaidFinderClient(
   Option(storage.getItem(followedBossesStorageKey)).foreach(_.split(",").foreach(follow))
 
   private def updateLocalStorage(): Unit = {
-    val bossNames = state.followedBosses.get.map(_.raidBoss.get.bossName)
+    val bossNames = state.followedBosses.get.map(_.raidBoss.get.name)
     if (bossNames.isEmpty)
       storage.removeItem(followedBossesStorageKey)
     else
@@ -53,7 +53,7 @@ class WebSocketRaidFinderClient(
 
   /** Get the column number associated with a raid boss */
   private def columnIndex(bossName: BossName): Option[Int] = {
-    val index = state.followedBosses.get.indexWhere(_.raidBoss.get.bossName == bossName)
+    val index = state.followedBosses.get.indexWhere(_.raidBoss.get.name == bossName)
     if (index < 0) None else Some(index)
   }
 
@@ -115,7 +115,7 @@ class WebSocketRaidFinderClient(
   override def onWebSocketMessage(message: Response): Unit = message match {
     case r: RaidBossesResponse =>
       r.raidBosses.foreach { raidBoss =>
-        val bossName = raidBoss.bossName
+        val bossName = raidBoss.name
         allBossesMap.get(bossName) match {
           // New raid boss that we don't yet know about
           case None =>
@@ -144,7 +144,7 @@ object RaidFinderClient {
 
   object RaidBossColumn {
     def empty(bossName: BossName): RaidBossColumn = {
-      val raidBoss = RaidBoss(bossName = bossName)
+      val raidBoss = RaidBoss(name = bossName)
       RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
     }
   }
@@ -154,7 +154,7 @@ object RaidFinderClient {
     followedBosses: Vars[RaidBossColumn]
   ) {
     lazy val followedBossNames: Binding[Set[BossName]] = Binding {
-      followedBosses.bind.map(_.raidBoss.get.bossName).toSet
+      followedBosses.bind.map(_.raidBoss.get.name).toSet
     }
   }
 }
