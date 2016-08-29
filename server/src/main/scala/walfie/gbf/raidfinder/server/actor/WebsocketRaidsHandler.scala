@@ -11,7 +11,7 @@ import walfie.gbf.raidfinder.RaidFinder
 class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor {
   implicit val scheduler = Scheduler(context.system.dispatcher)
 
-  var subscribed: Map[BossName, Cancelable] = Map.empty
+  var followed: Map[BossName, Cancelable] = Map.empty
 
   def receive: Receive = {
     case r: RequestMessage => r.toRequest.foreach(handleRequest)
@@ -31,9 +31,9 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
 
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
 
-    case r: SubscribeRequest =>
+    case r: FollowRequest =>
       val cancelables = r.bossNames
-        .filterNot(subscribed.keys.toSeq.contains)
+        .filterNot(followed.keys.toSeq.contains)
         .map { bossName =>
           bossName -> raidFinder.getRaidTweets(bossName).foreach { r: RaidTweet =>
             // TODO: Add utils for converting domain objects to protobuf messages
@@ -51,19 +51,19 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
           }
         }
 
-      subscribed = subscribed ++ cancelables
-      this push SubscriptionStatusResponse(subscribed.keys.toSeq)
+      followed = followed ++ cancelables
+      this push FollowStatusResponse(followed.keys.toSeq)
 
-    case r: UnsubscribeRequest =>
+    case r: FollowRequest =>
       r.bossNames.map { bossName =>
-        subscribed.get(bossName).foreach(_.cancel())
+        followed.get(bossName).foreach(_.cancel())
       }
-      subscribed = subscribed -- r.bossNames
-      this push SubscriptionStatusResponse(subscribed.keys.toSeq)
+      followed = followed -- r.bossNames
+      this push FollowStatusResponse(followed.keys.toSeq)
   }
 
   override def postStop(): Unit = {
-    subscribed.values.foreach(_.cancel)
+    followed.values.foreach(_.cancel)
   }
 }
 
