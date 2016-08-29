@@ -12,8 +12,8 @@ option (scalapb.options) = {
 message RequestMessage {
   oneof data {
     RaidBossesRequest raidBossesMessage = 1;
-    SubscribeRequest subscribeMessage = 2;
-    UnsubscribeRequest unsubscribeMessage = 3;
+    FollowRequest followMessage = 2;
+    UnfollowRequest unfollowMessage = 3;
   };
 };
 
@@ -21,13 +21,13 @@ message RaidBossesRequest {
   option (scalapb.message).extends = "Request";
 };
 
-message SubscribeRequest {
+message FollowRequest {
   option (scalapb.message).extends = "Request";
 
   repeated string bossNames = 1;
 };
 
-message UnsubscribeRequest {
+message UnfollowRequest {
   option (scalapb.message).extends = "Request";
 
   repeated string bossNames = 1;

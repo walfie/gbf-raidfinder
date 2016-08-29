@@ -58,7 +58,7 @@ class WebSocketRaidFinderClient(
   }
 
   def follow(bossName: BossName): Unit = if (columnIndex(bossName).isEmpty) {
-    websocket.send(SubscribeRequest(bossNames = List(bossName)))
+    websocket.send(FollowRequest(bossNames = List(bossName)))
 
     // If it's not a boss we know about, create an empty column for it
     val column: RaidBossColumn = allBossesMap.getOrElse(bossName, {
@@ -74,7 +74,7 @@ class WebSocketRaidFinderClient(
   }
 
   def unfollow(bossName: BossName): Unit = {
-    websocket.send(UnsubscribeRequest(bossNames = List(bossName)))
+    websocket.send(UnfollowRequest(bossNames = List(bossName)))
 
     val followedBosses = state.followedBosses.get
     columnIndex(bossName).foreach(followedBosses.remove)
@@ -128,7 +128,7 @@ class WebSocketRaidFinderClient(
         }
       }
 
-    case r: SubscriptionStatusResponse =>
+    case r: FollowStatusResponse =>
     // Ignore. Also TODO: Figure out why this doesn't come back consistently
 
     case r: RaidTweetResponse =>

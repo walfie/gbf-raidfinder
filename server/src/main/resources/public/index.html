@@ -32,13 +32,13 @@ function websocketUrl() {
     var envelope = JSON.parse(event.data);
     if (envelope.raidBossesMessage) {
       envelope.raidBossesMessage.raidBosses.forEach(function(raidBoss) {
-        raidBoss.subscribed = false; // This is so hacky
+        raidBoss.followed = false; // This is so hacky
 
         var img = d.createElement('img');
         img.src = raidBoss.image.value + ':thumb';
         img.style.opacity = '0.5';
         img.addEventListener('click', function() {
-          raidBoss.subscribed = !raidBoss.subscribed;
+          raidBoss.followed = !raidBoss.subscribed;
           var action = raidBoss.susbcribed ? 'UNSUBSCRIBE' : 'SUBSCRIBE';
           img.style.opacity = raidBoss.subscribed ? '1.0' : '0.5';
           ws.send('ey');
