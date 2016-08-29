@@ -1,7 +1,7 @@
 package walfie.gbf.raidfinder.client
 
+import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
-import java.nio.ByteBuffer
 import org.scalajs.dom
 import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
@@ -152,6 +152,10 @@ object RaidFinderClient {
   case class State(
     allBosses:      Vars[RaidBossColumn],
     followedBosses: Vars[RaidBossColumn]
-  )
+  ) {
+    lazy val followedBossNames: Binding[Set[BossName]] = Binding {
+      followedBosses.bind.map(_.raidBoss.get.bossName).toSet
+    }
+  }
 }
 

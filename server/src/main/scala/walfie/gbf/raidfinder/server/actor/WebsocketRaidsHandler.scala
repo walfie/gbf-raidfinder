@@ -54,7 +54,7 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
       followed = followed ++ cancelables
       this push FollowStatusResponse(followed.keys.toSeq)
 
-    case r: FollowRequest =>
+    case r: UnfollowRequest =>
       r.bossNames.map { bossName =>
         followed.get(bossName).foreach(_.cancel())
       }
