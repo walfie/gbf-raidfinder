@@ -54,13 +54,8 @@ object BossSelectorDialog {
         client.state.allBosses.map { bossColumn =>
           val boss = bossColumn.raidBoss.bind
           val isFollowing = client.state.followedBossNames.bind
-
-          if (isFollowing(boss.bossName)) {
-            <div></div>
-          } else {
-            val smallImage = boss.image.map(_ + ":thumb")
-            bossListItem(boss.bossName, smallImage).bind
-          }
+          val smallImage = boss.image.map(_ + ":thumb")
+          bossListItem(boss.bossName, smallImage, isFollowing(boss.bossName)).bind
         }
       }
     </ul>
@@ -87,10 +82,15 @@ object BossSelectorDialog {
   }
 
   @binding.dom
-  def bossListItem(bossName: String, image: Option[String]): Binding[HTMLLIElement] = {
+  def bossListItem(bossName: String, image: Option[String], isFollowing: Boolean): Binding[HTMLLIElement] = {
     val elem =
       <li class="gbfrf-js-bossSelect gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp" data:data-bossName={ bossName }>
         <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">{ bossName }</span>
+        <div class="mdl-layout-spacer"></div>
+        {
+          if (isFollowing) List(<div class="mdl-badge mdl-badge--overlap" data:data-badge="★"></div>)
+          else List.empty
+        }
       </li>
 
     image.foreach(elem.backgroundImage(_, 0.25))
