@@ -113,6 +113,7 @@ class WebSocketRaidFinderClient(
   }
 
   override def onWebSocketMessage(message: Response): Unit = message match {
+    // TODO: Exclude old bosses
     case r: RaidBossesResponse =>
       r.raidBosses.foreach { raidBoss =>
         val bossName = raidBoss.name
@@ -121,7 +122,7 @@ class WebSocketRaidFinderClient(
           case None =>
             val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
             allBossesMap = allBossesMap.updated(bossName, newColumn)
-            state.allBosses.get := allBossesMap.values
+            state.allBosses.get := allBossesMap.values.toArray.sortBy(_.raidBoss.get.level)
 
           // Update existing raid boss data
           case Some(column) => column.raidBoss := raidBoss
