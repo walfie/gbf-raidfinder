@@ -50,12 +50,10 @@ object BossSelectorDialog {
   def bossList(client: RaidFinderClient): Binding[HTMLUListElement] = {
     <ul class="mdl-list" style="padding: 0; margin: 0;">
       {
-        val isFollowing = client.state.followedBosses.bind
-          .map(_.raidBoss.get.bossName).toSet
-
         // TODO: Sort bosses by level
         client.state.allBosses.map { bossColumn =>
           val boss = bossColumn.raidBoss.bind
+          val isFollowing = client.state.followedBossNames.bind
 
           if (isFollowing(boss.bossName)) {
             <div></div>
