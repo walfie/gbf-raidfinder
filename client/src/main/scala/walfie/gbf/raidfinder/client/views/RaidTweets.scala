@@ -96,12 +96,12 @@ object RaidTweets {
   def raidBossHeader(raidBoss: RaidBoss, client: RaidFinderClient): Binding[HTMLElement] = {
     val headerRow =
       <div class="mdl-layout__header-row gbfrf-column__header-row">
-        <div class="mdl-layout-title gbfrf-column__header">{ raidBoss.bossName }</div>
+        <div class="mdl-layout-title gbfrf-column__header">{ raidBoss.name }</div>
         <div class="mdl-layout-spacer"></div>
-        <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(raidBoss.bossName) }>
+        <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(raidBoss.name) }>
           <i class="material-icons">more_vert</i>
         </button>
-        { raidBossHeaderMenu(raidBoss.bossName, client).bind }
+        { raidBossHeaderMenu(raidBoss.name, client).bind }
       </div>
 
     raidBoss.image.foreach(image => headerRow.backgroundImage(image + ":thumb", 0.25))

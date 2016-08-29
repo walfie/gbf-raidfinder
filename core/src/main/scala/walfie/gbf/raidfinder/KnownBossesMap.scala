@@ -31,7 +31,7 @@ class KnownBossesObserver(implicit ec: ExecutionContext) extends Observer[RaidIn
   def onError(e: Throwable): Unit = ()
   def onNext(elem: RaidInfo): Future[Ack] = {
     val name = elem.tweet.bossName
-    val raidBoss = RaidBoss.fromRaidInfo(elem)
+    val raidBoss = elem.boss
     agent.alter(_.updated(name, raidBoss)).flatMap(_ => Ack.Continue)
   }
 

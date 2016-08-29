@@ -12,8 +12,9 @@ option (scalapb.options) = {
 };
 
 message RaidBoss {
-  string bossName = 1;
+  string name = 1;
   google.protobuf.StringValue image = 2;
   int64 lastSeen = 3 [(scalapb.field).type = "java.util.Date"];
+  int32 level = 4;
 }
 
