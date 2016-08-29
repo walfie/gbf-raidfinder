@@ -7,43 +7,65 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
-import walfie.gbf.raidfinder.client.syntax.HTMLElementOps
+import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps}
 import walfie.gbf.raidfinder.protocol._
 
 object BossSelectorDialog {
   @binding.dom
   def dialogElement(client: RaidFinderClient): Binding[Element] = {
-    val elem = dom.document.createElement("dialog")
-    elem.classList.add("mdl-dialog")
-    elem.classList.add("gbfrf-follow__dialog")
-    val closeModal = { (e: Event) => elem.asInstanceOf[js.Dynamic].close(); () }
+    val dialog = dom.document.createElement("dialog")
+    dialog.classList.add("mdl-dialog")
+    dialog.classList.add("gbfrf-follow__dialog")
+    val closeModal = { (e: Event) => dialog.asInstanceOf[js.Dynamic].close(); () }
+
+    val bossListElement = bossList(client).bind
+
+    // TODO: Write a more generic event delegation helper
+    bossListElement.addEventListener("click", { e: Event =>
+      for {
+        target <- e.targetElement
+        element <- target.findParent(_.classList.contains("gbfrf-js-bossSelect"))
+        bossName <- Option(element.getAttribute("data-bossName"))
+      } yield {
+        client.follow(bossName)
+        closeModal(e)
+      }
+    })
 
     val inner =
       <div class="gbfrf-follow mdl-layout mdl-layout--fixed-header">
         { dialogHeader(onClose = closeModal).bind }
         <div class="gbfrf-follow__content">
-          <ul class="mdl-list" style="padding: 0; margin: 0;">
-            {
-              // TODO: Don't include bosses we're already following, or old bosses
-              // TODO: Sort bosses by level
-              client.state.allBosses.map { bossColumn =>
-                val boss = bossColumn.raidBoss.bind
-                val smallImage = boss.image.map(_ + ":thumb")
-                val onClick = { e: Event =>
-                  client.follow(boss.bossName)
-                  closeModal(e)
-                }
-                bossListItem(boss.bossName, smallImage, onClick).bind
-              }
-            }
-          </ul>
+          { bossListElement }
         </div>
         <hr style="margin: 0;"/>
         { dialogFooter(onCancel = closeModal).bind }
       </div>
 
-    elem.appendChild(inner)
-    elem
+    dialog.appendChild(inner)
+    dialog
+  }
+
+  @binding.dom
+  def bossList(client: RaidFinderClient): Binding[HTMLUListElement] = {
+    <ul class="mdl-list" style="padding: 0; margin: 0;">
+      {
+        val isFollowing = client.state.followedBosses.bind
+          .map(_.raidBoss.get.bossName).toSet
+
+        // TODO: Sort bosses by level
+        client.state.allBosses.map { bossColumn =>
+          val boss = bossColumn.raidBoss.bind
+
+          if (isFollowing(boss.bossName)) {
+            <div></div>
+          } else {
+            val smallImage = boss.image.map(_ + ":thumb")
+            bossListItem(boss.bossName, smallImage).bind
+          }
+        }
+      }
+    </ul>
   }
 
   @binding.dom
@@ -66,11 +88,10 @@ object BossSelectorDialog {
     </div>
   }
 
-  // TODO: Use event delegation on the parent instead of onclick
   @binding.dom
-  def bossListItem(bossName: String, image: Option[String], onClick: Event => Unit): Binding[HTMLLIElement] = {
+  def bossListItem(bossName: String, image: Option[String]): Binding[HTMLLIElement] = {
     val elem =
-      <li class="gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp" onclick={ onClick }>
+      <li class="gbfrf-js-bossSelect gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp" data:data-bossName={ bossName }>
         <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">{ bossName }</span>
       </li>
 
