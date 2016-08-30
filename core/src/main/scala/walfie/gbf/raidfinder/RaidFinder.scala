@@ -15,7 +15,7 @@ trait RaidFinder {
 
 object RaidFinder {
   val DefaultCacheSizePerBoss = 20
-  val DefaultBacklogSize = 100
+  val DefaultBacklogSize = 200
 
   /** Stream tweets without looking up old tweets first */
   def withoutBacklog(
