@@ -11,7 +11,10 @@ trait TwitterStreamer {
 }
 
 object TwitterStreamer {
-  val DefaultFilterTerms = (15 to 150 by 5).map("Lv" + _)
+  // For English tweets, we can just search "I need backup!"
+  // For Japanese tweets we can't just use "参加者募集！" since words must be
+  // space-separated, and the only space-separated thing is the boss level.
+  val DefaultFilterTerms = (15 to 150 by 5).map("Lv" + _) :+ "I need backup!"
 
   def apply(
     twitterStream: twitter4j.TwitterStream = TwitterStreamFactory.getSingleton,

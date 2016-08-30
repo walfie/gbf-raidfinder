@@ -10,11 +10,11 @@ import twitter4j._
 import walfie.gbf.raidfinder.domain._
 
 class StatusParserSpec extends StatusParserSpecHelpers {
-  "parse a valid status" in {
+  "parse a valid status in Japanese" in {
     val expectedRaidTweet = RaidTweet(
       tweetId = 12345L,
       screenName = "walfieee",
-      bossName = "Lv60 Ozorotter",
+      bossName = "Lv60 オオゾラッコ",
       raidId = "ABCD1234",
       profileImage = "http://example.com/profile-image_normal.png",
       text = "INSERT CUSTOM MESSAGE HERE",
@@ -22,7 +22,7 @@ class StatusParserSpec extends StatusParserSpecHelpers {
     )
 
     val expectedRaidBoss = RaidBoss(
-      name = "Lv60 Ozorotter",
+      name = "Lv60 オオゾラッコ",
       level = 60,
       image = Some("http://example.com/raid-image.png"),
       lastSeen = now
@@ -33,11 +33,39 @@ class StatusParserSpec extends StatusParserSpecHelpers {
     }
   }
 
+  "parse a valid status in English" in {
+    val expectedRaidTweet = RaidTweet(
+      tweetId = 12345L,
+      screenName = "walfieee",
+      bossName = "Lvl 60 Ozorotter",
+      raidId = "ABCD1234",
+      profileImage = "http://example.com/profile-image_normal.png",
+      text = "INSERT CUSTOM MESSAGE HERE",
+      createdAt = now
+    )
+
+    val expectedRaidBoss = RaidBoss(
+      name = "Lvl 60 Ozorotter",
+      level = 60,
+      image = Some("http://example.com/raid-image.png"),
+      lastSeen = now
+    )
+
+    val text = """
+      |INSERT CUSTOM MESSAGE HERE I need backup!Battle ID: ABCD1234
+      |Lvl 60 Ozorotter""".stripMargin.trim
+    val status = mockStatus(text = text)
+
+    StatusParser.parse(status) shouldBe Some {
+      RaidInfo(expectedRaidTweet, expectedRaidBoss)
+    }
+  }
+
   "parse a status without an image URL at the end" in {
     // New bosses (e.g., watermelon boss) might not have images when they first come out
     val text = """
       |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
-      |Lv60 Ozorotter""".stripMargin.trim
+      |Lv60 オオゾラッコ""".stripMargin.trim
     val status = mockStatus(text = text)
 
     StatusParser.parse(status) should not be empty
@@ -66,7 +94,7 @@ trait StatusParserSpecHelpers extends FreeSpec with MockitoSugar {
 
   val validTweetText = """
     |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
-    |Lv60 Ozorotter
+    |Lv60 オオゾラッコ
     |http://example.com/image-that-is-ignored.png""".stripMargin.trim
 
   def mockStatus(
