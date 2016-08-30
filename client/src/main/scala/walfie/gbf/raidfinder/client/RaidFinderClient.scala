@@ -1,5 +1,6 @@
 package walfie.gbf.raidfinder.client
 
+import walfie.gbf.raidfinder.client.Util.{Clock, Duration}
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
@@ -21,7 +22,7 @@ trait RaidFinderClient {
 }
 
 class WebSocketRaidFinderClient(
-  websocket: WebSocketClient, storage: Storage
+  websocket: WebSocketClient, storage: Storage, raidBossTtl: Duration, clock: Clock
 ) extends RaidFinderClient with WebSocketSubscriber {
   import RaidFinderClient._
 
@@ -64,8 +65,6 @@ class WebSocketRaidFinderClient(
     val column: RaidBossColumn = allBossesMap.getOrElse(bossName, {
       val newColumn = RaidBossColumn.empty(bossName)
       allBossesMap = allBossesMap.updated(bossName, newColumn)
-
-      state.allBosses.get := allBossesMap.values
       newColumn
     })
 
@@ -114,7 +113,19 @@ class WebSocketRaidFinderClient(
 
   override def onWebSocketMessage(message: Response): Unit = message match {
     case r: RaidBossesResponse =>
-      handleRaidBossesResponse(r.raidBosses)
+      r.raidBosses.foreach { raidBoss =>
+        val bossName = raidBoss.name
+        allBossesMap.get(bossName) match {
+          // New raid boss that we don't yet know about
+          case None =>
+            val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+            allBossesMap = allBossesMap.updated(bossName, newColumn)
+            state.allBosses.get := allBossesMap.values
+
+          // Update existing raid boss data
+          case Some(column) => column.raidBoss := raidBoss
+        }
+      }
 
     case r: FollowStatusResponse =>
     // Ignore. Also TODO: Figure out why this doesn't come back consistently
@@ -126,21 +137,39 @@ class WebSocketRaidFinderClient(
   // TODO: Exclude old bosses
   private def handleRaidBossesResponse(
     raidBosses: Seq[RaidBoss]
-  ): Unit = raidBosses.foreach { raidBoss =>
-    val bossName = raidBoss.name
-    allBossesMap.get(bossName) match {
-      // New raid boss that we don't yet know about
-      case None =>
-        val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
-        allBossesMap = allBossesMap.updated(bossName, newColumn)
-        state.allBosses.get := allBossesMap.values.toArray.sortBy { column =>
-          val boss = column.raidBoss.get
-          (boss.level, boss.name)
-        }
+  ): Unit = {
+    var shouldUpdateState: Boolean = false // Sorry for the var
 
-      // Update existing raid boss data
-      case Some(column) => column.raidBoss := raidBoss
+    raidBosses.foreach { raidBoss =>
+      val bossName = raidBoss.name
+      val expired = isExpired(raidBoss)
+
+      allBossesMap.get(bossName) match {
+        case None if expired => // Do nothing
+        case None => // Add to our list of known bosses
+          val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+          allBossesMap = allBossesMap.updated(bossName, newColumn)
+          shouldUpdateState = true
+
+        case Some(column) if expired => // Remove from allBosses list
+          allBossesMap = allBossesMap - bossName
+          shouldUpdateState = true
+        case Some(column) => // Update existing raid boss data
+          column.raidBoss := raidBoss
+      }
     }
+
+    if (shouldUpdateState) {
+      state.allBosses.get := allBossesMap.values.toArray.sortBy { column =>
+        val boss = column.raidBoss.get
+        (boss.level, boss.name)
+      }
+    }
+  }
+
+  private def isExpired(raidBoss: RaidBoss): Boolean = {
+    val minDate = clock.now().getTime - raidBossTtl.milliseconds
+    raidBoss.lastSeen.getTime < minDate
   }
 }
 

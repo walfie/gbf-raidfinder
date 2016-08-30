@@ -1,8 +1,9 @@
 package walfie.gbf.raidfinder.client
 
-import scala.annotation.tailrec
-import org.scalajs.dom.{console, document}
+import java.util.Date
 import org.scalajs.dom.raw._
+import org.scalajs.dom.{console, document}
+import scala.annotation.tailrec
 import scala.util.{Success, Failure, Try}
 
 object Util {
@@ -48,6 +49,18 @@ object Util {
     s.background = "transparent"
 
     textArea
+  }
+
+  // TODO: Move this somewhere better
+  trait Clock { def now(): Date }
+  object SystemClock extends Clock { def now(): Date = new Date() }
+
+  case class Duration(milliseconds: Long) extends AnyVal
+  object Duration {
+    def seconds(s: Long): Duration = Duration(s * 1000)
+    def minutes(m: Long): Duration = Duration(m * 60 * 1000)
+    def hours(h: Long): Duration = Duration(h * 3600 * 1000)
+    def days(d: Long): Duration = Duration(d * 24 * 3600 * 1000)
   }
 }
 

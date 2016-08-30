@@ -14,7 +14,12 @@ object Application extends JSApp {
   def main(): Unit = {
     val url = "ws://localhost:9000/ws/raids"
     val websocket = new BinaryProtobufWebSocketClient(url)
-    val client = new WebSocketRaidFinderClient(websocket, dom.window.localStorage)
+    val client = new WebSocketRaidFinderClient(
+      websocket,
+      dom.window.localStorage,
+      Util.Duration.hours(6), // TODO: Don't hardcode
+      Util.SystemClock
+    )
     client.updateBosses()
 
     // TODO: Put this somewhere else
