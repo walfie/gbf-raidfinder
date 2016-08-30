@@ -1,6 +1,6 @@
 package walfie.gbf.raidfinder.client
 
-import walfie.gbf.raidfinder.client.Util.{Clock, Duration}
+import walfie.gbf.raidfinder.client.util.time.{Clock, Duration}
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
@@ -113,19 +113,7 @@ class WebSocketRaidFinderClient(
 
   override def onWebSocketMessage(message: Response): Unit = message match {
     case r: RaidBossesResponse =>
-      r.raidBosses.foreach { raidBoss =>
-        val bossName = raidBoss.name
-        allBossesMap.get(bossName) match {
-          // New raid boss that we don't yet know about
-          case None =>
-            val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
-            allBossesMap = allBossesMap.updated(bossName, newColumn)
-            state.allBosses.get := allBossesMap.values
-
-          // Update existing raid boss data
-          case Some(column) => column.raidBoss := raidBoss
-        }
-      }
+      handleRaidBossesResponse(r.raidBosses)
 
     case r: FollowStatusResponse =>
     // Ignore. Also TODO: Figure out why this doesn't come back consistently
@@ -138,7 +126,7 @@ class WebSocketRaidFinderClient(
   private def handleRaidBossesResponse(
     raidBosses: Seq[RaidBoss]
   ): Unit = {
-    var shouldUpdateState: Boolean = false // Sorry for the var
+    var shouldUpdateState = false // Sorry about the var
 
     raidBosses.foreach { raidBoss =>
       val bossName = raidBoss.name

@@ -33,10 +33,10 @@ package object syntax {
   }
 
   implicit class ElementOps[T <: Element](val elem: T) extends AnyVal {
-    import walfie.gbf.raidfinder.client.Util
+    import walfie.gbf.raidfinder.client.util.HtmlHelpers
 
     def findParent(predicate: Element => Boolean): Option[Element] =
-      Util.findParent(elem, predicate)
+      HtmlHelpers.findParent(elem, predicate)
   }
 
   implicit class EventOps(val event: Event) extends AnyVal {
