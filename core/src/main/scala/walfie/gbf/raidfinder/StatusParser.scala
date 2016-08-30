@@ -5,11 +5,15 @@ import walfie.gbf.raidfinder.domain._
 import scala.util.Try
 
 object StatusParser {
-  /** Regex to match Japanese raid request tweets */
-  val RaidRegex = "(.*)参加者募集！参戦ID：([0-9A-F]+)\n(.+)\n?.*".r
+  /** Regexes to match raid request tweets */
+  val RaidRegexJapanese = "(.*)参加者募集！参戦ID：([0-9A-F]+)\n(.+)\n?.*".r
+  val RaidRegexEnglish = "(.*)I need backup!Battle ID: ([0-9A-F]+)\n(.+)\n?.*".r
 
-  /** Regex to get boss level from full name */
-  val BossRegex = "Lvl?([0-9]+) (.*)".r
+  /**
+    * Regex to get boss level from full name
+    * e.g., "Lv100 オオゾラッコ" or "Lvl 100 Ozorotter"
+    */
+  val BossRegex = "Lv(?:l )?([0-9]+) (.*)".r
 
   /** The source value for the official Granblue Twitter app */
   val GranblueSource =
@@ -18,7 +22,17 @@ object StatusParser {
   def parse(status: Status): Option[RaidInfo] = status.getText match {
     case _ if status.getSource != GranblueSource => None
 
-    case RaidRegex(extraText, raidId, boss) =>
+    case RaidRegexJapanese(extraText, raidId, boss) =>
+      Some(TweetParts(status, extraText, raidId, boss).toRaidInfo)
+
+    case RaidRegexEnglish(extraText, raidId, boss) =>
+      Some(TweetParts(status, extraText, raidId, boss).toRaidInfo)
+
+    case _ => None
+  }
+
+  private case class TweetParts(status: Status, extraText: String, raidId: String, boss: String) {
+    def toRaidInfo(): RaidInfo = {
       val bossName = boss.trim
 
       val raidTweet = RaidTweet(
@@ -45,9 +59,8 @@ object StatusParser {
         lastSeen = status.getCreatedAt
       )
 
-      Some(RaidInfo(raidTweet, raidBoss))
-
-    case _ => None
+      RaidInfo(raidTweet, raidBoss)
+    }
   }
 
   private def getImageFromStatus(status: Status): Option[RaidImage] = {
