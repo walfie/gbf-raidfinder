@@ -9,7 +9,7 @@ import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidFinderClient
 import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps, StringOps}
-import walfie.gbf.raidfinder.client.Util
+import walfie.gbf.raidfinder.client.util.HtmlHelpers
 import walfie.gbf.raidfinder.protocol._
 
 object RaidTweets {
@@ -49,7 +49,7 @@ object RaidTweets {
         element <- target.findParent(_.classList.contains("gbfrf-js-tweet"))
         raidId <- Option(element.getAttribute("data-raidId"))
       } yield {
-        if (Util.copy(raidId)) {
+        if (HtmlHelpers.copy(raidId)) {
           element.classList.toggle("gbfrf-tweet--copied")
           notification.enqueue(s"$raidId copied to clipboard")
         }

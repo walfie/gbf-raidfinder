@@ -1,11 +1,11 @@
-package walfie.gbf.raidfinder.client
+package walfie.gbf.raidfinder.client.util
 
-import scala.annotation.tailrec
-import org.scalajs.dom.{console, document}
 import org.scalajs.dom.raw._
+import org.scalajs.dom.{console, document}
+import scala.annotation.tailrec
 import scala.util.{Success, Failure, Try}
 
-object Util {
+object HtmlHelpers {
   @tailrec
   def findParent(element: Element, predicate: Element => Boolean): Option[Element] = {
     if (predicate(element)) Some(element)
