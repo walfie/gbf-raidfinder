@@ -49,12 +49,16 @@ lazy val client = (project in file("client"))
       "org.scala-js" %%% "scalajs-dom" % "0.9.1",
       "com.thoughtworks.binding" %%% "dom" % "9.0.0",
       "org.webjars.npm" % "moment" % Versions.MomentJS,
+      "org.webjars.bower" % "dialog-polyfill" % Versions.DialogPolyfillJS,
       compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
     ),
     jsDependencies ++= Seq(
       "org.webjars.npm" % "moment" % Versions.MomentJS
-        /        s"${Versions.MomentJS}/moment.js"
-        minified "min/moment.min.js"
+        / s"${Versions.MomentJS}/moment.js"
+        minified "min/moment.min.js",
+
+      "org.webjars.bower" % "dialog-polyfill" % Versions.DialogPolyfillJS
+        / s"${Versions.DialogPolyfillJS}/dialog-polyfill.js"
     )
   )
   .dependsOn(protocolJS)

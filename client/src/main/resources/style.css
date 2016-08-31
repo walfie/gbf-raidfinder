@@ -5,6 +5,8 @@ html, body {
 
 .gbfrf-main-content {
   height: 100%;
+  background: #ffffff;
+  position: relative;
 }
 
 .gbfrf-settings-fab__container {
@@ -33,7 +35,7 @@ html, body {
 
 @media (max-width: 460px) {
   .gbfrf-column {
-    width: 95%;
+    width: 90%;
   }
 }
 
@@ -45,7 +47,7 @@ html, body {
 
 .gbfrf-column__header-row {
   padding: 20px !important;
-  background-position-y: 20%;
+  background-position: 0 20%;
   background-size: 100% !important;
 }
 
@@ -136,6 +138,15 @@ html, body {
   height: 80%;
   width: 400px !important;
   padding: 0;
+  background: #ffffff;
+
+  position: absolute;
+  top: 50%;
+  transform: translate(0, -50%);
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .gbfrf-follow {
@@ -154,7 +165,7 @@ html, body {
   margin: 5px;
   background-color: #444;
   background-size: 100%;
-  background-position-y: 20%;
+  background-position: 0 20%;
   height: 50px;
 }
 
