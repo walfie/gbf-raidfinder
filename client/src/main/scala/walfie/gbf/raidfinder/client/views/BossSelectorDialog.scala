@@ -16,6 +16,7 @@ object BossSelectorDialog {
     val dialog = dom.document.createElement("dialog")
     dialog.classList.add("mdl-dialog")
     dialog.classList.add("gbfrf-follow__dialog")
+    js.Dynamic.global.dialogPolyfill.registerDialog(dialog)
     val closeModal = { (e: Event) => dialog.asInstanceOf[js.Dynamic].close(); () }
 
     val bossListElement = bossList(client).bind

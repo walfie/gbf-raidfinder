@@ -3,6 +3,7 @@ package walfie.gbf.raidfinder.client.views
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
+import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
@@ -14,21 +15,29 @@ object MainContent {
     client:       RaidFinderClient,
     notification: Notification,
     currentTime:  Binding[Double]
-  ): Binding[HTMLDivElement] = {
-    val dialog = Binding(BossSelectorDialog.dialogElement(client).bind)
+  ): Binding[Node] = {
+    val dialog = Binding(BossSelectorDialog.dialogElement(client).bind).bind
 
-    <div class="gbfrf-main-content">
-      { notification.binding.bind }
-      { dialog.bind }
-      { floatingActionButton(dialog.bind, client).bind }
-      <div class="gbfrf-columns">
-        {
-          client.state.followedBosses.map { column =>
-            RaidTweets.raidTweetColumn(column.raidBoss, column.raidTweets, currentTime, client, notification).bind
+    val holder = dom.document.createDocumentFragment()
+
+    holder.appendChild(dialog)
+
+    val main =
+      <div class="gbfrf-main-content">
+        { notification.binding.bind }
+        { floatingActionButton(dialog, client).bind }
+        <div class="gbfrf-columns">
+          {
+            client.state.followedBosses.map { column =>
+              RaidTweets.raidTweetColumn(column.raidBoss, column.raidTweets, currentTime, client, notification).bind
+            }
           }
-        }
+        </div>
       </div>
-    </div>
+
+    holder.appendChild(main)
+
+    holder
   }
 
   @binding.dom

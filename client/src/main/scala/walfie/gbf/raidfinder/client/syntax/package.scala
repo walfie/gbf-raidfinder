@@ -24,10 +24,7 @@ package object syntax {
     def backgroundImage(imageUrl: String, opacity: Double): T = {
       val img = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
       val color = s"rgba(0, 0, 0, $opacity)"
-      img.setAttribute("src", imageUrl)
-      img.onload = { _: dom.Event =>
-        elem.style.backgroundImage = s"linear-gradient($color, $color), url('$imageUrl')"
-      }
+      elem.style.backgroundImage = s"linear-gradient($color, $color), url('$imageUrl')"
       elem
     }
   }
