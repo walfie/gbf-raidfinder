@@ -7,10 +7,10 @@ lazy val commonSettings = Seq(
   Scalariform.settings
 )
 
-lazy val core = (project in file("core"))
+lazy val stream = (project in file("stream"))
   .settings(commonSettings: _*)
   .settings(
-    name := "gbf-raidfinder-core",
+    name := "gbf-raidfinder-stream",
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-agent" % Versions.Akka,
       "io.monix" %% "monix" % Versions.Monix,
@@ -37,7 +37,7 @@ lazy val server = (project in file("server"))
       "com.typesafe.play" %% "play-netty-server" % Versions.Play
     )
   )
-  .dependsOn(core, protocolJVM)
+  .dependsOn(stream, protocolJVM)
 
 lazy val client = (project in file("client"))
   .enablePlugins(ScalaJSPlugin)
@@ -64,6 +64,7 @@ lazy val client = (project in file("client"))
   .dependsOn(protocolJS)
 
 lazy val root = (project in file("."))
-  .aggregate(client, core, server)
+  .aggregate(client, stream, server)
   .settings(aggregate in update := false)
+
 
