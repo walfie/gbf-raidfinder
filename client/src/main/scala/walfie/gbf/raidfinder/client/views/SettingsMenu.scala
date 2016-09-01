@@ -14,16 +14,16 @@ import walfie.gbf.raidfinder.protocol._
 
 object SettingsMenu {
   @binding.dom
-  def content(client: RaidFinderClient, currentTab: Binding[DialogTab]): Binding[Element] = {
+  def content(client: RaidFinderClient, viewState: State): Binding[Element] = {
     <section id="gbfrf-dialog__settings" class={
-      val isActive = currentTab.bind == DialogTab.Settings
+      val isActive = viewState.currentTab.bind == DialogTab.Settings
       "gbfrf-dialog__content mdl-layout__tab-panel".addIf(isActive, "is-active")
     }>
       <div class="gbfrf-settings__content">
         <ul class="mdl-list" style="padding: 0; margin: 0;">
           { settingsListItem("Boss image quality")(qualitySelector).bind }
-          { settingsListItem("Twitter user images")(checkbox("abc")).bind }
-          { settingsListItem("Relative time")(checkbox("def")).bind }
+          { settingsListItem("Twitter user images")(checkbox("gbfrf-setting__user-image", viewState.showUserImages)).bind }
+          { settingsListItem("Relative time")(checkbox("gbfrf-setting__relative-time", viewState.relativeTime)).bind }
         </ul>
         <div style="margin-top: auto; align-self: flex-end; padding: 5px; color: gray;">github.com/walfie/gbf-raidfinder</div>
       </div>
@@ -41,15 +41,22 @@ object SettingsMenu {
   }
 
   @binding.dom
-  def checkbox(id: String): Binding[HTMLLabelElement] = {
+  def checkbox(id: String, checked: Var[Boolean]): Binding[HTMLLabelElement] = {
+    val onClick = { e: dom.Event =>
+      checked := e.currentTarget.asInstanceOf[HTMLInputElement].checked
+    }
+
+    val input = <input type="checkbox" id={ id } class="mdl-switch__input" onclick={ onClick }/>
+    input.checked = checked.get
+
     <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for={ id }>
-      <input type="checkbox" id={ id } class="mdl-switch__input"/><!-- // TODO: Checked -->
+      { input }
     </label>
   }
 
   @binding.dom // TODO: OnClick
   def qualitySelector: Binding[HTMLDivElement] = {
-    <div class="gbfrf-settings__toggle mdl-list__item-secondary-action">
+    <div class="gbfrf-settings__toggle">
       {
         Constants(Off, Low, High).map { quality =>
           val id = "gbfrf-settings__image-quality--" + quality.label

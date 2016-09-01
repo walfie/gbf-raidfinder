@@ -31,7 +31,7 @@ object Dialog {
       <div class="gbfrf-dialog__container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
         { dialogHeader(viewState.currentTab, onClose = closeModal).bind }
         { BossSelectMenu.content(client, closeModal, currentTab).bind }
-        { SettingsMenu.content(client, currentTab).bind }
+        { SettingsMenu.content(client, viewState).bind }
         <hr style="margin: 0;"/>
         { dialogFooter(onCancel = closeModal).bind }
       </div>

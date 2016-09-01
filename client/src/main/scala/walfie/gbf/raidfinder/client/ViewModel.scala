@@ -18,13 +18,17 @@ object ViewModel {
     case object Off extends ImageQuality("Off")
     case object Low extends ImageQuality("Low")
     case object High extends ImageQuality("High")
+
+    val Default = Off
+    val fromString: String => Option[ImageQuality] =
+      List(Off, Low, High).map(q => q.label -> q).toMap.get _
   }
 
   case class State(
-    currentTab:        Var[DialogTab]    = Var(DialogTab.Follow),
-    imageQuality:      Var[ImageQuality] = Var(ImageQuality.Off),
-    displayUserImages: Var[Boolean]      = Var(false),
-    relativeTime:      Var[Boolean]      = Var(true)
+    currentTab:     Var[DialogTab]    = Var(DialogTab.Follow),
+    imageQuality:   Var[ImageQuality] = Var(ImageQuality.Off),
+    showUserImages: Var[Boolean]      = Var(false),
+    relativeTime:   Var[Boolean]      = Var(true)
   )
 }
 
