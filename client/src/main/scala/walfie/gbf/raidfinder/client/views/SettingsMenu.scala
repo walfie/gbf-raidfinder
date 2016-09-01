@@ -8,6 +8,8 @@ import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps}
+import walfie.gbf.raidfinder.client.ViewModel._
+import walfie.gbf.raidfinder.client.ViewModel.ImageQuality._
 import walfie.gbf.raidfinder.protocol._
 
 object SettingsMenu {
@@ -42,11 +44,6 @@ object SettingsMenu {
       <input type="checkbox" id={ id } class="mdl-switch__input"/><!-- // TODO: Checked -->
     </label>
   }
-
-  sealed abstract class ImageQuality(val label: String)
-  case object Off extends ImageQuality("Off")
-  case object Low extends ImageQuality("Low")
-  case object High extends ImageQuality("High")
 
   @binding.dom // TODO: OnClick
   def qualitySelector: Binding[HTMLDivElement] = {
