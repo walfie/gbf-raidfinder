@@ -12,13 +12,7 @@ import walfie.gbf.raidfinder.protocol._
 
 object BossSelectorDialog {
   @binding.dom
-  def dialogElement(client: RaidFinderClient): Binding[Element] = {
-    val dialog = dom.document.createElement("dialog")
-    dialog.classList.add("mdl-dialog")
-    dialog.classList.add("gbfrf-follow__dialog")
-    js.Dynamic.global.dialogPolyfill.registerDialog(dialog)
-    val closeModal = { (e: Event) => dialog.asInstanceOf[js.Dynamic].close(); () }
-
+  def content(client: RaidFinderClient, closeModal: Event => Unit): Binding[Element] = {
     val bossListElement = bossList(client).bind
 
     // TODO: Write a more generic event delegation helper
@@ -33,18 +27,10 @@ object BossSelectorDialog {
       }
     })
 
-    val inner =
-      <div class="gbfrf-follow mdl-layout mdl-layout--fixed-header">
-        { dialogHeader(onClose = closeModal).bind }
-        <div class="gbfrf-follow__content">
-          { bossListElement }
-        </div>
-        <hr style="margin: 0;"/>
-        { dialogFooter(onCancel = closeModal).bind }
-      </div>
-
-    dialog.appendChild(inner)
-    dialog
+    <section id="gbfrf-dialog__follow" class="gbfrf-dialog__content mdl-layout__tab-panel is-active">
+      <!-- // TODO: is-visible -->
+      { bossListElement }
+    </section>
   }
 
   @binding.dom
@@ -59,26 +45,6 @@ object BossSelectorDialog {
         }
       }
     </ul>
-  }
-
-  @binding.dom
-  def dialogHeader(onClose: Event => Unit): Binding[HTMLElement] = {
-    <header class="mdl-layout__header">
-      <div class="mdl-layout__header-row gbfrf-column__header-row">
-        <div class="mdl-layout-title gbfrf-column__header">Follow</div>
-        <div class="mdl-layout-spacer"></div>
-        <div class="mdl-button mdl-js-button mdl-button--icon material-icons" onclick={ onClose }>
-          <i class="material-icons">clear</i>
-        </div>
-      </div>
-    </header>
-  }
-
-  @binding.dom
-  def dialogFooter(onCancel: Event => Unit): Binding[HTMLDivElement] = {
-    <div class="mdl-dialog__actions">
-      <button type="button" class="mdl-button" onclick={ onCancel }>Cancel</button>
-    </div>
   }
 
   @binding.dom

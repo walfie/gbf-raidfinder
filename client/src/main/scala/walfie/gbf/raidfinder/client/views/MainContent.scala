@@ -16,7 +16,7 @@ object MainContent {
     notification: Notification,
     currentTime:  Binding[Double]
   ): Binding[Node] = {
-    val dialog = Binding(BossSelectorDialog.dialogElement(client).bind).bind
+    val dialog = Binding(Dialog.element(client).bind).bind
 
     val holder = dom.document.createDocumentFragment()
 

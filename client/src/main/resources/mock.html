@@ -16,7 +16,7 @@
 
   <div class="gbfrf-settings-fab__container">
     <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--primary">
-      <i class="material-icons">add</i>
+      <i class="material-icons">settings</i>
     </button>
   </div>
 
@@ -107,10 +107,12 @@
 
 
 
-<dialog class="mdl-dialog gbfrf-follow__dialog">
-  <div class="gbfrf-follow mdl-layout mdl-layout--fixed-header">
+<dialog class="mdl-dialog gbfrf-dialog">
+
+  <div class="gbfrf-dialog__container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
 
     <header class="mdl-layout__header">
+      <!--
       <div class="mdl-layout__header-row gbfrf-column__header-row">
         <div class="mdl-layout-title gbfrf-column__header">Follow</div>
         <div class="mdl-layout-spacer"></div>
@@ -118,25 +120,87 @@
           <i class="material-icons">clear</i>
         </div>
       </div>
+      -->
+
+      <div class="mdl-layout__header-row gbfrf-column__header-row">
+      <!--<div class="mdl-layout__tab-bar mdl-js-ripple-effect">-->
+        <a href="#dialog-follow" class="mdl-layout__tab">Follow</a>
+        <a href="#dialog-settings" class="mdl-layout__tab is-active">Settings</a>
+        <div class="mdl-layout-spacer"></div>
+        <div class="mdl-button mdl-js-button mdl-button--icon material-icons js-close-dialog">
+          <i class="material-icons">clear</i>
+        </div>
+      </div>
+
     </header>
 
-    <div class="gbfrf-follow__content">
+    <section id="dialog-follow" class="gbfrf-dialog__content mdl-layout__tab-panel">
 
+      <ul class="mdl-list" style="padding: 0; margin: 0;">
+        <li class="gbfrf-follow__boss_box mdl-list__item mdl-shadow--2dp">
+          <span class="gbfrf-follow__boss_text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
+        </li>
 
-
-<ul class="mdl-list" style="padding: 0; margin: 0;">
-  <li class="gbfrf-follow__boss_box mdl-list__item mdl-shadow--2dp">
-    <span class="gbfrf-follow__boss_text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
-  </li>
-
-  <li class="gbfrf-follow__boss_box mdl-list__item mdl-shadow--2dp">
-    <span class="gbfrf-follow__boss_text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
-  </li>
-</ul>
+        <li class="gbfrf-follow__boss_box mdl-list__item mdl-shadow--2dp">
+          <span class="gbfrf-follow__boss_text mdl-list__item-primary-content">Lvl60 Yggdrasil Omega</span>
+        </li>
+      </ul>
       <div style="height:1000px;"></div>
 
+    </section>
 
-    </div>
+
+    <section id="dialog-settings" class="gbfrf-dialog__content gbfrf-settings__content mdl-layout__tab-panel is-active">
+      <ul class="mdl-list" style="padding: 0; margin: 0;">
+
+        <li class="gbfrf-settings__item mdl-list__item">
+          <div class="mdl-list__item-primary-content">Boss image quality</div>
+          <div class="gbfrf-settings__toggle mdl-list__item-secondary-action">
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-1">
+              <input type="radio" id="option-1" class="mdl-radio__button" name="options" value="1" checked>
+              <span class="mdl-radio__label">Off</span>
+            </label>
+
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-2">
+              <input type="radio" id="option-2" class="mdl-radio__button" name="options" value="2" checked>
+              <span class="mdl-radio__label">Low</span>
+            </label>
+
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-3">
+              <input type="radio" id="option-3" class="mdl-radio__button" name="options" value="3" checked>
+              <span class="mdl-radio__label">High</span>
+            </label>
+          </div>
+        </li>
+
+        <li class="gbfrf-settings__item mdl-list__item">
+          <span class="mdl-list__item-primary-content">Twitter user images</span>
+          <span class="mdl-list__item-secondary-action">
+            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="list-switch-1">
+              <input type="checkbox" id="list-switch-1" class="mdl-switch__input" checked />
+            </label>
+          </span>
+        </li>
+
+
+        <li class="gbfrf-settings__item mdl-list__item">
+          <span class="mdl-list__item-primary-content">Relative time</span>
+          <span class="mdl-list__item-secondary-action">
+            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="list-switch-2">
+              <input type="checkbox" id="list-switch-2" class="mdl-switch__input" checked />
+            </label>
+          </span>
+        </li>
+
+
+      </ul>
+
+      <div style="margin-top: auto; align-self: flex-end; padding: 5px; color: gray;">github.com/walfie/gbf-raidfinder</div>
+    </section>
+
+
+
+
     <hr style="margin: 0;" />
     <div class="mdl-dialog__actions">
       <button type="button" class="mdl-button js-close-dialog">Cancel</button>
@@ -155,6 +219,7 @@ showDialogButton.addEventListener('click', function() {
 dialog.querySelector('.js-close-dialog').addEventListener('click', function() {
   dialog.close();
 });
+dialog.showModal();
 </script>
 
 
