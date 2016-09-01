@@ -3,10 +3,14 @@ package walfie.gbf.raidfinder.client
 import com.thoughtworks.binding.Binding._
 
 object ViewModel {
-  sealed abstract class DialogTab(val label: String)
+  sealed abstract class DialogTab(val label: String) {
+    def id: String = s"gbfrf-dialog__$label"
+  }
   object DialogTab {
     case object Follow extends DialogTab("Follow")
     case object Settings extends DialogTab("Settings")
+
+    val all: List[DialogTab] = List(Follow, Settings)
   }
 
   sealed abstract class ImageQuality(val label: String)
@@ -17,10 +21,10 @@ object ViewModel {
   }
 
   case class State(
-    currentTab:        Var[DialogTab],
-    imageQuality:      Var[ImageQuality],
-    displayUserImages: Var[Boolean],
-    relativeTime:      Var[Boolean]
+    currentTab:        Var[DialogTab]    = Var(DialogTab.Follow),
+    imageQuality:      Var[ImageQuality] = Var(ImageQuality.Off),
+    displayUserImages: Var[Boolean]      = Var(false),
+    relativeTime:      Var[Boolean]      = Var(true)
   )
 }
 

@@ -7,16 +7,20 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
+import walfie.gbf.raidfinder.client.ViewModel
 import walfie.gbf.raidfinder.protocol._
 
 object MainContent {
   @binding.dom
   def mainContent(
     client:       RaidFinderClient,
+    viewState:    ViewModel.State,
     notification: Notification,
     currentTime:  Binding[Double]
   ): Binding[Node] = {
-    val dialog = Binding(Dialog.element(client).bind).bind
+    val dialog = Binding {
+      Dialog.element(client, viewState).bind
+    }.bind
 
     val holder = dom.document.createDocumentFragment()
 

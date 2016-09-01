@@ -35,7 +35,8 @@ object Application extends JSApp {
 
     binding.dom.render(
       dom.document.body,
-      views.MainContent.mainContent(client, notification, currentTime)
+      // TODO: Load ViewState from local storage
+      views.MainContent.mainContent(client, ViewModel.State(), notification, currentTime)
     )
   }
 }
