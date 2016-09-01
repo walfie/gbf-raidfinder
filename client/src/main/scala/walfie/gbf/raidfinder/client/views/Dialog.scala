@@ -27,7 +27,7 @@ object Dialog {
     val inner =
       <div class="gbfrf-dialog__container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
         { dialogHeader(onClose = closeModal).bind }
-        { BossSelectorDialog.content(client, closeModal).bind }
+        { BossSelectMenu.content(client, closeModal).bind }
         { SettingsMenu.content(client).bind }
         <hr style="margin: 0;"/>
         { dialogFooter(onCancel = closeModal).bind }

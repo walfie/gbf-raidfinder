@@ -10,7 +10,7 @@ import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps}
 import walfie.gbf.raidfinder.protocol._
 
-object BossSelectorDialog {
+object BossSelectMenu {
   @binding.dom
   def content(client: RaidFinderClient, closeModal: Event => Unit): Binding[Element] = {
     val bossListElement = bossList(client).bind
