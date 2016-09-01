@@ -7,12 +7,17 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
+import walfie.gbf.raidfinder.client.ViewModel._
 import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps, StringOps}
 import walfie.gbf.raidfinder.protocol._
 
 object BossSelectMenu {
   @binding.dom
-  def content(client: RaidFinderClient, closeModal: Event => Unit, isActive: Boolean): Binding[Element] = {
+  def content(
+    client:     RaidFinderClient,
+    closeModal: Event => Unit,
+    currentTab: Binding[DialogTab]
+  ): Binding[Element] = {
     val bossListElement = bossList(client).bind
 
     // TODO: Write a more generic event delegation helper
@@ -28,6 +33,7 @@ object BossSelectMenu {
     })
 
     <section id="gbfrf-dialog__follow" class={
+      val isActive = currentTab.bind == DialogTab.Follow
       "gbfrf-dialog__content mdl-layout__tab-panel".addIf(isActive, "is-active")
     }>
       { bossListElement }

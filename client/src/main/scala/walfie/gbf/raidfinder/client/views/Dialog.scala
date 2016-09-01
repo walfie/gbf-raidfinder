@@ -25,11 +25,13 @@ object Dialog {
 
     val closeModal = { (e: Event) => dynamicDialog.close(); () }
 
+    val currentTab = viewState.currentTab
+
     val inner =
       <div class="gbfrf-dialog__container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
         { dialogHeader(viewState.currentTab, onClose = closeModal).bind }
-        { BossSelectMenu.content(client, closeModal, true).bind }
-        { SettingsMenu.content(client).bind }
+        { BossSelectMenu.content(client, closeModal, currentTab).bind }
+        { SettingsMenu.content(client, currentTab).bind }
         <hr style="margin: 0;"/>
         { dialogFooter(onCancel = closeModal).bind }
       </div>
@@ -39,14 +41,15 @@ object Dialog {
   }
 
   @binding.dom
-  def dialogHeader(currentTab: Binding[ViewModel.DialogTab], onClose: Event => Unit): Binding[HTMLElement] = {
+  def dialogHeader(currentTab: Var[ViewModel.DialogTab], onClose: Event => Unit): Binding[HTMLElement] = {
     <header class="mdl-layout__header">
       <!-- // TODO: Handle tabs -->
       <div class="mdl-layout__header-row gbfrf-column__header-row">
         {
           Constants(DialogTab.all: _*).map { tab =>
             val classList = "mdl-layout__tab".addIf(currentTab.bind == tab, "is-active")
-            <a href={ "#" + tab.id } class={ classList }>{ tab.label }</a>
+            val onClick = { (e: Event) => currentTab := tab }
+            <a href={ "#" + tab.id } class={ classList } onclick={ onClick }>{ tab.label }</a>
           }
         }
         <div class="mdl-layout-spacer"></div>

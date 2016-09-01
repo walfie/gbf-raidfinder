@@ -7,16 +7,18 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
-import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps}
+import walfie.gbf.raidfinder.client.syntax.StringOps
 import walfie.gbf.raidfinder.client.ViewModel._
 import walfie.gbf.raidfinder.client.ViewModel.ImageQuality._
 import walfie.gbf.raidfinder.protocol._
 
 object SettingsMenu {
   @binding.dom
-  def content(client: RaidFinderClient): Binding[Element] = {
-    // TODO: is-active
-    <section id="gbfrf-dialog__settings" class="gbfrf-dialog__content mdl-layout__tab-panel">
+  def content(client: RaidFinderClient, currentTab: Binding[DialogTab]): Binding[Element] = {
+    <section id="gbfrf-dialog__settings" class={
+      val isActive = currentTab.bind == DialogTab.Settings
+      "gbfrf-dialog__content mdl-layout__tab-panel".addIf(isActive, "is-active")
+    }>
       <div class="gbfrf-settings__content">
         <ul class="mdl-list" style="padding: 0; margin: 0;">
           { settingsListItem("Boss image quality")(qualitySelector).bind }
