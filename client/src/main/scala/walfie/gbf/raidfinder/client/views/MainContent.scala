@@ -33,7 +33,10 @@ object MainContent {
         <div class="gbfrf-columns">
           {
             client.state.followedBosses.map { column =>
-              RaidTweets.raidTweetColumn(column.raidBoss, column.raidTweets, currentTime, client, notification).bind
+              RaidTweets.raidTweetColumn(
+                column.raidBoss, column.raidTweets, currentTime,
+                client, notification, viewState
+              ).bind
             }
           }
         </div>

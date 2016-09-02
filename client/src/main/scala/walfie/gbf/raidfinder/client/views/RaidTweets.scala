@@ -4,6 +4,8 @@ import com.momentjs.Moment
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
+import walfie.gbf.raidfinder.client.ViewModel
+import walfie.gbf.raidfinder.client.ViewModel.ImageQuality
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
@@ -19,13 +21,14 @@ object RaidTweets {
     raidTweets:   BindingSeq[RaidTweetResponse],
     currentTime:  Binding[Double],
     client:       RaidFinderClient,
-    notification: Notification
+    notification: Notification,
+    viewState:    ViewModel.State
   ): Binding[HTMLDivElement] = {
     <div class="gbfrf-column mdl-shadow--4dp">
       <div class="mdl-layout mdl-layout--fixed-header">
         { raidBossHeader(raidBoss.bind, client).bind }
         <div class="mdl-layout__content">
-          { raidTweetList(raidTweets, currentTime, notification).bind }
+          { raidTweetList(raidTweets, currentTime, notification, viewState).bind }
         </div>
       </div>
     </div>
@@ -35,11 +38,12 @@ object RaidTweets {
   def raidTweetList(
     raidTweets:   BindingSeq[RaidTweetResponse],
     currentTime:  Binding[Double],
-    notification: Notification
+    notification: Notification,
+    viewState:    ViewModel.State
   ): Binding[HTMLUListElement] = {
     val list =
       <ul class="mdl-list gbfrf-tweets">
-        { raidTweets.map(raidTweet => raidTweetListItem(raidTweet, currentTime).bind) }
+        { raidTweets.map(raidTweet => raidTweetListItem(raidTweet, currentTime, viewState.showUserImages).bind) }
       </ul>
 
     list.addEventListener("click", { e: Event =>
@@ -60,12 +64,18 @@ object RaidTweets {
   }
 
   @binding.dom
-  def raidTweetListItem(raidTweet: RaidTweetResponse, currentTime: Binding[Double]): Binding[HTMLLIElement] = {
+  def raidTweetListItem(
+    raidTweet:      RaidTweetResponse,
+    currentTime:    Binding[Double],
+    showUserImages: Binding[Boolean]
+  ): Binding[HTMLLIElement] = {
     val hasText = raidTweet.text.nonEmpty
     val avatar = {
       val url = raidTweet.profileImage.replace("_normal.", "_mini.")
       val imageClass = "gbfrf-tweet__avatar".addIf(hasText, "gbfrf-tweet__avatar--offset")
-      <img class={ imageClass } src={ url }/>
+      <img class={ imageClass } src={
+        if (showUserImages.bind) url else HtmlHelpers.BlankImage
+      }/>
     }
 
     <li class="gbfrf-tweet gbfrf-js-tweet mdl-list__item" data:data-raidId={ raidTweet.raidId }>
