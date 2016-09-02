@@ -169,19 +169,23 @@ html, body {
 
 .gbfrf-follow__boss-box {
   margin: 5px;
-  background-color: #444;
+  color: #000;
+  background-color: #fff;
   background-size: 100%;
   background-position: 0 20%;
   height: 50px;
+  font-size: 17px;
+  border-bottom: 1px solid gray;
+}
+
+.gbfrf-follow__boss-box--with-image {
+  color: #fff;
+  background-color: #444;
+  border-bottom: none;
 }
 
 .gbfrf-follow__boss-box:hover {
   cursor: pointer;
-}
-
-.gbfrf-follow__boss-text {
-  color: #fff;
-  font-size: 17px;
 }
 
 .gbfrf-settings__content {

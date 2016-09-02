@@ -14,11 +14,12 @@ import walfie.gbf.raidfinder.protocol._
 object BossSelectMenu {
   @binding.dom
   def content(
-    client:     RaidFinderClient,
-    closeModal: Event => Unit,
-    currentTab: Binding[DialogTab]
+    client:       RaidFinderClient,
+    closeModal:   Event => Unit,
+    currentTab:   Binding[DialogTab],
+    imageQuality: Binding[ImageQuality]
   ): Binding[Element] = {
-    val bossListElement = bossList(client).bind
+    val bossListElement = bossList(client, imageQuality).bind
 
     // TODO: Write a more generic event delegation helper
     bossListElement.addEventListener("click", { e: Event =>
@@ -41,24 +42,31 @@ object BossSelectMenu {
   }
 
   @binding.dom
-  def bossList(client: RaidFinderClient): Binding[HTMLUListElement] = {
+  def bossList(client: RaidFinderClient, imageQuality: Binding[ImageQuality]): Binding[HTMLUListElement] = {
     <ul class="mdl-list" style="padding: 0; margin: 0;">
       {
         client.state.allBosses.map { bossColumn =>
           val boss = bossColumn.raidBoss.bind
           val isFollowing = client.state.followedBossNames.bind
-          val smallImage = boss.image.map(_ + ":thumb")
-          bossListItem(boss.name, smallImage, isFollowing(boss.name)).bind
+          val smallImage = boss.image
+          bossListItem(boss.name, smallImage, isFollowing(boss.name), imageQuality).bind
         }
       }
     </ul>
   }
 
   @binding.dom
-  def bossListItem(bossName: String, image: Option[String], isFollowing: Boolean): Binding[HTMLLIElement] = {
+  def bossListItem(
+    bossName: String, image: Option[String], isFollowing: Boolean, imageQuality: Binding[ImageQuality]
+  ): Binding[HTMLLIElement] = {
     val elem =
-      <li class="gbfrf-js-bossSelect gbfrf-follow__boss-box mdl-list__item mdl-shadow--2dp" data:data-bossName={ bossName }>
-        <span class="gbfrf-follow__boss-text mdl-list__item-primary-content">{ bossName }</span>
+      <li class={
+        "gbfrf-js-bossSelect gbfrf-follow__boss-box mdl-list__item".addIf(
+          imageQuality.bind != ImageQuality.Off,
+          "gbfrf-follow__boss-box--with-image mdl-shadow--2dp"
+        )
+      } data:data-bossName={ bossName }>
+        <span class="mdl-list__item-primary-content">{ bossName }</span>
         <div class="mdl-layout-spacer"></div>
         {
           if (isFollowing) List(<div class="mdl-badge mdl-badge--overlap" data:data-badge="★"></div>)
@@ -66,7 +74,12 @@ object BossSelectMenu {
         }
       </li>
 
-    image.foreach(elem.backgroundImage(_, 0.25))
+    val quality = imageQuality.bind
+    if (quality == ImageQuality.Off) {
+      elem.style.backgroundImage = ""
+    } else {
+      image.foreach(i => elem.backgroundImage(i + quality.suffix, 0.25))
+    }
 
     elem
   }

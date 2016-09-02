@@ -18,11 +18,11 @@ object ViewModel {
       all.map(tab => tab.label -> tab).toMap.get _
   }
 
-  sealed abstract class ImageQuality(val label: String)
+  sealed abstract class ImageQuality(val label: String, val suffix: String)
   object ImageQuality {
-    case object Off extends ImageQuality("Off")
-    case object Low extends ImageQuality("Low")
-    case object High extends ImageQuality("High")
+    case object Off extends ImageQuality("Off", "")
+    case object Low extends ImageQuality("Low", ":thumb")
+    case object High extends ImageQuality("High", ":small")
 
     val Default = Off
     val fromString: String => Option[ImageQuality] =
