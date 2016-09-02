@@ -3,6 +3,7 @@ package walfie.gbf.raidfinder.client
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
+import walfie.gbf.raidfinder.client.ViewModel.ImageQuality
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.collection.mutable.Buffer
@@ -21,11 +22,21 @@ package object syntax {
     }
 
     /** Add a cover background image, slightly darkened */
-    def backgroundImage(imageUrl: String, opacity: Double): T = {
-      val img = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
-      val color = s"rgba(0, 0, 0, $opacity)"
-      elem.style.backgroundImage = s"linear-gradient($color, $color), url('$imageUrl')"
+    def backgroundImage(image: Option[String], opacity: Double): T = {
+      image match {
+        case None => elem.style.backgroundImage = ""
+        case Some(imageUrl) =>
+          val img = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
+          val color = s"rgba(0, 0, 0, $opacity)"
+          elem.style.backgroundImage = s"linear-gradient($color, $color), url('$imageUrl')"
+      }
+
       elem
+    }
+
+    def backgroundImageQuality(image: Option[String], opacity: Double, quality: ImageQuality): T = {
+      val imageOpt = if (quality == ImageQuality.Off) None else image
+      backgroundImage(imageOpt.map(_ + quality.suffix), opacity)
     }
   }
 

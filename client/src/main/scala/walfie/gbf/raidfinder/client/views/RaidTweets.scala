@@ -26,7 +26,7 @@ object RaidTweets {
   ): Binding[HTMLDivElement] = {
     <div class="gbfrf-column mdl-shadow--4dp">
       <div class="mdl-layout mdl-layout--fixed-header">
-        { raidBossHeader(raidBoss.bind, client).bind }
+        { raidBossHeader(raidBoss.bind, client, viewState.imageQuality).bind }
         <div class="mdl-layout__content">
           { raidTweetList(raidTweets, currentTime, notification, viewState).bind }
         </div>
@@ -103,7 +103,11 @@ object RaidTweets {
   private def menuId(bossName: String): String = "menu_" + bossName.replace(" ", "_")
 
   @binding.dom
-  def raidBossHeader(raidBoss: RaidBoss, client: RaidFinderClient): Binding[HTMLElement] = {
+  def raidBossHeader(
+    raidBoss:     RaidBoss,
+    client:       RaidFinderClient,
+    imageQuality: Binding[ImageQuality]
+  ): Binding[HTMLElement] = {
     val headerRow =
       <div class="mdl-layout__header-row gbfrf-column__header-row">
         <div class="mdl-layout-title gbfrf-column__header">{ raidBoss.name }</div>
@@ -114,7 +118,7 @@ object RaidTweets {
         { raidBossHeaderMenu(raidBoss.name, client).bind }
       </div>
 
-    raidBoss.image.foreach(image => headerRow.backgroundImage(image + ":thumb", 0.25))
+    headerRow.backgroundImageQuality(raidBoss.image, 0.25, imageQuality.bind)
 
     <header class="mdl-layout__header">
       { headerRow }

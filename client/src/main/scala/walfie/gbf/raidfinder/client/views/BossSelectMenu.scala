@@ -74,14 +74,7 @@ object BossSelectMenu {
         }
       </li>
 
-    val quality = imageQuality.bind
-    if (quality == ImageQuality.Off) {
-      elem.style.backgroundImage = ""
-    } else {
-      image.foreach(i => elem.backgroundImage(i + quality.suffix, 0.25))
-    }
-
-    elem
+    elem.backgroundImageQuality(image, 0.25, imageQuality.bind)
   }
 }
 
