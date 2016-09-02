@@ -48,9 +48,9 @@ object Dialog {
       <div class="mdl-layout__header-row gbfrf-column__header-row">
         {
           Constants(DialogTab.all: _*).map { tab =>
-            val classList = "mdl-layout__tab".addIf(currentTab.bind == tab, "is-active")
+            val classList = "gbfrf-dialog__tab-bar-item mdl-layout__tab".addIf(currentTab.bind == tab, "is-active")
             val onClick = { (e: Event) => currentTab := tab; onTabChange() }
-            <a href={ "#" + tab.id } class={ classList } onclick={ onClick }>{ tab.label }</a>
+            <div class={ classList } onclick={ onClick }>{ tab.label }</div>
           }
         }
         <div class="mdl-layout-spacer"></div>

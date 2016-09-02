@@ -33,14 +33,11 @@ object Application extends JSApp {
     val currentTime: Var[Double] = Var(js.Date.now())
     js.timers.setInterval(30000) {
       client.truncateColumns(50)
-      if (viewState.timeFormat.get == TimeFormat.Relative) {
-        currentTime := js.Date.now()
-      }
+      currentTime := js.Date.now()
     }
 
     binding.dom.render(
       dom.document.body,
-      // TODO: Load ViewState from local storage
       views.MainContent.mainContent(client, ViewModel.loadState(), notification, currentTime)
     )
   }
