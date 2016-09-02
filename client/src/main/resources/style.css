@@ -194,7 +194,7 @@ html, body {
   border-bottom: 1px solid gray;
 }
 
-.gbfrf-settings__toggle {
+.gbfrf-settings__radio-buttons {
   display: flex;
   flex-direction: row;
   justify-content: space-between;

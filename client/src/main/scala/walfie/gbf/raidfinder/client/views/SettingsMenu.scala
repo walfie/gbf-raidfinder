@@ -21,9 +21,21 @@ object SettingsMenu {
     }>
       <div class="gbfrf-settings__content">
         <ul class="mdl-list" style="padding: 0; margin: 0;">
-          { settingsListItem("Boss image quality")(qualitySelector(viewState.imageQuality)).bind }
-          { settingsListItem("Twitter user images")(checkbox("gbfrf-setting__user-image", viewState.showUserImages)).bind }
-          { settingsListItem("Relative time")(checkbox("gbfrf-setting__relative-time", viewState.relativeTime)).bind }
+          {
+            settingsListItem("Boss image quality") {
+              qualitySelector(viewState.imageQuality)
+            }.bind
+          }
+          {
+            settingsListItem("Twitter user images") {
+              checkboxAction("gbfrf-setting__user-image", viewState.showUserImages)
+            }.bind
+          }
+          {
+            settingsListItem("Relative time") {
+              checkboxAction("gbfrf-setting__relative-time", viewState.relativeTime)
+            }.bind
+          }
         </ul>
         <div style="margin-top: auto; align-self: flex-end; padding: 5px; color: gray;">github.com/walfie/gbf-raidfinder</div>
       </div>
@@ -34,10 +46,15 @@ object SettingsMenu {
   def settingsListItem(text: String)(secondaryAction: Binding[Element]): Binding[HTMLLIElement] = {
     <li class="gbfrf-settings__item mdl-list__item">
       <div class="mdl-list__item-primary-content">{ text }</div>
-      <div class="mdl-list__item-secondary-action">
-        { secondaryAction.bind /* TODO: extra classes */ }
-      </div>
+      { secondaryAction.bind }
     </li>
+  }
+
+  @binding.dom
+  def checkboxAction(id: String, checked: Var[Boolean]): Binding[HTMLDivElement] = {
+    <div class="mdl-list__item-secondary-action">
+      { checkbox(id, checked).bind }
+    </div>
   }
 
   @binding.dom
@@ -56,7 +73,7 @@ object SettingsMenu {
 
   @binding.dom // TODO: OnClick
   def qualitySelector(currentQuality: Var[ImageQuality]): Binding[HTMLDivElement] = {
-    <div class="gbfrf-settings__toggle">
+    <div class="gbfrf-settings__radio-buttons">
       {
         Constants(Off, Low, High).map { quality =>
           val id = "gbfrf-settings__image-quality--" + quality.label
