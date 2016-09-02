@@ -15,6 +15,8 @@ import walfie.gbf.raidfinder.protocol._
 object SettingsMenu {
   @binding.dom
   def content(client: RaidFinderClient, viewState: State): Binding[Element] = {
+    val onChange = () => ViewModel.persistState(viewState)
+
     <section id="gbfrf-dialog__settings" class={
       val isActive = viewState.currentTab.bind == DialogTab.Settings
       "gbfrf-dialog__content mdl-layout__tab-panel".addIf(isActive, "is-active")
@@ -23,17 +25,17 @@ object SettingsMenu {
         <ul class="mdl-list" style="padding: 0; margin: 0;">
           {
             settingsListItem("Boss image quality") {
-              qualitySelector(viewState.imageQuality)
+              qualitySelector(viewState.imageQuality, onChange)
             }.bind
           }
           {
-            settingsListItem("Twitter user images") {
-              checkboxAction("gbfrf-setting__user-image", viewState.showUserImages)
+            settingsListItem("Show user images") {
+              checkboxAction("gbfrf-setting__user-image", viewState.showUserImages, onChange)
             }.bind
           }
           {
             settingsListItem("Relative time") {
-              checkboxAction("gbfrf-setting__relative-time", viewState.relativeTime)
+              checkboxAction("gbfrf-setting__relative-time", viewState.relativeTime, onChange)
             }.bind
           }
         </ul>
@@ -51,16 +53,17 @@ object SettingsMenu {
   }
 
   @binding.dom
-  def checkboxAction(id: String, checked: Var[Boolean]): Binding[HTMLDivElement] = {
+  def checkboxAction(id: String, checked: Var[Boolean], onChange: () => Unit): Binding[HTMLDivElement] = {
     <div class="mdl-list__item-secondary-action">
-      { checkbox(id, checked).bind }
+      { checkbox(id, checked, onChange).bind }
     </div>
   }
 
   @binding.dom
-  def checkbox(id: String, checked: Var[Boolean]): Binding[HTMLLabelElement] = {
+  def checkbox(id: String, checked: Var[Boolean], onChange: () => Unit): Binding[HTMLLabelElement] = {
     val onClick = { e: dom.Event =>
       checked := e.currentTarget.asInstanceOf[HTMLInputElement].checked
+      onChange()
     }
 
     val input = <input type="checkbox" id={ id } class="mdl-switch__input" onclick={ onClick }/>
@@ -72,12 +75,15 @@ object SettingsMenu {
   }
 
   @binding.dom // TODO: OnClick
-  def qualitySelector(currentQuality: Var[ImageQuality]): Binding[HTMLDivElement] = {
+  def qualitySelector(currentQuality: Var[ImageQuality], onChange: () => Unit): Binding[HTMLDivElement] = {
     <div class="gbfrf-settings__radio-buttons">
       {
         Constants(Off, Low, High).map { quality =>
           val id = "gbfrf-settings__image-quality--" + quality.label
-          val onClick = (e: Event) => currentQuality := quality
+          val onClick = { e: Event =>
+            currentQuality := quality
+            onChange()
+          }
           val radioInput = <input type="radio" id={ id } class="mdl-radio__button" value={ quality.label } onclick={ onClick }/>
 
           val label =

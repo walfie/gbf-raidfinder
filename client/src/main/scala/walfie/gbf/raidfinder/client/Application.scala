@@ -26,17 +26,21 @@ object Application extends JSApp {
 
     val notification = new views.SnackbarNotification
 
+    val viewState = ViewModel.loadState()
+
     // Update currentTime every 30 seconds
     val currentTime: Var[Double] = Var(js.Date.now())
     js.timers.setInterval(30000) {
       client.truncateColumns(50)
-      currentTime := js.Date.now()
+      if (viewState.relativeTime.get) {
+        currentTime := js.Date.now()
+      }
     }
 
     binding.dom.render(
       dom.document.body,
       // TODO: Load ViewState from local storage
-      views.MainContent.mainContent(client, ViewModel.State(), notification, currentTime)
+      views.MainContent.mainContent(client, ViewModel.loadState(), notification, currentTime)
     )
   }
 }
