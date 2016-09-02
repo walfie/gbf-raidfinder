@@ -3,6 +3,7 @@ package walfie.gbf.raidfinder.client
 import java.nio.ByteBuffer
 import org.scalajs.dom
 import scala.scalajs.js
+import walfie.gbf.raidfinder.client.util.time.Duration
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.implicits._
 
@@ -20,6 +21,7 @@ trait WebSocketClient {
 trait WebSocketSubscriber {
   def onWebSocketMessage(message: Response): Unit
   def onWebSocketOpen(): Unit
+  def onWebSocketReconnect(): Unit
   def onWebSocketClose(): Unit
 }
 
@@ -28,7 +30,9 @@ class BinaryProtobufWebSocketClient(websocketUrl: String) extends WebSocketClien
   private var websocketIsOpen = false
   private var websocketSendQueue = js.Array[ArrayBuffer]()
 
-  private def connectWebSocket(): dom.WebSocket = {
+  private val reconnectInterval = Duration.seconds(5)
+
+  private def connectWebSocket(isReconnect: Boolean): dom.WebSocket = {
     val ws = new dom.WebSocket(websocketUrl, js.Array("binary"))
 
     ws.binaryType = "arraybuffer"
@@ -37,7 +41,10 @@ class BinaryProtobufWebSocketClient(websocketUrl: String) extends WebSocketClien
       websocketIsOpen = true
       websocketSendQueue.foreach(ws.send)
       websocketSendQueue = js.Array()
-      subscriber.foreach(_.onWebSocketOpen())
+      subscriber.foreach { sub =>
+        if (isReconnect) sub.onWebSocketReconnect()
+        else sub.onWebSocketOpen()
+      }
     }
 
     ws.onmessage = { e: dom.MessageEvent =>
@@ -56,12 +63,15 @@ class BinaryProtobufWebSocketClient(websocketUrl: String) extends WebSocketClien
     ws.onclose = { _: dom.CloseEvent =>
       websocketIsOpen = false
       subscriber.foreach(_.onWebSocketClose())
+      js.timers.setTimeout(reconnectInterval.milliseconds) {
+        websocket = connectWebSocket(isReconnect = true)
+      }
     }
 
     ws
   }
 
-  private var websocket = connectWebSocket()
+  private var websocket = connectWebSocket(isReconnect = false)
 
   def setSubscriber(newSubscriber: Option[WebSocketSubscriber]): Unit =
     subscriber = newSubscriber
