@@ -6,6 +6,8 @@ import scala.annotation.tailrec
 import scala.util.{Success, Failure, Try}
 
 object HtmlHelpers {
+  val BlankImage = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+
   @tailrec
   def findParent(element: Element, predicate: Element => Boolean): Option[Element] = {
     if (predicate(element)) Some(element)

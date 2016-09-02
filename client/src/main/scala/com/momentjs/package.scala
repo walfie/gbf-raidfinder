@@ -17,5 +17,6 @@ trait Date extends js.Object {
   def fromNow(): String = js.native
   def fromNow(withoutSuffix: Boolean): String = js.native
   def from(millis: Double, withoutSuffix: Boolean): String = js.native
+  def format(stringFormat: String): String = js.native
 }
 

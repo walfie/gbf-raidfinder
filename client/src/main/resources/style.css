@@ -37,6 +37,12 @@ html, body {
   .gbfrf-column {
     width: 90%;
   }
+
+  .gbfrf-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+  }
 }
 
 .gbfrf-column__header {
@@ -133,7 +139,7 @@ html, body {
   padding-left: 0.5em;
 }
 
-.gbfrf-follow__dialog {
+.gbfrf-dialog {
   max-width: 80%;
   height: 80%;
   width: 400px !important;
@@ -149,32 +155,53 @@ html, body {
   margin-right: auto;
 }
 
-.gbfrf-follow {
+.gbfrf-dialog__container {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.gbfrf-follow__content {
-  overflow-y: scroll;
+.gbfrf-dialog__content {
+  overflow-y: auto;
   max-height: 100%;
   flex: 1 1;
 }
 
 .gbfrf-follow__boss-box {
   margin: 5px;
-  background-color: #444;
+  color: #000;
+  background-color: #fff;
   background-size: 100%;
   background-position: 0 20%;
   height: 50px;
+  font-size: 17px;
+  border-bottom: 1px solid gray;
+}
+
+.gbfrf-follow__boss-box--with-image {
+  color: #fff;
+  background-color: #444;
+  border-bottom: none;
 }
 
 .gbfrf-follow__boss-box:hover {
   cursor: pointer;
 }
 
-.gbfrf-follow__boss-text {
-  color: #fff;
-  font-size: 17px;
+.gbfrf-settings__content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gbfrf-settings__item {
+  border-bottom: 1px solid gray;
+}
+
+.gbfrf-settings__radio-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 60%;
 }
 

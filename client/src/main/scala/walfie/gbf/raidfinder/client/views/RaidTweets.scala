@@ -4,6 +4,8 @@ import com.momentjs.Moment
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
+import walfie.gbf.raidfinder.client.ViewModel
+import walfie.gbf.raidfinder.client.ViewModel.{ImageQuality, TimeFormat}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
@@ -19,13 +21,14 @@ object RaidTweets {
     raidTweets:   BindingSeq[RaidTweetResponse],
     currentTime:  Binding[Double],
     client:       RaidFinderClient,
-    notification: Notification
+    notification: Notification,
+    viewState:    ViewModel.State
   ): Binding[HTMLDivElement] = {
     <div class="gbfrf-column mdl-shadow--4dp">
       <div class="mdl-layout mdl-layout--fixed-header">
-        { raidBossHeader(raidBoss.bind, client).bind }
+        { raidBossHeader(raidBoss.bind, client, viewState.imageQuality).bind }
         <div class="mdl-layout__content">
-          { raidTweetList(raidTweets, currentTime, notification).bind }
+          { raidTweetList(raidTweets, currentTime, notification, viewState).bind }
         </div>
       </div>
     </div>
@@ -35,11 +38,18 @@ object RaidTweets {
   def raidTweetList(
     raidTweets:   BindingSeq[RaidTweetResponse],
     currentTime:  Binding[Double],
-    notification: Notification
+    notification: Notification,
+    viewState:    ViewModel.State
   ): Binding[HTMLUListElement] = {
     val list =
       <ul class="mdl-list gbfrf-tweets">
-        { raidTweets.map(raidTweet => raidTweetListItem(raidTweet, currentTime).bind) }
+        {
+          raidTweets.map { raidTweet =>
+            raidTweetListItem(
+              raidTweet, currentTime, viewState.timeFormat, viewState.showUserImages
+            ).bind
+          }
+        }
       </ul>
 
     list.addEventListener("click", { e: Event =>
@@ -60,12 +70,19 @@ object RaidTweets {
   }
 
   @binding.dom
-  def raidTweetListItem(raidTweet: RaidTweetResponse, currentTime: Binding[Double]): Binding[HTMLLIElement] = {
+  def raidTweetListItem(
+    raidTweet:      RaidTweetResponse,
+    currentTime:    Binding[Double],
+    timeFormat:     Binding[TimeFormat],
+    showUserImages: Binding[Boolean]
+  ): Binding[HTMLLIElement] = {
     val hasText = raidTweet.text.nonEmpty
     val avatar = {
       val url = raidTweet.profileImage.replace("_normal.", "_mini.")
       val imageClass = "gbfrf-tweet__avatar".addIf(hasText, "gbfrf-tweet__avatar--offset")
-      <img class={ imageClass } src={ url }/>
+      <img class={ imageClass } src={
+        if (showUserImages.bind) url else HtmlHelpers.BlankImage
+      }/>
     }
 
     <li class="gbfrf-tweet gbfrf-js-tweet mdl-list__item" data:data-raidId={ raidTweet.raidId }>
@@ -75,7 +92,19 @@ object RaidTweets {
           <div>
             <span class="gbfrf-tweet__username">{ raidTweet.screenName }</span>
             <span class="gbfrf-tweet__timestamp">
-              { Moment(raidTweet.createdAt.getTime).from(currentTime.bind, true) }
+              {
+                val moment = Moment(raidTweet.createdAt.getTime)
+
+                // TODO: Put this in a method
+                timeFormat.bind match {
+                  case TimeFormat.Relative =>
+                    moment.from(currentTime.bind, true)
+                  case TimeFormat.TwelveHour =>
+                    moment.format("h:mm:ssa")
+                  case TimeFormat.TwentyFourHour =>
+                    moment.format("H:mm:ss")
+                }
+              }
             </span>
           </div>
           {
@@ -93,7 +122,11 @@ object RaidTweets {
   private def menuId(bossName: String): String = "menu_" + bossName.replace(" ", "_")
 
   @binding.dom
-  def raidBossHeader(raidBoss: RaidBoss, client: RaidFinderClient): Binding[HTMLElement] = {
+  def raidBossHeader(
+    raidBoss:     RaidBoss,
+    client:       RaidFinderClient,
+    imageQuality: Binding[ImageQuality]
+  ): Binding[HTMLElement] = {
     val headerRow =
       <div class="mdl-layout__header-row gbfrf-column__header-row">
         <div class="mdl-layout-title gbfrf-column__header">{ raidBoss.name }</div>
@@ -104,7 +137,7 @@ object RaidTweets {
         { raidBossHeaderMenu(raidBoss.name, client).bind }
       </div>
 
-    raidBoss.image.foreach(image => headerRow.backgroundImage(image + ":thumb", 0.25))
+    headerRow.backgroundImageQuality(raidBoss.image, 0.25, imageQuality.bind)
 
     <header class="mdl-layout__header">
       { headerRow }
