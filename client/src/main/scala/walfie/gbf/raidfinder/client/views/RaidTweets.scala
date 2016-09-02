@@ -43,7 +43,13 @@ object RaidTweets {
   ): Binding[HTMLUListElement] = {
     val list =
       <ul class="mdl-list gbfrf-tweets">
-        { raidTweets.map(raidTweet => raidTweetListItem(raidTweet, currentTime, viewState.showUserImages).bind) }
+        {
+          raidTweets.map { raidTweet =>
+            raidTweetListItem(
+              raidTweet, currentTime, viewState.showUserImages, viewState.relativeTime
+            ).bind
+          }
+        }
       </ul>
 
     list.addEventListener("click", { e: Event =>
@@ -65,9 +71,10 @@ object RaidTweets {
 
   @binding.dom
   def raidTweetListItem(
-    raidTweet:      RaidTweetResponse,
-    currentTime:    Binding[Double],
-    showUserImages: Binding[Boolean]
+    raidTweet:        RaidTweetResponse,
+    currentTime:      Binding[Double],
+    showUserImages:   Binding[Boolean],
+    showRelativeTime: Binding[Boolean]
   ): Binding[HTMLLIElement] = {
     val hasText = raidTweet.text.nonEmpty
     val avatar = {
@@ -85,7 +92,15 @@ object RaidTweets {
           <div>
             <span class="gbfrf-tweet__username">{ raidTweet.screenName }</span>
             <span class="gbfrf-tweet__timestamp">
-              { Moment(raidTweet.createdAt.getTime).from(currentTime.bind, true) }
+              {
+                if (showRelativeTime.bind) {
+                  Moment(raidTweet.createdAt.getTime).from(currentTime.bind, true)
+                } else {
+                  // TODO: This is deprecated and also doesn't display well. Do it better.
+                  val time = raidTweet.createdAt
+                  s"${time.getHours}:${time.getMinutes}:${time.getSeconds}"
+                }
+              }
             </span>
           </div>
           {
