@@ -21,7 +21,7 @@ object SettingsMenu {
     }>
       <div class="gbfrf-settings__content">
         <ul class="mdl-list" style="padding: 0; margin: 0;">
-          { settingsListItem("Boss image quality")(qualitySelector).bind }
+          { settingsListItem("Boss image quality")(qualitySelector(viewState.imageQuality)).bind }
           { settingsListItem("Twitter user images")(checkbox("gbfrf-setting__user-image", viewState.showUserImages)).bind }
           { settingsListItem("Relative time")(checkbox("gbfrf-setting__relative-time", viewState.relativeTime)).bind }
         </ul>
@@ -31,7 +31,7 @@ object SettingsMenu {
   }
 
   @binding.dom
-  def settingsListItem(text: String)(secondaryAction: Binding[Element]): Binding[Element] = {
+  def settingsListItem(text: String)(secondaryAction: Binding[Element]): Binding[HTMLLIElement] = {
     <li class="gbfrf-settings__item mdl-list__item">
       <div class="mdl-list__item-primary-content">{ text }</div>
       <div class="mdl-list__item-secondary-action">
@@ -55,16 +55,24 @@ object SettingsMenu {
   }
 
   @binding.dom // TODO: OnClick
-  def qualitySelector: Binding[HTMLDivElement] = {
+  def qualitySelector(currentQuality: Var[ImageQuality]): Binding[HTMLDivElement] = {
     <div class="gbfrf-settings__toggle">
       {
         Constants(Off, Low, High).map { quality =>
           val id = "gbfrf-settings__image-quality--" + quality.label
+          val onClick = (e: Event) => currentQuality := quality
+          val radioInput = <input type="radio" id={ id } class="mdl-radio__button" value={ quality.label } onclick={ onClick }/>
 
-          <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for={ id }>
-            <input type="radio" id={ id } class="mdl-radio__button" name="options" value={ quality.label }/>
-            <span class="mdl-radio__label">{ quality.label }</span>
-          </label>
+          val label =
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for={ id }>
+              {
+                radioInput.checked = (currentQuality.bind == quality)
+                radioInput
+              }
+              <span class="mdl-radio__label">{ quality.label }</span>
+            </label>
+
+          label
         }
       }
     </div>

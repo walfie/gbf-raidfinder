@@ -43,7 +43,6 @@ object Dialog {
   @binding.dom
   def dialogHeader(currentTab: Var[ViewModel.DialogTab], onClose: Event => Unit): Binding[HTMLElement] = {
     <header class="mdl-layout__header">
-      <!-- // TODO: Handle tabs -->
       <div class="mdl-layout__header-row gbfrf-column__header-row">
         {
           Constants(DialogTab.all: _*).map { tab =>
