@@ -19,6 +19,7 @@ trait WebSocketClient {
 
 trait WebSocketSubscriber {
   def onWebSocketMessage(message: Response): Unit
+  def onWebSocketOpen(): Unit
   def onWebSocketClose(): Unit
 }
 
@@ -27,32 +28,40 @@ class BinaryProtobufWebSocketClient(websocketUrl: String) extends WebSocketClien
   private var websocketIsOpen = false
   private var websocketSendQueue = js.Array[ArrayBuffer]()
 
-  private val websocket = new dom.WebSocket(websocketUrl, js.Array("binary"))
-  websocket.binaryType = "arraybuffer"
+  private def connectWebSocket(): dom.WebSocket = {
+    val ws = new dom.WebSocket(websocketUrl, js.Array("binary"))
 
-  websocket.onopen = { _: dom.Event =>
-    websocketIsOpen = true
-    websocketSendQueue.foreach(websocket.send)
-    websocketSendQueue = js.Array()
-  }
+    ws.binaryType = "arraybuffer"
 
-  websocket.onmessage = { e: dom.MessageEvent =>
-    val data = e.data match {
-      case buffer: ArrayBuffer => new Int8Array(buffer).toArray
+    ws.onopen = { _: dom.Event =>
+      websocketIsOpen = true
+      websocketSendQueue.foreach(ws.send)
+      websocketSendQueue = js.Array()
+      subscriber.foreach(_.onWebSocketOpen())
     }
-    val parsedMessage = ResponseMessage.validate(data)
 
-    for {
-      sub <- subscriber
-      message <- parsedMessage.toOption // TODO: Log error
-      response <- message.toResponse
-    } sub.onWebSocketMessage(response)
+    ws.onmessage = { e: dom.MessageEvent =>
+      val data = e.data match {
+        case buffer: ArrayBuffer => new Int8Array(buffer).toArray
+      }
+      val parsedMessage = ResponseMessage.validate(data)
+
+      for {
+        sub <- subscriber
+        message <- parsedMessage.toOption // TODO: Log error
+        response <- message.toResponse
+      } sub.onWebSocketMessage(response)
+    }
+
+    ws.onclose = { _: dom.CloseEvent =>
+      websocketIsOpen = false
+      subscriber.foreach(_.onWebSocketClose())
+    }
+
+    ws
   }
 
-  websocket.onclose = { _: dom.CloseEvent =>
-    websocketIsOpen = false
-    subscriber.foreach(_.onWebSocketClose())
-  }
+  private var websocket = connectWebSocket()
 
   def setSubscriber(newSubscriber: Option[WebSocketSubscriber]): Unit =
     subscriber = newSubscriber

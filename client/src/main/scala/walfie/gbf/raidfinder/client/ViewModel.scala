@@ -6,6 +6,13 @@ import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
 
 object ViewModel {
+  sealed trait ConnectionStatus
+  object ConnectionStatus {
+    case object Connecting extends ConnectionStatus
+    case object Connected extends ConnectionStatus
+    case object Disconnected extends ConnectionStatus
+  }
+
   trait Labeled {
     def label: String
     def id: String

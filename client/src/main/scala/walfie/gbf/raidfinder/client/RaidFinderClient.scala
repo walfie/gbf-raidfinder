@@ -1,12 +1,13 @@
 package walfie.gbf.raidfinder.client
 
-import walfie.gbf.raidfinder.client.util.time.{Clock, Duration}
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
 import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.syntax.BufferOps
+import walfie.gbf.raidfinder.client.util.time.{Clock, Duration}
+import walfie.gbf.raidfinder.client.ViewModel._
 import walfie.gbf.raidfinder.protocol._
 
 trait RaidFinderClient {
@@ -28,7 +29,14 @@ class WebSocketRaidFinderClient(
 
   websocket.setSubscriber(Some(this))
 
+  var connectionStatus: Var[ConnectionStatus] = Var(ConnectionStatus.Connecting)
+
+  override def onWebSocketOpen(): Unit = {
+    connectionStatus := ConnectionStatus.Connected
+  }
+
   override def onWebSocketClose(): Unit = {
+    connectionStatus := ConnectionStatus.Disconnected
     println("Websocket closed") // TODO: Better handling
   }
 
