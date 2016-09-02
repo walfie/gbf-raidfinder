@@ -1,12 +1,13 @@
 package walfie.gbf.raidfinder.client
 
+import com.momentjs.Moment
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
-import com.momentjs.Moment
 import scala.scalajs.js
-import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.client.util.time._
+import walfie.gbf.raidfinder.client.ViewModel.TimeFormat
+import walfie.gbf.raidfinder.protocol._
 
 import dom.raw._
 import js.JSApp
@@ -32,7 +33,7 @@ object Application extends JSApp {
     val currentTime: Var[Double] = Var(js.Date.now())
     js.timers.setInterval(30000) {
       client.truncateColumns(50)
-      if (viewState.relativeTime.get) {
+      if (viewState.timeFormat.get == TimeFormat.Relative) {
         currentTime := js.Date.now()
       }
     }

@@ -5,7 +5,7 @@ import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import walfie.gbf.raidfinder.client.ViewModel
-import walfie.gbf.raidfinder.client.ViewModel.ImageQuality
+import walfie.gbf.raidfinder.client.ViewModel.{ImageQuality, TimeFormat}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
@@ -46,7 +46,7 @@ object RaidTweets {
         {
           raidTweets.map { raidTweet =>
             raidTweetListItem(
-              raidTweet, currentTime, viewState.showUserImages, viewState.relativeTime
+              raidTweet, currentTime, viewState.timeFormat, viewState.showUserImages
             ).bind
           }
         }
@@ -71,10 +71,10 @@ object RaidTweets {
 
   @binding.dom
   def raidTweetListItem(
-    raidTweet:        RaidTweetResponse,
-    currentTime:      Binding[Double],
-    showUserImages:   Binding[Boolean],
-    showRelativeTime: Binding[Boolean]
+    raidTweet:      RaidTweetResponse,
+    currentTime:    Binding[Double],
+    timeFormat:     Binding[TimeFormat],
+    showUserImages: Binding[Boolean]
   ): Binding[HTMLLIElement] = {
     val hasText = raidTweet.text.nonEmpty
     val avatar = {
@@ -93,12 +93,16 @@ object RaidTweets {
             <span class="gbfrf-tweet__username">{ raidTweet.screenName }</span>
             <span class="gbfrf-tweet__timestamp">
               {
-                if (showRelativeTime.bind) {
-                  Moment(raidTweet.createdAt.getTime).from(currentTime.bind, true)
-                } else {
-                  // TODO: This is deprecated and also doesn't display well. Do it better.
-                  val time = raidTweet.createdAt
-                  s"${time.getHours}:${time.getMinutes}:${time.getSeconds}"
+                val moment = Moment(raidTweet.createdAt.getTime)
+
+                // TODO: Put this in a method
+                timeFormat.bind match {
+                  case TimeFormat.Relative =>
+                    moment.from(currentTime.bind, true)
+                  case TimeFormat.TwelveHour =>
+                    moment.format("h:mm:ssa")
+                  case TimeFormat.TwentyFourHour =>
+                    moment.format("H:mm:ss")
                 }
               }
             </span>

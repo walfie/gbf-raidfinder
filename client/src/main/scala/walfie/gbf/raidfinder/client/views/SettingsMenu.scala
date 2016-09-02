@@ -25,17 +25,17 @@ object SettingsMenu {
         <ul class="mdl-list" style="padding: 0; margin: 0;">
           {
             settingsListItem("Boss image quality") {
-              qualitySelector(viewState.imageQuality, onChange)
+              radioSelector(ImageQuality.all, viewState.imageQuality, onChange)
+            }.bind
+          }
+          {
+            settingsListItem("Time format") {
+              radioSelector(TimeFormat.all, viewState.timeFormat, onChange)
             }.bind
           }
           {
             settingsListItem("Show user images") {
               checkboxAction("gbfrf-setting__user-image", viewState.showUserImages, onChange)
-            }.bind
-          }
-          {
-            settingsListItem("Relative time") {
-              checkboxAction("gbfrf-setting__relative-time", viewState.relativeTime, onChange)
             }.bind
           }
         </ul>
@@ -74,25 +74,29 @@ object SettingsMenu {
     </label>
   }
 
-  @binding.dom // TODO: OnClick
-  def qualitySelector(currentQuality: Var[ImageQuality], onChange: () => Unit): Binding[HTMLDivElement] = {
+  @binding.dom
+  def radioSelector[T <: Labeled](
+    allValues:    Seq[T],
+    currentValue: Var[T],
+    onChange:     () => Unit
+  ): Binding[HTMLDivElement] = {
     <div class="gbfrf-settings__radio-buttons">
       {
-        Constants(Off, Low, High).map { quality =>
-          val id = "gbfrf-settings__image-quality--" + quality.label
+        Constants(allValues: _*).map { value =>
           val onClick = { e: Event =>
-            currentQuality := quality
+            currentValue := value
             onChange()
           }
-          val radioInput = <input type="radio" id={ id } class="mdl-radio__button" value={ quality.label } onclick={ onClick }/>
+          val radioInput =
+            <input type="radio" id={ value.id } class="mdl-radio__button" value={ value.label } onclick={ onClick }/>
 
           val label =
-            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for={ id }>
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for={ value.id }>
               {
-                radioInput.checked = (currentQuality.bind == quality)
+                radioInput.checked = (currentValue.bind == value)
                 radioInput
               }
-              <span class="mdl-radio__label">{ quality.label }</span>
+              <span class="mdl-radio__label">{ value.label }</span>
             </label>
 
           label
