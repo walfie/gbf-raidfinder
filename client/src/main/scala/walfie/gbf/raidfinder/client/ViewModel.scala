@@ -11,12 +11,12 @@ object ViewModel {
     def id: String
   }
 
-  sealed abstract class DialogTab(val label: String) extends Labeled {
+  sealed abstract class DialogTab(val label: String, val icon: String) extends Labeled {
     def id: String = s"gbfrf-dialog__$label"
   }
   object DialogTab {
-    case object Follow extends DialogTab("Follow")
-    case object Settings extends DialogTab("Settings")
+    case object Follow extends DialogTab("Follow", "add")
+    case object Settings extends DialogTab("Settings", "settings")
 
     val all: List[DialogTab] = List(Follow, Settings)
     val fromString: String => Option[DialogTab] =

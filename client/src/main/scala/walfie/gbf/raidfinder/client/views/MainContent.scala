@@ -8,6 +8,7 @@ import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.client.ViewModel
+import walfie.gbf.raidfinder.client.ViewModel.DialogTab
 import walfie.gbf.raidfinder.protocol._
 
 object MainContent {
@@ -29,7 +30,7 @@ object MainContent {
     val main =
       <div class="gbfrf-main-content">
         { notification.binding.bind }
-        { floatingActionButton(dialog, client).bind }
+        { floatingActionButton(dialog, client, viewState.currentTab).bind }
         <div class="gbfrf-columns">
           {
             client.state.followedBosses.map { column =>
@@ -48,7 +49,11 @@ object MainContent {
   }
 
   @binding.dom
-  def floatingActionButton(dialog: Element, client: RaidFinderClient): Binding[HTMLDivElement] = {
+  def floatingActionButton(
+    dialog:     Element,
+    client:     RaidFinderClient,
+    currentTab: Binding[DialogTab]
+  ): Binding[HTMLDivElement] = {
     val showModal = { e: Event =>
       client.updateBosses()
       dialog.asInstanceOf[js.Dynamic].showModal()
@@ -56,7 +61,9 @@ object MainContent {
 
     <div class="gbfrf-settings-fab__container" onclick={ showModal }>
       <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--primary">
-        <i class="material-icons">add</i>
+        <i class="material-icons">
+          { currentTab.bind.icon }
+        </i>
       </button>
     </div>
   }
