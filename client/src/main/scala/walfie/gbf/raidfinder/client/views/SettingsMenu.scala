@@ -24,13 +24,13 @@ object SettingsMenu {
       <div class="gbfrf-settings__content">
         <ul class="mdl-list" style="padding: 0; margin: 0;">
           {
-            settingsListItem("Boss image quality") {
-              radioSelector(ImageQuality.all, viewState.imageQuality, onChange)
+            settingsListItem("Time format") {
+              radioSelector(TimeFormat.all, viewState.timeFormat, onChange)
             }.bind
           }
           {
-            settingsListItem("Time format") {
-              radioSelector(TimeFormat.all, viewState.timeFormat, onChange)
+            settingsListItem("Boss image quality") {
+              radioSelector(ImageQuality.all, viewState.imageQuality, onChange)
             }.bind
           }
           {
