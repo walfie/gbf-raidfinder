@@ -7,6 +7,7 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
+import walfie.gbf.raidfinder.client.syntax._
 import walfie.gbf.raidfinder.client.ViewModel
 import walfie.gbf.raidfinder.client.ViewModel.DialogTab
 import walfie.gbf.raidfinder.protocol._
@@ -17,15 +18,10 @@ object MainContent {
     client:       RaidFinderClient,
     viewState:    ViewModel.State,
     notification: Notification,
-    currentTime:  Binding[Double]
-  ): Binding[Node] = {
-    val dialog = Binding {
-      Dialog.element(client, viewState).bind
-    }.bind
-
-    val holder = dom.document.createDocumentFragment()
-
-    holder.appendChild(dialog)
+    currentTime:  Binding[Double],
+    isConnected:  Binding[Boolean]
+  ): Binding[Constants[HTMLElement]] = {
+    val dialog = Dialog.element(client, viewState).bind
 
     val main =
       <div class="gbfrf-main-content">
@@ -43,9 +39,11 @@ object MainContent {
         </div>
       </div>
 
-    holder.appendChild(main)
-
-    holder
+    Constants(
+      loadingBar(isConnected).bind,
+      dialog,
+      main
+    )
   }
 
   @binding.dom
@@ -67,5 +65,13 @@ object MainContent {
       </button>
     </div>
   }
+
+  @binding.dom
+  def loadingBar(isHidden: Binding[Boolean]): Binding[HTMLDivElement] = {
+    <div class={
+      "gbfrf-loading-bar mdl-progress mdl-js-progress mdl-progress__indeterminate"
+        .addIf(isHidden.bind, "is-hidden")
+    }></div>
+  }.mdl
 }
 

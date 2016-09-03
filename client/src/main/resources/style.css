@@ -3,6 +3,16 @@ html, body {
   width: auto;
 }
 
+.is-hidden {
+  display: none;
+}
+
+.gbfrf-loading-bar {
+  position: absolute;
+  z-index: 100;
+  width: 100%;
+}
+
 .gbfrf-main-content {
   height: 100%;
   background: #ffffff;

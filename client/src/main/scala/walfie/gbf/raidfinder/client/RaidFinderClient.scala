@@ -30,21 +30,21 @@ class WebSocketRaidFinderClient(
 
   websocket.setSubscriber(Some(this))
 
-  val connectionStatus: Var[ConnectionStatus] = Var(ConnectionStatus.Connecting)
+  val isConnected: Var[Boolean] = Var(false)
 
   override def onWebSocketOpen(): Unit = {
-    connectionStatus := ConnectionStatus.Connected
+    isConnected := true
   }
 
   override def onWebSocketReconnect(): Unit = {
     // Refollow bosses on disconnect
     val followedBosses = state.followedBosses.get.map(_.raidBoss.get.name)
     websocket.send(FollowRequest(bossNames = followedBosses))
-    connectionStatus := ConnectionStatus.Connected
+    isConnected := true
   }
 
   override def onWebSocketClose(): Unit = {
-    connectionStatus := ConnectionStatus.Disconnected
+    isConnected := false
   }
 
   private var allBossesMap: Map[BossName, RaidBossColumn] = Map.empty

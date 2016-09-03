@@ -40,7 +40,9 @@ object Application extends JSApp {
 
     binding.dom.render(
       dom.document.body,
-      views.MainContent.mainContent(client, ViewModel.loadState(), notification, currentTime)
+      views.MainContent.mainContent(
+        client, ViewModel.loadState(), notification, currentTime, client.isConnected
+      )
     )
   }
 }
