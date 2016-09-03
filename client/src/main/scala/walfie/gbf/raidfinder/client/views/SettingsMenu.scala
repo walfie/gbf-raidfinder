@@ -39,9 +39,19 @@ object SettingsMenu {
             }.bind
           }
         </ul>
-        <div style="margin-top: auto; align-self: flex-end; padding: 5px; color: gray;">github.com/walfie/gbf-raidfinder</div>
+        { footer.bind }
       </div>
     </section>
+  }
+
+  @binding.dom
+  def footer: Binding[HTMLDivElement] = {
+    // TODO: Don't hardcode this
+    <div class="gbfrf-settings__footer">
+      <a href="http://github.com/walfie/gbf-raidfinder" target="_blank">
+        github.com/walfie/gbf-raidfinder
+      </a>
+    </div>
   }
 
   @binding.dom

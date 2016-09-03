@@ -5,7 +5,7 @@ import org.scalajs.dom
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.util.time.Duration
 import walfie.gbf.raidfinder.protocol._
-import walfie.gbf.raidfinder.protocol.implicits._
+import walfie.gbf.raidfinder.protocol.syntax._
 
 import js.ArrayOps
 import js.JSConverters._

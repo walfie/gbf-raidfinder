@@ -5,7 +5,7 @@ import monix.execution.{Cancelable, Scheduler}
 import walfie.gbf.raidfinder.domain._
 import walfie.gbf.raidfinder.protocol
 import walfie.gbf.raidfinder.protocol.{RaidBoss => _, _}
-import walfie.gbf.raidfinder.protocol.implicits._
+import walfie.gbf.raidfinder.protocol.syntax._
 import walfie.gbf.raidfinder.RaidFinder
 
 class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor {
@@ -19,17 +19,19 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
 
   def push(response: Response): Unit = out ! response.toMessage
 
-  val handleRequest: PartialFunction[Request, _] = {
-    case r: RaidBossesRequest =>
-      val bosses = raidFinder.getKnownBosses.values.map { rb: RaidBoss =>
-        protocol.RaidBoss(
-          name = rb.name,
-          level = rb.level,
-          image = rb.image,
-          lastSeen = rb.lastSeen
-        )
-      }
+  private def raidBossToProtocol(rb: RaidBoss): protocol.RaidBoss = protocol.RaidBoss(
+    name = rb.name, level = rb.level, image = rb.image, lastSeen = rb.lastSeen
+  )
 
+  val handleRequest: PartialFunction[Request, _] = {
+    case r: AllRaidBossesRequest =>
+      val bosses = raidFinder.getKnownBosses.values.map(raidBossToProtocol)
+      this push RaidBossesResponse(raidBosses = bosses.toSeq)
+
+    case req: RaidBossesRequest =>
+      val bosses = req.bossNames
+        .collect(raidFinder.getKnownBosses)
+        .map(raidBossToProtocol)
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
 
     case r: FollowRequest =>

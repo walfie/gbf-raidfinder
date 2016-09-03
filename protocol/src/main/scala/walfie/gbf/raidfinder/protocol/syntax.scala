@@ -1,13 +1,14 @@
 package walfie.gbf.raidfinder.protocol
 
 /** Convenience classes for dealing with Protobuf `oneof` messages */
-package object implicits {
+package object syntax {
   implicit class RequestMessageOps(val message: RequestMessage) extends AnyVal {
     import RequestMessage.Data._
 
     // Could also do `raidBossesMessage orElse followMessage orElse ...`
     // but it doesn't check for exhaustive matches, so we'll use this verbose way
     def toRequest(): Option[Request] = message.data match {
+      case AllRaidBossesMessage(v) => Some(v)
       case RaidBossesMessage(v) => Some(v)
       case FollowMessage(v) => Some(v)
       case UnfollowMessage(v) => Some(v)
@@ -20,6 +21,7 @@ package object implicits {
 
     def toMessage(): RequestMessage = {
       val data = request match {
+        case v: AllRaidBossesRequest => AllRaidBossesMessage(v)
         case v: RaidBossesRequest => RaidBossesMessage(v)
         case v: FollowRequest => FollowMessage(v)
         case v: UnfollowRequest => UnfollowMessage(v)
