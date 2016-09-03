@@ -2,6 +2,7 @@ package walfie.gbf.raidfinder.client
 
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
+import java.util.Date
 import org.scalajs.dom
 import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
@@ -29,7 +30,7 @@ class WebSocketRaidFinderClient(
 
   websocket.setSubscriber(Some(this))
 
-  var connectionStatus: Var[ConnectionStatus] = Var(ConnectionStatus.Connecting)
+  val connectionStatus: Var[ConnectionStatus] = Var(ConnectionStatus.Connecting)
 
   override def onWebSocketOpen(): Unit = {
     connectionStatus := ConnectionStatus.Connected
@@ -133,7 +134,13 @@ class WebSocketRaidFinderClient(
     // Ignore. Also TODO: Figure out why this doesn't come back consistently
 
     case r: RaidTweetResponse =>
-      allBossesMap.get(r.bossName).foreach(column => r +=: column.raidTweets.get)
+      allBossesMap.get(r.bossName).foreach { column =>
+        val columnTweets = column.raidTweets.get
+        val shouldInsert = columnTweets.headOption.forall { firstTweetInColumn =>
+          r.createdAt.after(firstTweetInColumn.createdAt)
+        }
+        if (shouldInsert) r +=: columnTweets
+      }
   }
 
   // TODO: Exclude old bosses

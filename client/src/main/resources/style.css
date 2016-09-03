@@ -46,8 +46,6 @@ html, body {
 }
 
 .gbfrf-column__header {
-  overflow: hidden;
-  text-overflow: ellipsis;
   max-width: 90%;
 }
 

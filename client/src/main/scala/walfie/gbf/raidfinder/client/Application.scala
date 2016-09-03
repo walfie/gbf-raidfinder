@@ -17,7 +17,9 @@ object Application extends JSApp {
     val url = "ws://localhost:9000/ws/raids"
     val bossTtl = Duration.hours(6)
 
-    val websocket = new BinaryProtobufWebSocketClient(url)
+    val reconnectInterval = Duration.seconds(5)
+
+    val websocket = new BinaryProtobufWebSocketClient(url, reconnectInterval)
     val client = new WebSocketRaidFinderClient(
       websocket, dom.window.localStorage, bossTtl, SystemClock
     )

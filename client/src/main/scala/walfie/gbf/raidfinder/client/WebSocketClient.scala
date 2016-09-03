@@ -25,12 +25,13 @@ trait WebSocketSubscriber {
   def onWebSocketClose(): Unit
 }
 
-class BinaryProtobufWebSocketClient(websocketUrl: String) extends WebSocketClient {
+class BinaryProtobufWebSocketClient(
+  websocketUrl:      String,
+  reconnectInterval: Duration
+) extends WebSocketClient {
   private var subscriber: Option[WebSocketSubscriber] = None
   private var websocketIsOpen = false
   private var websocketSendQueue = js.Array[ArrayBuffer]()
-
-  private val reconnectInterval = Duration.seconds(5)
 
   private def connectWebSocket(isReconnect: Boolean): dom.WebSocket = {
     val ws = new dom.WebSocket(websocketUrl, js.Array("binary"))
