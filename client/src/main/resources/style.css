@@ -3,6 +3,16 @@ html, body {
   width: auto;
 }
 
+.is-hidden {
+  display: none;
+}
+
+.gbfrf-loading-bar {
+  position: absolute;
+  z-index: 100;
+  width: 100%;
+}
+
 .gbfrf-main-content {
   height: 100%;
   background: #ffffff;
@@ -46,8 +56,6 @@ html, body {
 }
 
 .gbfrf-column__header {
-  overflow: hidden;
-  text-overflow: ellipsis;
   max-width: 90%;
 }
 
@@ -107,6 +115,11 @@ html, body {
   font-size: small;
 }
 
+.gbfrf-tweet__timestamp {
+  font-size: small;
+  padding-left: 0.5em;
+}
+
 .gbfrf-tweet__text {
   margin-left: 10px;
   margin-top: 0.5em;
@@ -134,11 +147,6 @@ html, body {
   border-color: #eaeaea transparent transparent transparent;
 }
 
-.gbfrf-tweet__timestamp {
-  font-size: small;
-  padding-left: 0.5em;
-}
-
 .gbfrf-dialog {
   max-width: 80%;
   height: 80%;
@@ -159,6 +167,10 @@ html, body {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.gbfrf-dialog__tab-bar-item {
+  cursor: pointer;
 }
 
 .gbfrf-dialog__content {

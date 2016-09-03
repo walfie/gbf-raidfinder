@@ -26,7 +26,7 @@ object RaidTweets {
   ): Binding[HTMLDivElement] = {
     <div class="gbfrf-column mdl-shadow--4dp">
       <div class="mdl-layout mdl-layout--fixed-header">
-        { raidBossHeader(raidBoss.bind, client, viewState.imageQuality).bind }
+        { raidBossHeader(raidBoss, viewState.imageQuality, client).bind }
         <div class="mdl-layout__content">
           { raidTweetList(raidTweets, currentTime, notification, viewState).bind }
         </div>
@@ -123,21 +123,23 @@ object RaidTweets {
 
   @binding.dom
   def raidBossHeader(
-    raidBoss:     RaidBoss,
-    client:       RaidFinderClient,
-    imageQuality: Binding[ImageQuality]
+    raidBoss:     Binding[RaidBoss],
+    imageQuality: Binding[ImageQuality],
+    client:       RaidFinderClient
   ): Binding[HTMLElement] = {
+    val boss = raidBoss.bind
+
     val headerRow =
       <div class="mdl-layout__header-row gbfrf-column__header-row">
-        <div class="mdl-layout-title gbfrf-column__header">{ raidBoss.name }</div>
+        <div class="mdl-layout-title gbfrf-column__header">{ boss.name }</div>
         <div class="mdl-layout-spacer"></div>
-        <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(raidBoss.name) }>
+        <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(boss.name) }>
           <i class="material-icons">more_vert</i>
         </button>
-        { raidBossHeaderMenu(raidBoss.name, client).bind }
+        { raidBossHeaderMenu(boss.name, client).bind }
       </div>
 
-    headerRow.backgroundImageQuality(raidBoss.image, 0.25, imageQuality.bind)
+    headerRow.backgroundImageQuality(boss.image, 0.25, imageQuality.bind)
 
     <header class="mdl-layout__header">
       { headerRow }
