@@ -30,10 +30,18 @@ class WebSocketRaidFinderClient(
   import RaidFinderClient._
 
   websocket.setSubscriber(Some(this))
-
   val isConnected: Var[Boolean] = Var(false)
 
+  private var allBossesMap: Map[BossName, RaidBossColumn] = Map.empty
+
+  // Load bosses from localStorage and follow them
+  private val followedBossesStorageKey = "followedBosses"
+  val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
+  Option(storage.getItem(followedBossesStorageKey))
+    .foreach(_.split(",").foreach(follow))
+
   override def onWebSocketOpen(): Unit = {
+    updateAllBosses()
     isConnected := true
   }
 
@@ -41,20 +49,13 @@ class WebSocketRaidFinderClient(
     // Refollow bosses on disconnect
     val followedBosses = state.followedBosses.get.map(_.raidBoss.get.name)
     websocket.send(FollowRequest(bossNames = followedBosses))
+    updateBosses(followedBosses)
     isConnected := true
   }
 
   override def onWebSocketClose(): Unit = {
     isConnected := false
   }
-
-  private var allBossesMap: Map[BossName, RaidBossColumn] = Map.empty
-
-  private val followedBossesStorageKey = "followedBosses"
-
-  // Set initial state to empty, then load from localStorage
-  val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
-  Option(storage.getItem(followedBossesStorageKey)).foreach(_.split(",").foreach(follow))
 
   private def updateLocalStorage(): Unit = {
     val bossNames = state.followedBosses.get.map(_.raidBoss.get.name)
@@ -143,6 +144,9 @@ class WebSocketRaidFinderClient(
         }
         if (shouldInsert) r +=: columnTweets
       }
+
+    case r: ErrorResponse =>
+      dom.window.console.error(r.message) // TODO: Better error handling
   }
 
   // TODO: Exclude old bosses
