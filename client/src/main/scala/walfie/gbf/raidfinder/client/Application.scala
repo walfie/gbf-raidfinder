@@ -23,7 +23,7 @@ object Application extends JSApp {
     val client = new WebSocketRaidFinderClient(
       websocket, dom.window.localStorage, bossTtl, SystemClock
     )
-    client.updateBosses()
+    client.updateAllBosses()
 
     Moment.defineLocale("en-short", MomentShortLocale)
 

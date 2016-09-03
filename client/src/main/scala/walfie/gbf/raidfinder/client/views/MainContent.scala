@@ -53,7 +53,7 @@ object MainContent {
     currentTab: Binding[DialogTab]
   ): Binding[HTMLDivElement] = {
     val showModal = { e: Event =>
-      client.updateBosses()
+      client.updateAllBosses()
       dialog.asInstanceOf[js.Dynamic].showModal()
     }
 

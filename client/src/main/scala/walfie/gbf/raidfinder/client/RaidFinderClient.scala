@@ -14,7 +14,8 @@ import walfie.gbf.raidfinder.protocol._
 trait RaidFinderClient {
   def state: RaidFinderClient.State
 
-  def updateBosses(): Unit
+  def updateBosses(bossNames: Seq[BossName]): Unit
+  def updateAllBosses(): Unit
   def follow(bossName: BossName): Unit
   def unfollow(bossName: BossName): Unit
   def clear(bossName: BossName): Unit
@@ -63,9 +64,10 @@ class WebSocketRaidFinderClient(
       storage.setItem(followedBossesStorageKey, bossNames.mkString(","))
   }
 
-  def updateBosses(): Unit = {
-    websocket.send(RaidBossesRequest())
-  }
+  def updateBosses(bossNames: Seq[BossName]): Unit =
+    websocket.send(RaidBossesRequest(bossNames))
+  def updateAllBosses(): Unit =
+    websocket.send(AllRaidBossesRequest())
 
   /** Get the column number associated with a raid boss */
   private def columnIndex(bossName: BossName): Option[Int] = {
