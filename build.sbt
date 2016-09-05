@@ -29,9 +29,15 @@ lazy val protocolJVM = protocol.jvm
 lazy val protocolJS = protocol.js
 
 lazy val server = (project in file("server"))
+  .enablePlugins(JavaServerAppPackaging)
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder-server",
+    herokuSkipSubProjects in Compile := false,
+    herokuAppName in Compile := "gbf-raidfinder",
+    herokuProcessTypes in Compile := Map(
+      "web" -> "target/universal/stage/bin/gbf-raidfinder-server -Dhttp.port=$PORT"
+    ),
     libraryDependencies ++= Seq(
       "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
       "com.typesafe.play" %% "play-netty-server" % Versions.Play

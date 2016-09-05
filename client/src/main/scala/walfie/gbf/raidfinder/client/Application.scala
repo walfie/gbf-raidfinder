@@ -14,7 +14,8 @@ import js.JSApp
 
 object Application extends JSApp {
   def main(): Unit = {
-    val url = "ws://localhost:9000/ws/raids"
+    // TODO: Get this from somewhere else
+    val url = "ws://gbf-raidfinder.herokuapp.com/ws/raids"
     val bossTtl = Duration.hours(6)
 
     val reconnectInterval = Duration.seconds(5)
@@ -32,7 +33,7 @@ object Application extends JSApp {
 
     // Update currentTime every 30 seconds
     val currentTime: Var[Double] = Var(js.Date.now())
-    js.timers.setInterval(30000) {
+    js.timers.setInterval(Duration.seconds(30).milliseconds) {
       client.truncateColumns(50)
       currentTime := js.Date.now()
     }

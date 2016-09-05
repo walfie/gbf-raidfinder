@@ -22,15 +22,12 @@ object Application {
     val components = new Components(raidFinder)
     val server = components.server
 
-    waitForStopEvent()
-    server.stop()
-  }
-
-  /** Temporary thing to allow stopping the application without killing SBT */
-  def waitForStopEvent(): Unit = {
-    println("Application started. Press RETURN to stop.")
-    scala.io.StdIn.readLine()
-    println("Stopping application.")
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run = {
+        println("Stopping application.")
+        server.stop()
+      }
+    })
   }
 }
 

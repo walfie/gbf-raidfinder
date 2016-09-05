@@ -48,7 +48,7 @@ object SettingsMenu {
   def footer: Binding[HTMLDivElement] = {
     // TODO: Don't hardcode this
     <div class="gbfrf-settings__footer">
-      <a href="http://github.com/walfie/gbf-raidfinder" target="_blank">
+      <a href="https://github.com/walfie/gbf-raidfinder" target="_blank">
         github.com/walfie/gbf-raidfinder
       </a>
     </div>
