@@ -41,20 +41,23 @@ class WebSocketRaidFinderClient(
     .foreach(_.split(",").foreach(follow))
 
   override def onWebSocketOpen(): Unit = {
-    updateAllBosses()
+    refollowBosses()
     isConnected := true
   }
 
   override def onWebSocketReconnect(): Unit = {
-    // Refollow bosses on disconnect
-    val followedBosses = state.followedBosses.get.map(_.raidBoss.get.name)
-    websocket.send(FollowRequest(bossNames = followedBosses))
-    updateBosses(followedBosses)
+    refollowBosses()
     isConnected := true
   }
 
   override def onWebSocketClose(): Unit = {
     isConnected := false
+  }
+
+  private def refollowBosses(): Unit = {
+    val followedBosses = state.followedBosses.get.map(_.raidBoss.get.name)
+    websocket.send(FollowRequest(bossNames = followedBosses))
+    updateBosses(followedBosses)
   }
 
   private def updateLocalStorage(): Unit = {

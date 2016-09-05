@@ -36,7 +36,7 @@ lazy val server = (project in file("server"))
     herokuSkipSubProjects in Compile := false,
     herokuAppName in Compile := "gbf-raidfinder",
     herokuProcessTypes in Compile := Map(
-      "web" -> "target/universal/stage/bin/gbf-raidfinder-server -Dhttp.port=$PORT"
+      "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT"
     ),
     libraryDependencies ++= Seq(
       "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
@@ -50,7 +50,6 @@ lazy val client = (project in file("client"))
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder-client",
-    persistLauncher in Compile := true,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.1",
       "com.thoughtworks.binding" %%% "dom" % "9.0.0",
