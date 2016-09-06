@@ -29,15 +29,9 @@ lazy val protocolJVM = protocol.jvm
 lazy val protocolJS = protocol.js
 
 lazy val server = (project in file("server"))
-  .enablePlugins(JavaServerAppPackaging)
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder-server",
-    herokuSkipSubProjects in Compile := false,
-    herokuAppName in Compile := "gbf-raidfinder",
-    herokuProcessTypes in Compile := Map(
-      "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT"
-    ),
     libraryDependencies ++= Seq(
       "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
       "com.typesafe.play" %% "play-netty-server" % Versions.Play
@@ -79,7 +73,7 @@ lazy val client = (project in file("client"))
   .dependsOn(protocolJS)
 
 lazy val root = (project in file("."))
-  .enablePlugins(SbtWeb)
+  .enablePlugins(SbtWeb, JavaServerAppPackaging)
   .dependsOn(server, client)
   .settings(commonSettings: _*)
   .settings(
@@ -89,6 +83,13 @@ lazy val root = (project in file("."))
     pipelineStages in Assets := Seq(scalaJSPipeline),
     WebKeys.packagePrefix in Assets := "public/",
     managedClasspath in Runtime += (packageBin in Assets).value,
-    compile in Compile <<= (compile in Compile) dependsOn scalaJSPipeline.map(f => f(Seq.empty))
+    compile in Compile <<= (compile in Compile) dependsOn scalaJSPipeline.map(f => f(Seq.empty)),
+
+    stage <<= stage dependsOn scalaJSProd,
+    herokuSkipSubProjects in Compile := false,
+    herokuAppName in Compile := "gbf-raidfinder",
+    herokuProcessTypes in Compile := Map(
+      "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT"
+    )
   )
 
