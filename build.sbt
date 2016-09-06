@@ -39,12 +39,21 @@ lazy val server = (project in file("server"))
   )
   .dependsOn(stream, protocolJVM)
 
+val jsPath = settingKey[File]("Output directory for scala.js compiled files")
 lazy val client = (project in file("client"))
   .enablePlugins(ScalaJSPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder-client",
-    persistLauncher in Compile := true,
+
+    // Put output JS files in `target/scala_2.11/classes/public/js`
+    jsPath := crossTarget.value / "classes" / "public" / "js",
+    crossTarget in (Compile, fullOptJS) := jsPath.value,
+    crossTarget in (Compile, fastOptJS) := jsPath.value,
+    crossTarget in (Compile, packageJSDependencies) := jsPath.value,
+    crossTarget in (Compile, packageScalaJSLauncher) := jsPath.value,
+    crossTarget in (Compile, packageMinifiedJSDependencies) := jsPath.value,
+
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.1",
       "com.thoughtworks.binding" %%% "dom" % "9.0.0",
@@ -64,7 +73,18 @@ lazy val client = (project in file("client"))
   .dependsOn(protocolJS)
 
 lazy val root = (project in file("."))
-  .aggregate(client, stream, server)
-  .settings(aggregate in update := false)
+  .enablePlugins(JavaServerAppPackaging)
+  .dependsOn(server, client)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "gbf-raidfinder",
+    mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
 
+    stage <<= stage dependsOn (fullOptJS in (client, Compile)),
+    herokuAppName in Compile := "gbf-raidfinder",
+    herokuSkipSubProjects in Compile := false,
+    herokuProcessTypes in Compile := Map(
+      "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT"
+    )
+  )
 

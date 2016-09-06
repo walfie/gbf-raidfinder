@@ -2,6 +2,7 @@ package walfie.gbf.raidfinder.server
 
 import akka.actor._
 import akka.stream.ActorMaterializer
+import com.typesafe.config.ConfigFactory
 import monix.execution.Scheduler.Implicits.global
 import play.api.BuiltInComponents
 import play.api.http.DefaultHttpErrorHandler
@@ -19,18 +20,21 @@ object Application {
   def main(args: Array[String]): Unit = {
     val raidFinder = RaidFinder.withBacklog()
 
-    val components = new Components(raidFinder)
+    val config = ConfigFactory.load
+    val port = config.getInt("http.port")
+
+    val components = new Components(raidFinder, port)
     val server = components.server
 
-    waitForStopEvent()
-    server.stop()
-  }
+    // TODO: Use logger
+    println(s"Running server on port $port")
 
-  /** Temporary thing to allow stopping the application without killing SBT */
-  def waitForStopEvent(): Unit = {
-    println("Application started. Press RETURN to stop.")
-    scala.io.StdIn.readLine()
-    println("Stopping application.")
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run = {
+        println("Stopping application.")
+        server.stop()
+      }
+    })
   }
 }
 
