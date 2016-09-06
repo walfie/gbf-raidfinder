@@ -18,7 +18,7 @@
 (function() {
   var l = window.location;
   var protocol = (l.protocol === 'https:') ? 'wss://' : 'ws://';
-  var url = protocol + l.host + l.pathname + '/ws/raids';
+  var url = protocol + l.host + '/ws/raids';
   GbfRaidFinder().init(url);
 }());
 </script>

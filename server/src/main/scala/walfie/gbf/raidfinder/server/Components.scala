@@ -18,7 +18,7 @@ class Components(val raidFinder: RaidFinder, port: Int) extends NettyServerCompo
   override lazy val serverConfig = ServerConfig(port = Some(port))
 
   lazy val router = Router.from {
-    case GET(p"/") => controllers.Assets.at(path = "/public", "index.html") // Temporary
+    case GET(p"/") => controllers.Assets.at(path = "/public", "index.html")
     case GET(p"/ws/raids") => websocketController.raids
     case GET(p"/$file*") => controllers.Assets.at(path = "/public", file = file)
   }
