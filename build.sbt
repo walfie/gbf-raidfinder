@@ -45,11 +45,21 @@ lazy val server = (project in file("server"))
   )
   .dependsOn(stream, protocolJVM)
 
+val jsPath = settingKey[File]("Output directory for scala.js compiled files")
 lazy val client = (project in file("client"))
-  .enablePlugins(ScalaJSPlugin)
+  .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder-client",
+
+    // Put output JS files in `target/scala_2.11/classes/public/js`
+    jsPath := crossTarget.value / "classes" / "public" / "js",
+    crossTarget in (Compile, fullOptJS) := jsPath.value,
+    crossTarget in (Compile, fastOptJS) := jsPath.value,
+    crossTarget in (Compile, packageJSDependencies) := jsPath.value,
+    crossTarget in (Compile, packageScalaJSLauncher) := jsPath.value,
+    crossTarget in (Compile, packageMinifiedJSDependencies) := jsPath.value,
+
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.1",
       "com.thoughtworks.binding" %%% "dom" % "9.0.0",
@@ -69,7 +79,16 @@ lazy val client = (project in file("client"))
   .dependsOn(protocolJS)
 
 lazy val root = (project in file("."))
-  .aggregate(client, stream, server)
-  .settings(aggregate in update := false)
-
+  .enablePlugins(SbtWeb)
+  .dependsOn(server, client)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "gbf-raidfinder",
+    scalaJSProjects := Seq(client),
+    mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
+    pipelineStages in Assets := Seq(scalaJSPipeline),
+    WebKeys.packagePrefix in Assets := "public/",
+    managedClasspath in Runtime += (packageBin in Assets).value,
+    compile in Compile <<= (compile in Compile) dependsOn scalaJSPipeline.map(f => f(Seq.empty))
+  )
 

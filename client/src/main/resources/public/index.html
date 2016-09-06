@@ -12,10 +12,15 @@
 </head>
 <body>
 
-<script src="../gbf-raidfinder-client-jsdeps.js"></script>
-<script src="../gbf-raidfinder-client-fastopt.js"></script>
+<script src="./js/gbf-raidfinder-client-jsdeps.js"></script>
+<script src="./js/gbf-raidfinder-client-fastopt.js"></script>
 <script>
-GbfRaidFinder().init("ws://gbf-raidfinder.herokuapp.com/ws/raids")
+(function() {
+  var l = window.location;
+  var protocol = (l.protocol === "https:") ? "wss://" : "ws://";
+  var url = protocol + l.host + l.pathname + "/ws/raids";
+  GbfRaidFinder().init(url)
+}());
 </script>
 
 <script defer src="https://code.getmdl.io/1.2.0/material.min.js"></script>
