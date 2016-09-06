@@ -81,8 +81,8 @@ lazy val root = (project in file("."))
     mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
 
     stage <<= stage dependsOn (fullOptJS in (client, Compile)),
-    herokuSkipSubProjects in Compile := false,
     herokuAppName in Compile := "gbf-raidfinder",
+    herokuSkipSubProjects in Compile := false,
     herokuProcessTypes in Compile := Map(
       "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT"
     )

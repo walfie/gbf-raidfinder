@@ -12,14 +12,12 @@
 </head>
 <body>
 
-<script src="./js/gbf-raidfinder-client-jsdeps.js"></script>
-<script src="./js/gbf-raidfinder-client-opt.js"></script>
+<script src="public/js/gbf-raidfinder-client-jsdeps.js"></script>
+<script src="public/js/gbf-raidfinder-client-fastopt.js"></script>
 <script>
 (function() {
-  var l = window.location;
-  var protocol = (l.protocol === 'https:') ? 'wss://' : 'ws://';
-  var url = protocol + l.host + l.pathname + '/ws/raids';
-  GbfRaidFinder().init(url);
+  var url = 'ws://localhost:9000/ws/raids';
+  GbfRaidFinder().init();
 }());
 </script>
 
