@@ -41,7 +41,7 @@ lazy val server = (project in file("server"))
 
 val jsPath = settingKey[File]("Output directory for scala.js compiled files")
 lazy val client = (project in file("client"))
-  .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+  .enablePlugins(ScalaJSPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder-client",
@@ -73,19 +73,14 @@ lazy val client = (project in file("client"))
   .dependsOn(protocolJS)
 
 lazy val root = (project in file("."))
-  .enablePlugins(SbtWeb, JavaServerAppPackaging)
+  .enablePlugins(JavaServerAppPackaging)
   .dependsOn(server, client)
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder",
-    scalaJSProjects := Seq(client),
     mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
-    pipelineStages in Assets := Seq(scalaJSPipeline),
-    WebKeys.packagePrefix in Assets := "public/",
-    managedClasspath in Runtime += (packageBin in Assets).value,
-    compile in Compile <<= (compile in Compile) dependsOn scalaJSPipeline.map(f => f(Seq.empty)),
 
-    stage <<= stage dependsOn scalaJSProd,
+    stage <<= stage dependsOn (fullOptJS in (client, Compile)),
     herokuSkipSubProjects in Compile := false,
     herokuAppName in Compile := "gbf-raidfinder",
     herokuProcessTypes in Compile := Map(
