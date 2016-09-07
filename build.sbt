@@ -34,6 +34,7 @@ lazy val server = (project in file("server"))
     name := "gbf-raidfinder-server",
     libraryDependencies ++= Seq(
       "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
+      "com.typesafe.play" %% "filters-helpers" % Versions.Play,
       "com.typesafe.play" %% "play-netty-server" % Versions.Play
     )
   )

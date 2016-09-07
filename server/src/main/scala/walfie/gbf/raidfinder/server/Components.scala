@@ -8,14 +8,17 @@ import play.api.mvc._
 import play.api.routing.Router
 import play.api.routing.sird._
 import play.core.server._
+import play.filters.gzip.GzipFilterComponents
 import scala.concurrent.Future
 import walfie.gbf.raidfinder.RaidFinder
 import walfie.gbf.raidfinder.server.controller._
 
 class Components(val raidFinder: RaidFinder, port: Int) extends NettyServerComponents
-  with BuiltInComponents with Controller with RaidFinderControllers {
+  with BuiltInComponents with GzipFilterComponents with Controller with RaidFinderControllers {
 
   override lazy val serverConfig = ServerConfig(port = Some(port))
+
+  override lazy val httpFilters = List(gzipFilter)
 
   lazy val router = Router.from {
     case GET(p"/") => controllers.Assets.at(path = "/public", "index.html")
