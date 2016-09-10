@@ -18,6 +18,7 @@ trait RaidFinderClient {
   def updateAllBosses(): Unit
   def follow(bossName: BossName): Unit
   def unfollow(bossName: BossName): Unit
+  def toggleFollow(bossName: BossName): Unit
   def clear(bossName: BossName): Unit
   def move(bossName: BossName, displacement: Int): Unit
 
@@ -93,14 +94,19 @@ class WebSocketRaidFinderClient(
     updateLocalStorage()
   }
 
-  def unfollow(bossName: BossName): Unit = {
+  def unfollow(bossName: BossName): Unit = columnIndex(bossName).foreach { index =>
     websocket.send(UnfollowRequest(bossNames = List(bossName)))
 
     val followedBosses = state.followedBosses.get
-    columnIndex(bossName).foreach(followedBosses.remove)
-    allBossesMap.get(bossName).foreach(_.clear())
 
+    followedBosses.remove(index)
+    allBossesMap.get(bossName).foreach(_.clear())
     updateLocalStorage()
+  }
+
+  def toggleFollow(bossName: BossName): Unit = {
+    if (columnIndex(bossName).isDefined) unfollow(bossName)
+    else follow(bossName)
   }
 
   def clear(bossName: BossName): Unit = {

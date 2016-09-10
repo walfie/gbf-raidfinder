@@ -19,6 +19,7 @@ object BossSelectMenu {
     currentTab:   Binding[DialogTab],
     imageQuality: Binding[ImageQuality]
   ): Binding[Element] = {
+    val isFollowing = client.state.followedBossNames
     val bossListElement = bossList(client, imageQuality).bind
 
     // TODO: Write a more generic event delegation helper
@@ -27,10 +28,7 @@ object BossSelectMenu {
         target <- e.targetElement
         element <- target.findParent(_.classList.contains("gbfrf-js-bossSelect"))
         bossName <- Option(element.getAttribute("data-bossName"))
-      } yield {
-        client.follow(bossName)
-        closeModal(e)
-      }
+      } yield client.toggleFollow(bossName)
     })
 
     <section id="gbfrf-dialog__follow" class={
@@ -46,8 +44,8 @@ object BossSelectMenu {
     <ul class="mdl-list" style="padding: 0; margin: 0;">
       {
         client.state.allBosses.map { bossColumn =>
-          val boss = bossColumn.raidBoss.bind
           val isFollowing = client.state.followedBossNames.bind
+          val boss = bossColumn.raidBoss.bind
           val smallImage = boss.image
           bossListItem(boss.name, smallImage, isFollowing(boss.name), imageQuality).bind
         }
