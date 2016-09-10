@@ -26,8 +26,8 @@ trait WebSocketSubscriber {
 }
 
 class BinaryProtobufWebSocketClient(
-  websocketUrl:      String,
-  reconnectInterval: Duration
+  websocketUrl:         String,
+  maxReconnectInterval: Duration
 ) extends WebSocketClient {
   private var subscriber: Option[WebSocketSubscriber] = None
   private var websocketIsOpen = false
@@ -64,7 +64,10 @@ class BinaryProtobufWebSocketClient(
     ws.onclose = { _: dom.CloseEvent =>
       websocketIsOpen = false
       subscriber.foreach(_.onWebSocketClose())
-      js.timers.setTimeout(reconnectInterval.milliseconds) {
+
+      // TODO: Exponential backoff?
+      val retryInterval = js.Math.random() * maxReconnectInterval.milliseconds
+      js.timers.setTimeout(retryInterval) {
         websocket = connectWebSocket(isReconnect = true)
       }
     }

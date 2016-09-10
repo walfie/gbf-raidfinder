@@ -17,9 +17,9 @@ object Application {
   def init(url: String): Unit = {
     val bossTtl = Duration.hours(6)
 
-    val reconnectInterval = Duration.seconds(5)
+    val maxReconnectInterval = Duration.seconds(10)
 
-    val websocket = new BinaryProtobufWebSocketClient(url, reconnectInterval)
+    val websocket = new BinaryProtobufWebSocketClient(url, maxReconnectInterval)
 
     val client = new WebSocketRaidFinderClient(
       websocket, dom.window.localStorage, bossTtl, SystemClock
