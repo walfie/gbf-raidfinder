@@ -52,10 +52,7 @@ object MainContent {
     client:     RaidFinderClient,
     currentTab: Binding[DialogTab]
   ): Binding[HTMLDivElement] = {
-    val showModal = { e: Event =>
-      client.updateAllBosses()
-      dialog.asInstanceOf[js.Dynamic].showModal()
-    }
+    val showModal = (e: Event) => dialog.asInstanceOf[js.Dynamic].showModal()
 
     <div class="gbfrf-settings-fab__container" onclick={ showModal }>
       <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--primary">

@@ -68,26 +68,32 @@ class BinaryProtobufWebSocketClient(
       // TODO: Exponential backoff?
       val retryInterval = js.Math.random() * maxReconnectInterval.milliseconds
       js.timers.setTimeout(retryInterval) {
-        websocket = connectWebSocket(isReconnect = true)
+        websocket = Option(connectWebSocket(isReconnect = true))
       }
     }
 
     ws
   }
 
-  private var websocket = connectWebSocket(isReconnect = false)
+  private var websocket: Option[dom.WebSocket] = None
 
-  def setSubscriber(newSubscriber: Option[WebSocketSubscriber]): Unit =
+  // Only connect websocket when a subscriber is present
+  def setSubscriber(newSubscriber: Option[WebSocketSubscriber]): Unit = {
+    if (subscriber.isEmpty && newSubscriber.nonEmpty) {
+      websocket = Option(connectWebSocket(isReconnect = false))
+    }
+
     subscriber = newSubscriber
+  }
 
   def send(request: Request): Unit = {
     val messageBytes = request.toMessage.toByteArray.toJSArray
     val buffer = TypedArrayBuffer.wrap(new Int8Array(messageBytes)).arrayBuffer
 
-    if (websocketIsOpen) websocket.send(buffer)
+    if (websocketIsOpen && websocket.nonEmpty) websocket.foreach(_.send(buffer))
     else websocketSendQueue.push(buffer)
   }
 
-  def close(): Unit = websocket.close()
+  def close(): Unit = websocket.foreach(_.close())
 }
 

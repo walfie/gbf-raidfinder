@@ -16,6 +16,7 @@ trait RaidFinderClient {
 
   def updateBosses(bossNames: Seq[BossName]): Unit
   def updateAllBosses(): Unit
+  def resetBossList(): Unit
   def follow(bossName: BossName): Unit
   def unfollow(bossName: BossName): Unit
   def toggleFollow(bossName: BossName): Unit
@@ -42,7 +43,7 @@ class WebSocketRaidFinderClient(
     .foreach(_.split(",").foreach(follow))
 
   override def onWebSocketOpen(): Unit = {
-    refollowBosses()
+    resetBossList()
     isConnected := true
   }
 
@@ -73,6 +74,13 @@ class WebSocketRaidFinderClient(
     websocket.send(RaidBossesRequest(bossNames))
   def updateAllBosses(): Unit =
     websocket.send(AllRaidBossesRequest())
+
+  def resetBossList(): Unit = {
+    val followed = state.followedBosses.get
+    state.allBosses.get := followed
+    allBossesMap = followed.map(column => column.raidBoss.get.name -> column).toMap
+    updateAllBosses()
+  }
 
   /** Get the column number associated with a raid boss */
   private def columnIndex(bossName: BossName): Option[Int] = {
@@ -160,7 +168,6 @@ class WebSocketRaidFinderClient(
     case r: KeepAliveResponse => // Ignore
   }
 
-  // TODO: Exclude old bosses
   private def handleRaidBossesResponse(
     raidBosses: Seq[RaidBoss]
   ): Unit = {

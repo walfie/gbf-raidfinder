@@ -17,6 +17,10 @@ class WebsocketRaidsHandler(
   implicit val scheduler = Scheduler(context.system.dispatcher)
 
   var followed: Map[BossName, Cancelable] = Map.empty
+  val newBossListener: Cancelable = raidFinder.newBossObservable.foreach { boss =>
+    val bosses = Seq(raidBossToProtocol(boss))
+    this push RaidBossesResponse(raidBosses = bosses)
+  }
 
   def receive: Receive = {
     case r: RequestMessage => r.toRequest.foreach(handleRequest)
@@ -28,7 +32,7 @@ class WebsocketRaidsHandler(
     name = rb.name, level = rb.level, image = rb.image, lastSeen = rb.lastSeen
   )
 
-  val keepAliveCancellable = keepAliveInterval.map { interval =>
+  val keepAliveCancelable = keepAliveInterval.map { interval =>
     context.system.scheduler.schedule(interval, interval) {
       this push KeepAliveResponse()
     }
@@ -77,7 +81,9 @@ class WebsocketRaidsHandler(
   }
 
   override def postStop(): Unit = {
-    followed.values.foreach(_.cancel)
+    newBossListener.cancel()
+    keepAliveCancelable.foreach(_.cancel())
+    followed.values.foreach(_.cancel())
   }
 }
 

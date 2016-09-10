@@ -9,6 +9,7 @@ import walfie.gbf.raidfinder.domain._
 
 trait RaidFinder {
   def getRaidTweets(bossName: BossName): Observable[RaidTweet]
+  def newBossObservable: Observable[RaidBoss]
   def getKnownBosses(): Map[BossName, RaidBoss]
   def shutdown(): Unit
 }
@@ -69,6 +70,10 @@ class DefaultRaidFinder(
     .collect(Function.unlift(StatusParser.parse))
     .publish
 
+  // Whenever a new boss comes in, info gets published here
+  // TODO: Maybe add test?
+  val newBossObservable = raidInfos.map(_.boss).publish
+
   private val (partitioner, partitionerCancelable) = CachedRaidTweetsPartitioner
     .fromUngroupedObservable(raidInfos.map(_.tweet), cacheSizePerBoss)
 
@@ -76,12 +81,14 @@ class DefaultRaidFinder(
     .fromRaidInfoObservable(raidInfos)
 
   private val raidInfosCancelable = raidInfos.connect()
+  private val newBossCancelable = newBossObservable.connect()
 
   private val cancelable = Cancelable { () =>
     List(
       raidInfosCancelable,
       partitionerCancelable,
-      knownBossesCancelable
+      knownBossesCancelable,
+      newBossCancelable
     ).foreach(_.cancel)
     onShutdown()
   }
