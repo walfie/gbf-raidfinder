@@ -45,7 +45,7 @@ loadScript('./js/gbf-raidfinder-client-jsdeps.js', function() {
 
   loadScript('./js/gbf-raidfinder-client-' + fileVer + '.js', function() {
     var protocol = (l.protocol === 'https:') ? 'wss://' : 'ws://';
-    var url = protocol + l.host + '/ws/raids';
+    var url = protocol + l.host + '/ws/raids?keepAlive=true';
     GbfRaidFinder().init(url);
   });
 });

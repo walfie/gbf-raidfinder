@@ -3,6 +3,7 @@ package walfie.gbf.raidfinder.server
 import akka.actor._
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
+import java.util.concurrent.TimeUnit
 import monix.execution.Scheduler.Implicits.global
 import play.api.http.DefaultHttpErrorHandler
 import play.api.mvc._
@@ -11,6 +12,7 @@ import play.api.routing.sird._
 import play.api.{BuiltInComponents, Logger, Mode}
 import play.core.server._
 import play.core.server.NettyServerComponents
+import scala.concurrent.duration._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import walfie.gbf.raidfinder
@@ -24,7 +26,11 @@ object Application {
     val port = config.getInt("http.port")
 
     val mode = getMode(config.getString("application.mode"))
-    val components = new Components(raidFinder, port, mode)
+    val keepAliveInterval = config.getDuration(
+      "application.websocket.keepAliveInterval",
+      TimeUnit.MILLISECONDS
+    ).milliseconds
+    val components = new Components(raidFinder, port, mode, keepAliveInterval)
     val server = components.server
 
     if (mode == Mode.Dev) {

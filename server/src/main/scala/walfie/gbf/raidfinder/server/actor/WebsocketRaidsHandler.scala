@@ -2,13 +2,18 @@ package walfie.gbf.raidfinder.server.actor
 
 import akka.actor._
 import monix.execution.{Cancelable, Scheduler}
+import scala.concurrent.duration.FiniteDuration
 import walfie.gbf.raidfinder.domain._
 import walfie.gbf.raidfinder.protocol
-import walfie.gbf.raidfinder.protocol.{RaidBoss => _, _}
 import walfie.gbf.raidfinder.protocol.syntax._
+import walfie.gbf.raidfinder.protocol.{RaidBoss => _, _}
 import walfie.gbf.raidfinder.RaidFinder
 
-class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor {
+class WebsocketRaidsHandler(
+  out:               ActorRef,
+  raidFinder:        RaidFinder,
+  keepAliveInterval: Option[FiniteDuration]
+) extends Actor {
   implicit val scheduler = Scheduler(context.system.dispatcher)
 
   var followed: Map[BossName, Cancelable] = Map.empty
@@ -22,6 +27,12 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
   private def raidBossToProtocol(rb: RaidBoss): protocol.RaidBoss = protocol.RaidBoss(
     name = rb.name, level = rb.level, image = rb.image, lastSeen = rb.lastSeen
   )
+
+  val keepAliveCancellable = keepAliveInterval.map { interval =>
+    context.system.scheduler.schedule(interval, interval) {
+      this push KeepAliveResponse()
+    }
+  }
 
   val handleRequest: PartialFunction[Request, _] = {
     case r: AllRaidBossesRequest =>
@@ -71,8 +82,12 @@ class WebsocketRaidsHandler(out: ActorRef, raidFinder: RaidFinder) extends Actor
 }
 
 object WebsocketRaidsHandler {
-  def props(out: ActorRef, raidFinder: RaidFinder): Props = Props {
-    new WebsocketRaidsHandler(out, raidFinder)
+  def props(
+    out:               ActorRef,
+    raidFinder:        RaidFinder,
+    keepAliveInterval: Option[FiniteDuration]
+  ): Props = Props {
+    new WebsocketRaidsHandler(out, raidFinder, keepAliveInterval)
   }.withDeploy(Deploy.local)
 }
 
