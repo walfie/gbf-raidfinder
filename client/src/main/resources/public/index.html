@@ -32,7 +32,10 @@ function loadCSS(url) {
 (function() {
 
 var l = window.location;
-var isLocal = l.protocol == 'file:' || l.hostname == 'localhost';
+var isLocalFile = l.protocol == 'file:';
+var isLocalhost = l.hostname == 'localhost';
+var isLocal = isLocalFile || isLocalhost;
+var remoteUrl = 'ws://gbf-raidfinder.aikats.us';
 
 [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
@@ -45,7 +48,8 @@ loadScript('./js/gbf-raidfinder-client-jsdeps.js', function() {
 
   loadScript('./js/gbf-raidfinder-client-' + fileVer + '.js', function() {
     var protocol = (l.protocol === 'https:') ? 'wss://' : 'ws://';
-    var url = protocol + l.host + '/ws/raids?keepAlive=true';
+    var baseUrl = isLocalFile ? remoteUrl : (protocol + l.host);
+    var url = baseUrl + '/ws/raids?keepAlive=true';
     GbfRaidFinder().init(url);
   });
 });
