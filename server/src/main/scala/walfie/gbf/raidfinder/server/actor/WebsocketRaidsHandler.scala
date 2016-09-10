@@ -17,6 +17,10 @@ class WebsocketRaidsHandler(
   implicit val scheduler = Scheduler(context.system.dispatcher)
 
   var followed: Map[BossName, Cancelable] = Map.empty
+  val newBossListener: Cancelable = raidFinder.newBossObservable.foreach { boss =>
+    val bosses = Seq(raidBossToProtocol(boss))
+    this push RaidBossesResponse(raidBosses = bosses)
+  }
 
   def receive: Receive = {
     case r: RequestMessage => r.toRequest.foreach(handleRequest)
@@ -77,7 +81,8 @@ class WebsocketRaidsHandler(
   }
 
   override def postStop(): Unit = {
-    followed.values.foreach(_.cancel)
+    newBossListener.cancel()
+    followed.values.foreach(_.cancel())
   }
 }
 
