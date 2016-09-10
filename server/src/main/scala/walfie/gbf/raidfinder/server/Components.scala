@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import play.api.BuiltInComponents
 import play.api.http.DefaultHttpErrorHandler
+import play.api.Mode.Mode
 import play.api.mvc._
 import play.api.routing.Router
 import play.api.routing.sird._
@@ -13,10 +14,10 @@ import scala.concurrent.Future
 import walfie.gbf.raidfinder.RaidFinder
 import walfie.gbf.raidfinder.server.controller._
 
-class Components(val raidFinder: RaidFinder, port: Int) extends NettyServerComponents
+class Components(val raidFinder: RaidFinder, port: Int, mode: Mode) extends NettyServerComponents
   with BuiltInComponents with GzipFilterComponents with Controller with RaidFinderControllers {
 
-  override lazy val serverConfig = ServerConfig(port = Some(port))
+  override lazy val serverConfig = ServerConfig(port = Some(port), mode = mode)
 
   override lazy val httpFilters = List(gzipFilter)
 

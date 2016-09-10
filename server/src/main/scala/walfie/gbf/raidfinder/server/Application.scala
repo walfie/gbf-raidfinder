@@ -4,11 +4,11 @@ import akka.actor._
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import monix.execution.Scheduler.Implicits.global
-import play.api.BuiltInComponents
 import play.api.http.DefaultHttpErrorHandler
 import play.api.mvc._
 import play.api.routing.Router
 import play.api.routing.sird._
+import play.api.{BuiltInComponents, Logger, Mode}
 import play.core.server._
 import play.core.server.NettyServerComponents
 import scala.concurrent.Future
@@ -20,21 +20,31 @@ object Application {
   def main(args: Array[String]): Unit = {
     val raidFinder = RaidFinder.withBacklog()
 
-    val config = ConfigFactory.load
+    val config = ConfigFactory.load()
     val port = config.getInt("http.port")
 
-    val components = new Components(raidFinder, port)
+    val mode = getMode(config.getString("application.mode"))
+    val components = new Components(raidFinder, port, mode)
     val server = components.server
 
-    // TODO: Use logger
-    println(s"Running server on port $port")
+    if (mode == Mode.Dev) {
+      Logger.info("Press ENTER to stop the application.")
+      scala.io.StdIn.readLine()
+      server.stop()
+    }
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run = {
-        println("Stopping application.")
-        server.stop()
-      }
+      Logger.info("Stopping application.")
+      server.stop()
     })
+  }
+
+  def getMode(s: String): Mode.Mode = s match {
+    case "dev" => Mode.Dev
+    case "prod" => Mode.Prod
+    case unknown => throw new IllegalArgumentException(
+      s"""Unknown application.mode "$unknown" (Must be one of: dev, prod)"""
+    )
   }
 }
 
