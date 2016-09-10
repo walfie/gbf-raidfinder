@@ -24,6 +24,7 @@ object Dialog {
     }
 
     val closeModal = { (e: Event) => dynamicDialog.close(); () }
+    val reloadBosses = { (e: Event) => client.resetBossList() }
 
     val onTabChange = () => ViewModel.persistState(viewState)
 
@@ -35,7 +36,7 @@ object Dialog {
         { BossSelectMenu.content(client, closeModal, currentTab, viewState.imageQuality).bind }
         { SettingsMenu.content(client, viewState).bind }
         <hr style="margin: 0;"/>
-        { dialogFooter(onCancel = closeModal).bind }
+        { dialogFooter(viewState.currentTab, closeModal = closeModal, reloadBosses = reloadBosses).bind }
       </div>
 
     dialog.appendChild(inner)
@@ -62,9 +63,19 @@ object Dialog {
   }
 
   @binding.dom
-  def dialogFooter(onCancel: Event => Unit): Binding[HTMLDivElement] = {
+  def dialogFooter(
+    currentTab:   Binding[ViewModel.DialogTab],
+    closeModal:   Event => Unit,
+    reloadBosses: Event => Unit
+  ): Binding[HTMLDivElement] = {
     <div class="mdl-dialog__actions">
-      <button type="button" class="mdl-button" onclick={ onCancel }>Cancel</button>
+      <button type="button" class="mdl-button" onclick={ closeModal }>Cancel</button>
+      <button type="button" class={
+        "mdl-button".addIf(currentTab.bind != DialogTab.Follow, "is-hidden")
+      } onclick={ reloadBosses }>
+        <i class="material-icons">refresh</i>
+        Reload Bosses
+      </button>
     </div>
   }
 
