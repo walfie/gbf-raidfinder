@@ -40,8 +40,10 @@ object Application {
     }
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
-      Logger.info("Stopping application.")
-      server.stop()
+      override def run(): Unit = {
+        Logger.info("Stopping application.")
+        server.stop()
+      }
     })
   }
 
