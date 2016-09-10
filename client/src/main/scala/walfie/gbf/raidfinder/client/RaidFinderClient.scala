@@ -160,7 +160,6 @@ class WebSocketRaidFinderClient(
     case r: KeepAliveResponse => // Ignore
   }
 
-  // TODO: Exclude old bosses
   private def handleRaidBossesResponse(
     raidBosses: Seq[RaidBoss]
   ): Unit = {
