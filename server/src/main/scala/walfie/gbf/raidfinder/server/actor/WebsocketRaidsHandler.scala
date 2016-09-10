@@ -32,7 +32,7 @@ class WebsocketRaidsHandler(
     name = rb.name, level = rb.level, image = rb.image, lastSeen = rb.lastSeen
   )
 
-  val keepAliveCancellable = keepAliveInterval.map { interval =>
+  val keepAliveCancelable = keepAliveInterval.map { interval =>
     context.system.scheduler.schedule(interval, interval) {
       this push KeepAliveResponse()
     }
@@ -82,6 +82,7 @@ class WebsocketRaidsHandler(
 
   override def postStop(): Unit = {
     newBossListener.cancel()
+    keepAliveCancelable.foreach(_.cancel())
     followed.values.foreach(_.cancel())
   }
 }

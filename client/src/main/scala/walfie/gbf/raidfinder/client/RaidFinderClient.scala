@@ -43,13 +43,11 @@ class WebSocketRaidFinderClient(
 
   override def onWebSocketOpen(): Unit = {
     refollowBosses()
+    updateAllBosses()
     isConnected := true
   }
 
-  override def onWebSocketReconnect(): Unit = {
-    refollowBosses()
-    isConnected := true
-  }
+  override def onWebSocketReconnect(): Unit = onWebSocketOpen()
 
   override def onWebSocketClose(): Unit = {
     isConnected := false

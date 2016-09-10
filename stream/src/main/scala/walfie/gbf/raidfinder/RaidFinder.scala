@@ -81,12 +81,14 @@ class DefaultRaidFinder(
     .fromRaidInfoObservable(raidInfos)
 
   private val raidInfosCancelable = raidInfos.connect()
+  private val newBossCancelable = newBossObservable.connect()
 
   private val cancelable = Cancelable { () =>
     List(
       raidInfosCancelable,
       partitionerCancelable,
-      knownBossesCancelable
+      knownBossesCancelable,
+      newBossCancelable
     ).foreach(_.cancel)
     onShutdown()
   }

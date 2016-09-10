@@ -36,14 +36,13 @@ object Application {
     if (mode == Mode.Dev) {
       Logger.info("Press ENTER to stop the application.")
       scala.io.StdIn.readLine()
+      Logger.info("Stopping application...")
       server.stop()
+      Logger.info("Application stopped.")
     }
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run(): Unit = {
-        Logger.info("Stopping application.")
-        server.stop()
-      }
+      override def run(): Unit = server.stop()
     })
   }
 
