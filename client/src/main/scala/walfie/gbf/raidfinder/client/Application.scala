@@ -17,9 +17,9 @@ object Application {
   def init(url: String): Unit = {
     val bossTtl = Duration.hours(6)
 
-    val reconnectInterval = Duration.seconds(5)
+    val maxReconnectInterval = Duration.seconds(10)
 
-    val websocket = new BinaryProtobufWebSocketClient(url, reconnectInterval)
+    val websocket = new BinaryProtobufWebSocketClient(url, maxReconnectInterval)
 
     val client = new WebSocketRaidFinderClient(
       websocket, dom.window.localStorage, bossTtl, SystemClock
@@ -38,12 +38,14 @@ object Application {
       currentTime := js.Date.now()
     }
 
-    binding.dom.render(
-      dom.document.body,
-      views.MainContent.mainContent(
-        client, ViewModel.loadState(), notification, currentTime, client.isConnected
-      )
+    val div = dom.document.createElement("div")
+    div.classList.add("gbfrf-container")
+    val mainContent = views.MainContent.mainContent(
+      client, ViewModel.loadState(), notification, currentTime, client.isConnected
     )
+
+    binding.dom.render(div, mainContent)
+    dom.document.body.appendChild(div)
   }
 }
 

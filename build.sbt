@@ -35,7 +35,8 @@ lazy val server = (project in file("server"))
     libraryDependencies ++= Seq(
       "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
       "com.typesafe.play" %% "filters-helpers" % Versions.Play,
-      "com.typesafe.play" %% "play-netty-server" % Versions.Play
+      "com.typesafe.play" %% "play-netty-server" % Versions.Play,
+      "com.typesafe.play" %% "play-logback" % Versions.Play
     )
   )
   .dependsOn(stream, protocolJVM)
@@ -85,7 +86,7 @@ lazy val root = (project in file("."))
     herokuAppName in Compile := "gbf-raidfinder",
     herokuSkipSubProjects in Compile := false,
     herokuProcessTypes in Compile := Map(
-      "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT"
+      "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT -Dapplication.mode=prod"
     )
   )
 

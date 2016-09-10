@@ -1,6 +1,7 @@
-html, body {
+html, body, .gbfrf-container {
   height: 100%;
   width: auto;
+  visibility: visible !important;
 }
 
 .is-hidden {

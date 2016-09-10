@@ -2,28 +2,67 @@
 <html lang="en">
 <head>
 
+<link type="image/x-icon" rel="icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQEAYAAABPYyMiAAAABmJLR0T///////8JWPfcAAAACXBIWXMAAABIAAAASABGyWs+AAAAF0lEQVRIx2NgGAWjYBSMglEwCkbBSAcACBAAAeaR9cIAAAAASUVORK5CYII=">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Granblue Raid Finder</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-<link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.indigo-pink.min.css">
-<link rel="stylesheet" href="style.css">
-
 </head>
-<body>
+<body style="visibility:hidden;">
 
-<script src="./js/gbf-raidfinder-client-jsdeps.js"></script>
-<script src="./js/gbf-raidfinder-client-opt.js"></script>
 <script>
+var d = document;
+
+function loadScript(url, cb) {
+  var s = d.createElement('script');
+  s.async = 1;
+  s.onload = cb;
+  s.src = url;
+  d.body.appendChild(s);
+};
+
+function loadCSS(url) {
+  var l = d.createElement('link');
+  l.onload = function() { l.media = 'all'; };
+  l.rel = 'stylesheet';
+  l.media = 'none';
+  l.href = url;
+  d.body.appendChild(l);
+};
+
 (function() {
-  var l = window.location;
-  var protocol = (l.protocol === 'https:') ? 'wss://' : 'ws://';
-  var url = protocol + l.host + '/ws/raids';
-  GbfRaidFinder().init(url);
+
+var l = window.location;
+var isLocal = l.protocol == 'file:' || l.hostname == 'localhost';
+
+[
+  'https://fonts.googleapis.com/icon?family=Material+Icons',
+  'https://code.getmdl.io/1.2.0/material.indigo-pink.min.css',
+  'style.css'
+].forEach(loadCSS);
+
+loadScript('./js/gbf-raidfinder-client-jsdeps.js', function() {
+  var fileVer = isLocal ? 'fastopt' : 'opt';
+
+  loadScript('./js/gbf-raidfinder-client-' + fileVer + '.js', function() {
+    var protocol = (l.protocol === 'https:') ? 'wss://' : 'ws://';
+    var url = protocol + l.host + '/ws/raids?keepAlive=true';
+    GbfRaidFinder().init(url);
+  });
+});
+
+if (!isLocal) {
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83867714-1', 'auto');
+  ga('send', 'pageview');
+}
+
 }());
 </script>
 
-<script defer src="https://code.getmdl.io/1.2.0/material.min.js"></script>
+<script async defer src="https://code.getmdl.io/1.2.0/material.min.js"></script>
 
 </body>
 </html>

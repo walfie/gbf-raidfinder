@@ -150,6 +150,8 @@ class WebSocketRaidFinderClient(
 
     case r: ErrorResponse =>
       dom.window.console.error(r.message) // TODO: Better error handling
+
+    case r: KeepAliveResponse => // Ignore
   }
 
   // TODO: Exclude old bosses
