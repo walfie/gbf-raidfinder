@@ -1,5 +1,5 @@
 object Versions {
-  val Akka = "2.4.9"
+  val Akka = "2.4.10"
   val Mockito = "1.10.19"
   val Monix = "2.0.0"
   val Play = "2.5.6"
