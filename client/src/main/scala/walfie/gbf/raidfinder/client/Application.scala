@@ -38,12 +38,14 @@ object Application {
       currentTime := js.Date.now()
     }
 
-    binding.dom.render(
-      dom.document.body,
-      views.MainContent.mainContent(
-        client, ViewModel.loadState(), notification, currentTime, client.isConnected
-      )
+    val div = dom.document.createElement("div")
+    div.classList.add("gbfrf-container")
+    val mainContent = views.MainContent.mainContent(
+      client, ViewModel.loadState(), notification, currentTime, client.isConnected
     )
+
+    binding.dom.render(div, mainContent)
+    dom.document.body.appendChild(div)
   }
 }
 
