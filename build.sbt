@@ -5,7 +5,7 @@ lazy val buildInfo = (crossProject.crossType(CrossType.Pure) in file(".build-inf
   .settings(commonSettings: _*)
   .settings(
     buildInfoPackage := "walfie.gbf.raidfinder",
-    buildInfoKeys := Seq[BuildInfoKey](version) // TODO: Add git commit hash
+    buildInfoKeys := Seq[BuildInfoKey](version, git.gitHeadCommit)
   )
 lazy val buildInfoJVM = buildInfo.jvm
 lazy val buildInfoJS = buildInfo.js

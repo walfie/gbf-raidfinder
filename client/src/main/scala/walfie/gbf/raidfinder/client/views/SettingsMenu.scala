@@ -47,9 +47,14 @@ object SettingsMenu {
 
   @binding.dom
   def footer: Binding[HTMLDivElement] = {
+    val gitHash = BuildInfo.gitHeadCommit.getOrElse("")
+    val gitShortHash = gitHash.take(7)
+
     // TODO: Don't hardcode this
     <div class="gbfrf-settings__footer">
-      <span>{ "v" + BuildInfo.version }</span><br/>
+      <span class="gbfrf-settings__version">{ "v" + BuildInfo.version }</span>
+      <span class="gbfrf-settings__sha" title={ gitHash }>{ gitShortHash }</span>
+      <br/>
       <a href="https://github.com/walfie/gbf-raidfinder" target="_blank">
         github.com/walfie/gbf-raidfinder
       </a>

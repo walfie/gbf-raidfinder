@@ -224,6 +224,9 @@ html, body, .gbfrf-container {
   border-bottom: 1px solid gray;
 }
 
+.gbfrf-settings__sha:not(:empty):before{ content:"(" }
+.gbfrf-settings__sha:not(:empty):after{ content:")" }
+
 .gbfrf-settings__radio-buttons {
   display: flex;
   flex-direction: row;
