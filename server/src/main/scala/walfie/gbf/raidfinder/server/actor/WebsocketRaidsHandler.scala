@@ -8,6 +8,7 @@ import walfie.gbf.raidfinder.protocol
 import walfie.gbf.raidfinder.protocol.syntax._
 import walfie.gbf.raidfinder.protocol.{RaidBoss => _, _}
 import walfie.gbf.raidfinder.RaidFinder
+import walfie.gbf.raidfinder.server.syntax.ProtocolConverters.RaidBossDomainOps
 
 class WebsocketRaidsHandler(
   out:               ActorRef,
@@ -18,7 +19,7 @@ class WebsocketRaidsHandler(
 
   var followed: Map[BossName, Cancelable] = Map.empty
   val newBossListener: Cancelable = raidFinder.newBossObservable.foreach { boss =>
-    val bosses = Seq(raidBossToProtocol(boss))
+    val bosses = Seq(boss.toProtocol)
     this push RaidBossesResponse(raidBosses = bosses)
   }
 
@@ -28,10 +29,6 @@ class WebsocketRaidsHandler(
 
   def push(response: Response): Unit = out ! response.toMessage
 
-  private def raidBossToProtocol(rb: RaidBoss): protocol.RaidBoss = protocol.RaidBoss(
-    name = rb.name, level = rb.level, image = rb.image, lastSeen = rb.lastSeen
-  )
-
   val keepAliveCancelable = keepAliveInterval.map { interval =>
     context.system.scheduler.schedule(interval, interval) {
       this push KeepAliveResponse()
@@ -40,13 +37,13 @@ class WebsocketRaidsHandler(
 
   val handleRequest: PartialFunction[Request, _] = {
     case r: AllRaidBossesRequest =>
-      val bosses = raidFinder.getKnownBosses.values.map(raidBossToProtocol)
+      val bosses = raidFinder.getKnownBosses.values.map(_.toProtocol)
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
 
     case req: RaidBossesRequest =>
       val bosses = req.bossNames
         .collect(raidFinder.getKnownBosses)
-        .map(raidBossToProtocol)
+        .map(_.toProtocol)
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
 
     case r: FollowRequest =>

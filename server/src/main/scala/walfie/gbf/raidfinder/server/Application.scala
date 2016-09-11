@@ -20,7 +20,7 @@ import walfie.gbf.raidfinder.RaidFinder
 
 object Application {
   def main(args: Array[String]): Unit = {
-    val raidFinder = RaidFinder.withBacklog()
+    val raidFinder = RaidFinder.withBacklog(initialBosses = Seq.empty)
 
     val config = ConfigFactory.load()
     val port = config.getInt("http.port")
