@@ -17,7 +17,14 @@ object HtmlHelpers {
     }
   }
 
+  /** Create an empty textarea, select the text inside, and copy to clipboard */
   def copy(stringToCopy: String): Boolean = {
+    // If the user has already selected something, store the selection
+    val selection = document.getSelection()
+    val selectedRange =
+      if (selection.rangeCount > 0) Some(selection.getRangeAt(0))
+      else None
+
     val textArea = createInvisibleTextArea()
     textArea.value = stringToCopy
     document.body.appendChild(textArea)
@@ -29,6 +36,12 @@ object HtmlHelpers {
       case e: Throwable => false // TODO: Maybe don't swallow this exception
     } finally {
       document.body.removeChild(textArea)
+    }
+
+    // Restore the user's previous selection, if any
+    selectedRange.foreach { range =>
+      selection.removeAllRanges()
+      selection.addRange(range)
     }
 
     result
