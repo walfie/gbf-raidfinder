@@ -89,7 +89,12 @@ lazy val root = (project in file("."))
     herokuAppName in Compile := "gbf-raidfinder",
     herokuSkipSubProjects in Compile := false,
     herokuProcessTypes in Compile := Map(
-      "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT -Dapplication.mode=prod"
+      "web" -> Seq(
+        s"target/universal/stage/bin/${name.value}",
+        "-Dhttp.port=$PORT",
+        "-Dapplication.cache.redisUrl=$REDIS_URL",
+        "-Dapplication.mode=prod"
+      ).mkString(" ")
     )
   )
 

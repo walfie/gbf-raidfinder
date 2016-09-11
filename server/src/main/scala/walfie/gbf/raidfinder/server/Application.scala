@@ -24,7 +24,7 @@ object Application {
 
     // Get initial bosses from cache
     val protobufStorage = {
-      val url = appConfig.as[Option[String]]("cache.redisUrl")
+      val url = appConfig.as[Option[String]]("cache.redisUrl").filter(_.nonEmpty)
       getProtobufStorage(url)
     }
     val bossCacheKey = appConfig.as[String]("cache.bossesKey")
@@ -48,6 +48,7 @@ object Application {
     val components = new Components(raidFinder, port, mode, keepAliveInterval)
     val server = components.server
 
+    // Shutdown handling
     val shutdown = () => {
       server.stop()
       protobufStorage.close()
