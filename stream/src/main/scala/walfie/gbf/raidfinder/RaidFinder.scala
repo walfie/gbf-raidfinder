@@ -72,7 +72,11 @@ class DefaultRaidFinder(
 
   // Whenever a new boss comes in, info gets published here
   // TODO: Maybe add test?
-  val newBossObservable = raidInfos.map(_.boss).publish
+  val newBossObservable = raidInfos
+    .map(_.boss)
+    .groupBy(_.name)
+    .flatMap(_.headF)
+    .publish
 
   private val (partitioner, partitionerCancelable) = CachedRaidTweetsPartitioner
     .fromUngroupedObservable(raidInfos.map(_.tweet), cacheSizePerBoss)

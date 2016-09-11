@@ -21,7 +21,7 @@ object KnownBossesObserver {
 }
 
 /**
-  * Takes incoming [[RaidInfo]]s and keeps the latest of each raid boss.
+  * Takes incoming `RaidInfo`s and keeps the latest of each raid boss.
   * This can be implemented trivially with [[Observable#scan]] but eh.
   */
 class KnownBossesObserver(implicit ec: ExecutionContext) extends Observer[RaidInfo] with KnownBossesMap {
