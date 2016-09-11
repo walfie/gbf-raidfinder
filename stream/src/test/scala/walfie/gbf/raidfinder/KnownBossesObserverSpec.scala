@@ -40,21 +40,40 @@ class KnownBossesObserverSpec extends KnownBossesObserverSpecHelpers {
     cancelable.cancel()
   }
 
-  "Purge old bosses" in new ObserverFixture {
-    val bosses = (1 to 10).map { i =>
-      RaidBoss(name = i.toString, level = i, image = None, lastSeen = new Date(i))
+  "purgeOldBosses" - {
+    "remove old bosses" in new ObserverFixture {
+      val bosses = (1 to 10).map { i =>
+        RaidBoss(name = i.toString, level = i, image = None, lastSeen = new Date(i))
+      }
+      override val initialBosses = bosses
+
+      scheduler.tick()
+      observer.get shouldBe bosses.map(boss => boss.name -> boss).toMap
+
+      val resultF = observer.purgeOldBosses(minDate = new Date(5), levelThreshold = 100)
+      scheduler.tick()
+
+      resultF.futureValue shouldBe
+        bosses.drop(5).map(boss => boss.name -> boss).toMap
     }
-    override val initialBosses = bosses
 
-    scheduler.tick()
-    observer.get shouldBe bosses.map(boss => boss.name -> boss).toMap
+    "keep bosses that are above a certain level" in new ObserverFixture {
+      val bosses = Seq(10, 50, 100, 120, 150).map { i =>
+        RaidBoss(name = i.toString, level = i, image = None, lastSeen = new Date(0))
+      }
+      override val initialBosses = bosses
 
-    val resultF = observer.purgeOldBosses(minDate = new Date(5))
-    scheduler.tick()
+      scheduler.tick()
+      observer.get.values.toSet shouldBe bosses.toSet
 
-    resultF.futureValue shouldBe
-      bosses.drop(5).map(boss => boss.name -> boss).toMap
+      val resultF = observer.purgeOldBosses(minDate = new Date(5), levelThreshold = 100)
+      scheduler.tick()
+
+      resultF.futureValue.values.toSet shouldBe
+        bosses.filter(_.level >= 100).toSet
+    }
   }
+
 }
 
 trait KnownBossesObserverSpecHelpers extends FreeSpec
