@@ -6,6 +6,7 @@ import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
+import walfie.gbf.raidfinder.BuildInfo
 import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.client.syntax.StringOps
 import walfie.gbf.raidfinder.client.ViewModel._
@@ -48,6 +49,7 @@ object SettingsMenu {
   def footer: Binding[HTMLDivElement] = {
     // TODO: Don't hardcode this
     <div class="gbfrf-settings__footer">
+      <span>{ "v" + BuildInfo.version }</span><br/>
       <a href="https://github.com/walfie/gbf-raidfinder" target="_blank">
         github.com/walfie/gbf-raidfinder
       </a>

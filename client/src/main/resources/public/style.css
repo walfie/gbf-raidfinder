@@ -209,6 +209,7 @@ html, body, .gbfrf-container {
 
 .gbfrf-settings__footer {
   margin-top: auto;
+  text-align: right;
   align-self: flex-end;
   padding: 5px;
   color: gray;
