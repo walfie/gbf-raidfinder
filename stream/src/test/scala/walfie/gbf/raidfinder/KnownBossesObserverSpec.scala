@@ -6,7 +6,7 @@ import monix.reactive.Observer
 import monix.reactive.subjects._
 import org.mockito.Mockito._
 import org.scalatest._
-import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.Matchers._
 import org.scalatest.mockito.MockitoSugar
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,8 +14,12 @@ import scala.util.Random
 import walfie.gbf.raidfinder.domain._
 
 class KnownBossesObserverSpec extends KnownBossesObserverSpecHelpers {
-  "Start empty" in new ObserverFixture {
-    observer.get shouldBe Map.empty[BossName, RaidInfo]
+  "Start with initial value" in new ObserverFixture {
+    val boss1 = mockRaidInfo("A").boss
+    val boss2 = mockRaidInfo("B").boss
+    override val initialBosses = Seq(boss1, boss2)
+
+    observer.get shouldBe Map("A" -> boss1, "B" -> boss2)
     cancelable.cancel()
   }
 
@@ -25,21 +29,43 @@ class KnownBossesObserverSpec extends KnownBossesObserverSpecHelpers {
 
     bosses1.foreach(raidInfos.onNext)
     bosses2.foreach(raidInfos.onNext)
+
+    eventually {
+      scheduler.tick()
+      observer.get shouldBe Map(
+        "A" -> bosses1.last.boss,
+        "B" -> bosses2.last.boss
+      )
+    }
+    cancelable.cancel()
+  }
+
+  "Purge old bosses" in new ObserverFixture {
+    val bosses = (1 to 10).map { i =>
+      RaidBoss(name = i.toString, level = i, image = None, lastSeen = new Date(i))
+    }
+    override val initialBosses = bosses
+
+    scheduler.tick()
+    observer.get shouldBe bosses.map(boss => boss.name -> boss).toMap
+
+    val resultF = observer.purgeOldBosses(minDate = new Date(5))
     scheduler.tick()
 
-    observer.get shouldBe Map(
-      "A" -> bosses1.last,
-      "B" -> bosses2.last
-    ).mapValues(_.boss)
-    cancelable.cancel()
+    resultF.futureValue shouldBe
+      bosses.drop(5).map(boss => boss.name -> boss).toMap
   }
 }
 
-trait KnownBossesObserverSpecHelpers extends FreeSpec with MockitoSugar with Eventually {
+trait KnownBossesObserverSpecHelpers extends FreeSpec
+  with MockitoSugar with Eventually with ScalaFutures {
+
   trait ObserverFixture {
     implicit val scheduler = TestScheduler()
+    val initialBosses: Seq[RaidBoss] = Seq.empty
     val raidInfos = ConcurrentSubject.replay[RaidInfo]
-    val (observer, cancelable) = KnownBossesObserver.fromRaidInfoObservable(raidInfos)
+    lazy val (observer, cancelable) = KnownBossesObserver
+      .fromRaidInfoObservable(raidInfos, initialBosses)
   }
 
   def mockRaidInfo(bossName: String): RaidInfo = {
@@ -47,6 +73,7 @@ trait KnownBossesObserverSpecHelpers extends FreeSpec with MockitoSugar with Eve
     when(tweet.bossName) thenReturn bossName
     when(tweet.createdAt) thenReturn (new Date(Random.nextLong.abs * 1000))
     val boss = mock[RaidBoss]
+    when(boss.name) thenReturn bossName
     RaidInfo(tweet, boss)
   }
 }

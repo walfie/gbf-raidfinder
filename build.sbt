@@ -32,11 +32,14 @@ lazy val server = (project in file("server"))
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder-server",
+    resolvers += Resolver.jcenterRepo, // for ficus
     libraryDependencies ++= Seq(
+      "com.iheart" %% "ficus" % "1.2.6",
       "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
       "com.typesafe.play" %% "filters-helpers" % Versions.Play,
       "com.typesafe.play" %% "play-netty-server" % Versions.Play,
-      "com.typesafe.play" %% "play-logback" % Versions.Play
+      "com.typesafe.play" %% "play-logback" % Versions.Play,
+      "redis.clients" % "jedis" % "2.8.1"
     )
   )
   .dependsOn(stream, protocolJVM)
@@ -86,7 +89,12 @@ lazy val root = (project in file("."))
     herokuAppName in Compile := "gbf-raidfinder",
     herokuSkipSubProjects in Compile := false,
     herokuProcessTypes in Compile := Map(
-      "web" -> s"target/universal/stage/bin/${name.value} -Dhttp.port=$$PORT -Dapplication.mode=prod"
+      "web" -> Seq(
+        s"target/universal/stage/bin/${name.value}",
+        "-Dhttp.port=$PORT",
+        "-Dapplication.cache.redisUrl=$REDIS_URL",
+        "-Dapplication.mode=prod"
+      ).mkString(" ")
     )
   )
 

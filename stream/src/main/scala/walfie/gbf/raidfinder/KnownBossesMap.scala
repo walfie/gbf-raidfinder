@@ -1,6 +1,7 @@
 package walfie.gbf.raidfinder
 
 import akka.agent.Agent
+import java.util.Date
 import monix.execution.{Ack, Cancelable, Scheduler}
 import monix.reactive._
 import scala.concurrent.{ExecutionContext, Future}
@@ -8,13 +9,15 @@ import walfie.gbf.raidfinder.domain._
 
 trait KnownBossesMap {
   def get(): Map[BossName, RaidBoss]
+  def purgeOldBosses(minDate: Date): Future[Map[BossName, RaidBoss]]
 }
 
 object KnownBossesObserver {
   def fromRaidInfoObservable(
-    observable: Observable[RaidInfo]
+    observable:    Observable[RaidInfo],
+    initialBosses: Seq[RaidBoss]
   )(implicit scheduler: Scheduler): (KnownBossesObserver, Cancelable) = {
-    val observer = new KnownBossesObserver
+    val observer = new KnownBossesObserver(initialBosses)
     val cancelable = observable.subscribe(observer)
     (observer, cancelable)
   }
@@ -22,10 +25,14 @@ object KnownBossesObserver {
 
 /**
   * Takes incoming `RaidInfo`s and keeps the latest of each raid boss.
-  * This can be implemented trivially with [[Observable#scan]] but eh.
+  * This can be implemented trivially with `Observable#scan` but eh.
   */
-class KnownBossesObserver(implicit ec: ExecutionContext) extends Observer[RaidInfo] with KnownBossesMap {
-  val agent = Agent[Map[BossName, RaidBoss]](Map.empty)
+class KnownBossesObserver(
+  initialBosses: Seq[RaidBoss]
+)(implicit ec: ExecutionContext) extends Observer[RaidInfo] with KnownBossesMap {
+  private val agent = Agent[Map[BossName, RaidBoss]](
+    initialBosses.map(boss => boss.name -> boss).toMap
+  )
 
   def onComplete(): Unit = ()
   def onError(e: Throwable): Unit = ()
@@ -36,5 +43,10 @@ class KnownBossesObserver(implicit ec: ExecutionContext) extends Observer[RaidIn
   }
 
   def get(): Map[BossName, RaidBoss] = agent.get()
+  def purgeOldBosses(minDate: Date): Future[Map[BossName, RaidBoss]] = {
+    agent.alter(_.filter {
+      case (name, boss) => boss.lastSeen.after(minDate)
+    })
+  }
 }
 
