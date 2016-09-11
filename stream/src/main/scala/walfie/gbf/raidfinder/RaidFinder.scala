@@ -1,9 +1,11 @@
 package walfie.gbf.raidfinder
 
+import java.util.Date
 import monix.eval.Task
 import monix.execution.{Cancelable, Scheduler}
 import monix.reactive._
 import scala.concurrent.duration._
+import scala.concurrent.Future
 import twitter4j._
 import walfie.gbf.raidfinder.domain._
 
@@ -11,6 +13,7 @@ trait RaidFinder {
   def getRaidTweets(bossName: BossName): Observable[RaidTweet]
   def newBossObservable: Observable[RaidBoss]
   def getKnownBosses(): Map[BossName, RaidBoss]
+  def purgeOldBosses(minDate: Date): Future[Map[BossName, RaidBoss]]
   def shutdown(): Unit
 }
 
@@ -107,5 +110,7 @@ class DefaultRaidFinder(
     knownBosses.get()
   def getRaidTweets(bossName: BossName): Observable[RaidTweet] =
     partitioner.getObservable(bossName)
+  def purgeOldBosses(minDate: Date): Future[Map[BossName, RaidBoss]] =
+    knownBosses.purgeOldBosses(minDate)
 }
 

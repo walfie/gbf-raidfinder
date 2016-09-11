@@ -1,12 +1,11 @@
 package walfie.gbf.raidfinder.server
 
-import akka.actor._
 import com.typesafe.config.{Config, ConfigFactory}
 import java.net.URI
+import java.util.Date
 import net.ceedubs.ficus.Ficus._
-import play.api.mvc._
+import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import play.api.{Logger, Mode}
-import play.core.server._
 import scala.concurrent.duration._
 import walfie.gbf.raidfinder.domain
 import walfie.gbf.raidfinder.protocol._
@@ -27,18 +26,25 @@ object Application {
       val url = appConfig.as[Option[String]]("cache.redisUrl").filter(_.nonEmpty)
       getProtobufStorage(url)
     }
-    val bossCacheKey = appConfig.as[String]("cache.bossesKey")
-    val bossFlushInterval = appConfig.as[FiniteDuration]("cache.flushInterval")
-    val cachedBosses = getCachedBosses(protobufStorage, bossCacheKey)
+
+    val bossStorageConfig = appConfig.as[BossStorageConfig]("cache.bosses")
+    val cachedBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
 
     // Start RaidFinder
     val raidFinder = RaidFinder.withBacklog(initialBosses = cachedBosses)
 
     // Periodically flush bosses to cache
-    scheduler.scheduleWithFixedDelay(bossFlushInterval, bossFlushInterval) {
-      val bosses = raidFinder.getKnownBosses().values.map(_.toProtocol)
-      val bossesResponse = RaidBossesResponse(raidBosses = bosses.toSeq)
-      BlockingIO.future(protobufStorage.set(bossCacheKey, bossesResponse))
+    val bossFlushCancelable = scheduler.scheduleWithFixedDelay(
+      bossStorageConfig.flushInterval,
+      bossStorageConfig.flushInterval
+    ) {
+      // Purge old bosses and then update the cache
+      val purgeMinDate = new Date(System.currentTimeMillis() - bossStorageConfig.ttl.toMillis)
+      for {
+        bosses <- raidFinder.purgeOldBosses(purgeMinDate)
+        cacheObj = RaidBossesResponse(raidBosses = bosses.values.map(_.toProtocol).toSeq)
+        _ <- BlockingIO.future(protobufStorage.set(bossStorageConfig.cacheKey, cacheObj))
+      } yield ()
     }
 
     // Start server
@@ -51,6 +57,7 @@ object Application {
     // Shutdown handling
     val shutdown = () => {
       server.stop()
+      bossFlushCancelable.cancel()
       protobufStorage.close()
     }
 
@@ -87,4 +94,10 @@ object Application {
       .fold(Seq.empty[domain.RaidBoss])(_.raidBosses.map(_.toDomain))
   }
 }
+
+case class BossStorageConfig(
+  cacheKey:      String,
+  ttl:           FiniteDuration,
+  flushInterval: FiniteDuration
+)
 
