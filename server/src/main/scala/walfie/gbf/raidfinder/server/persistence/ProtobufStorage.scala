@@ -5,10 +5,10 @@ import java.net.URI
 import redis.clients.jedis.{BinaryJedis, Jedis}
 
 trait ProtobufStorage {
-  type MessageT[T] = GeneratedMessage with Message[T]
+  type CacheItem[T] = GeneratedMessage with Message[T]
 
-  def set[T <: MessageT[T]](key: String, value: T): Unit
-  def get[T <: MessageT[T]](
+  def set[T <: CacheItem[T]](key: String, value: T): Unit
+  def get[T <: CacheItem[T]](
     key: String
   )(implicit companion: GeneratedMessageCompanion[T]): Option[T]
 
@@ -23,11 +23,11 @@ object ProtobufStorage {
 
 // TODO: Write integration test
 class RedisProtobufStorage(redis: BinaryJedis) extends ProtobufStorage {
-  def set[T <: MessageT[T]](key: String, value: T): Unit = {
+  def set[T <: CacheItem[T]](key: String, value: T): Unit = {
     redis.set(key.getBytes, value.toByteArray)
   }
 
-  def get[T <: MessageT[T]](
+  def get[T <: CacheItem[T]](
     key: String
   )(implicit companion: GeneratedMessageCompanion[T]): Option[T] = {
     Option(redis.get(key.getBytes)).flatMap { bytes =>
@@ -39,9 +39,9 @@ class RedisProtobufStorage(redis: BinaryJedis) extends ProtobufStorage {
 }
 
 object NoOpProtobufStorage extends ProtobufStorage {
-  def set[T <: MessageT[T]](key: String, value: T): Unit = ()
+  def set[T <: CacheItem[T]](key: String, value: T): Unit = ()
 
-  def get[T <: MessageT[T]](
+  def get[T <: CacheItem[T]](
     key: String
   )(implicit companion: GeneratedMessageCompanion[T]): Option[T] = None
 

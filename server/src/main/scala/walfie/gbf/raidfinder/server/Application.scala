@@ -61,17 +61,7 @@ object Application {
       protobufStorage.close()
     }
 
-    if (mode == Mode.Dev) {
-      Logger.info("Press ENTER to stop the application.")
-      scala.io.StdIn.readLine()
-      Logger.info("Stopping application...")
-      shutdown()
-      Logger.info("Application stopped.")
-    }
-
-    Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run(): Unit = shutdown()
-    })
+    handleShutdown(mode, shutdown)
   }
 
   def getMode(s: String): Mode.Mode = s match {
@@ -92,6 +82,20 @@ object Application {
     storage
       .get[RaidBossesResponse](key)
       .fold(Seq.empty[domain.RaidBoss])(_.raidBosses.map(_.toDomain))
+  }
+
+  def handleShutdown(mode: Mode.Mode, shutdown: () => Unit) = {
+    if (mode == Mode.Dev) {
+      Logger.info("Press ENTER to stop the application.")
+      scala.io.StdIn.readLine()
+      Logger.info("Stopping application...")
+      shutdown()
+      Logger.info("Application stopped.")
+    }
+
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run(): Unit = shutdown()
+    })
   }
 }
 
