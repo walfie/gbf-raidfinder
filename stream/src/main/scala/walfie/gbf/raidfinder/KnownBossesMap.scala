@@ -1,6 +1,7 @@
 package walfie.gbf.raidfinder
 
 import akka.agent.Agent
+import java.util.Date
 import monix.execution.{Ack, Cancelable, Scheduler}
 import monix.reactive._
 import scala.concurrent.{ExecutionContext, Future}
@@ -8,6 +9,7 @@ import walfie.gbf.raidfinder.domain._
 
 trait KnownBossesMap {
   def get(): Map[BossName, RaidBoss]
+  def purgeOldBosses(minDate: Date): Future[Map[BossName, RaidBoss]]
 }
 
 object KnownBossesObserver {
@@ -41,5 +43,10 @@ class KnownBossesObserver(
   }
 
   def get(): Map[BossName, RaidBoss] = agent.get()
+  def purgeOldBosses(minDate: Date): Future[Map[BossName, RaidBoss]] = {
+    agent.alter(_.filter {
+      case (name, boss) => boss.lastSeen.after(minDate)
+    })
+  }
 }
 
