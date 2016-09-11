@@ -1,48 +1,68 @@
 package walfie.gbf.raidfinder.server
 
 import akka.actor._
-import akka.stream.ActorMaterializer
-import com.typesafe.config.ConfigFactory
-import java.util.concurrent.TimeUnit
-import monix.execution.Scheduler.Implicits.global
-import play.api.http.DefaultHttpErrorHandler
+import com.typesafe.config.{Config, ConfigFactory}
+import java.net.URI
+import net.ceedubs.ficus.Ficus._
 import play.api.mvc._
-import play.api.routing.Router
-import play.api.routing.sird._
-import play.api.{BuiltInComponents, Logger, Mode}
+import play.api.{Logger, Mode}
 import play.core.server._
-import play.core.server.NettyServerComponents
 import scala.concurrent.duration._
-import scala.concurrent.Future
-import scala.util.control.NonFatal
-import walfie.gbf.raidfinder
+import walfie.gbf.raidfinder.domain
+import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.RaidFinder
+import walfie.gbf.raidfinder.server.persistence._
+import walfie.gbf.raidfinder.server.syntax.ProtocolConverters._
+import walfie.gbf.raidfinder.util.BlockingIO
 
 object Application {
   def main(args: Array[String]): Unit = {
-    val raidFinder = RaidFinder.withBacklog(initialBosses = Seq.empty)
+    implicit val scheduler = monix.execution.Scheduler.Implicits.global
 
     val config = ConfigFactory.load()
-    val port = config.getInt("http.port")
+    val appConfig = config.getConfig("application")
 
-    val mode = getMode(config.getString("application.mode"))
-    val keepAliveInterval = config.getDuration(
-      "application.websocket.keepAliveInterval",
-      TimeUnit.MILLISECONDS
-    ).milliseconds
+    // Get initial bosses from cache
+    val protobufStorage = {
+      val url = appConfig.as[Option[String]]("cache.redisUrl")
+      getProtobufStorage(url)
+    }
+    val bossCacheKey = appConfig.as[String]("cache.bossesKey")
+    val bossFlushInterval = appConfig.as[FiniteDuration]("cache.flushInterval")
+    val cachedBosses = getCachedBosses(protobufStorage, bossCacheKey)
+
+    // Start RaidFinder
+    val raidFinder = RaidFinder.withBacklog(initialBosses = cachedBosses)
+
+    // Periodically flush bosses to cache
+    scheduler.scheduleWithFixedDelay(bossFlushInterval, bossFlushInterval) {
+      val bosses = raidFinder.getKnownBosses().values.map(_.toProtocol)
+      val bossesResponse = RaidBossesResponse(raidBosses = bosses.toSeq)
+      BlockingIO.future(protobufStorage.set(bossCacheKey, bossesResponse))
+    }
+
+    // Start server
+    val port = config.as[Int]("http.port")
+    val mode = getMode(appConfig.as[String]("mode"))
+    val keepAliveInterval = appConfig.as[FiniteDuration]("websocket.keepAliveInterval")
     val components = new Components(raidFinder, port, mode, keepAliveInterval)
     val server = components.server
+
+    val shutdown = () => {
+      server.stop()
+      protobufStorage.close()
+    }
 
     if (mode == Mode.Dev) {
       Logger.info("Press ENTER to stop the application.")
       scala.io.StdIn.readLine()
       Logger.info("Stopping application...")
-      server.stop()
+      shutdown()
       Logger.info("Application stopped.")
     }
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run(): Unit = server.stop()
+      override def run(): Unit = shutdown()
     })
   }
 
@@ -52,6 +72,18 @@ object Application {
     case unknown => throw new IllegalArgumentException(
       s"""Unknown application.mode "$unknown" (Must be one of: dev, prod)"""
     )
+  }
+
+  def getProtobufStorage(redisUrl: Option[String]): ProtobufStorage = {
+    redisUrl.fold[ProtobufStorage](NoOpProtobufStorage) { url =>
+      ProtobufStorage.redis(new URI(url))
+    }
+  }
+
+  def getCachedBosses(storage: ProtobufStorage, key: String): Seq[domain.RaidBoss] = {
+    storage
+      .get[RaidBossesResponse](key)
+      .fold(Seq.empty[domain.RaidBoss])(_.raidBosses.map(_.toDomain))
   }
 }
 
