@@ -209,6 +209,7 @@ html, body, .gbfrf-container {
 
 .gbfrf-settings__footer {
   margin-top: auto;
+  text-align: right;
   align-self: flex-end;
   padding: 5px;
   color: gray;
@@ -222,6 +223,9 @@ html, body, .gbfrf-container {
 .gbfrf-settings__item {
   border-bottom: 1px solid gray;
 }
+
+.gbfrf-settings__sha:not(:empty):before{ content:"(" }
+.gbfrf-settings__sha:not(:empty):after{ content:")" }
 
 .gbfrf-settings__radio-buttons {
   display: flex;

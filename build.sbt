@@ -1,5 +1,15 @@
 // TODO: Put all dependencies in a Dependencies.scala file with versions
 
+lazy val buildInfo = (crossProject.crossType(CrossType.Pure) in file(".build-info"))
+  .enablePlugins(ScalaJSPlugin, BuildInfoPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    buildInfoPackage := "walfie.gbf.raidfinder",
+    buildInfoKeys := Seq[BuildInfoKey](version, git.gitHeadCommit)
+  )
+lazy val buildInfoJVM = buildInfo.jvm
+lazy val buildInfoJS = buildInfo.js
+
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
   organization := "com.github.walfie",
@@ -75,7 +85,7 @@ lazy val client = (project in file("client"))
         / s"${Versions.DialogPolyfillJS}/dialog-polyfill.js"
     )
   )
-  .dependsOn(protocolJS)
+  .dependsOn(protocolJS, buildInfoJS)
 
 lazy val root = (project in file("."))
   .enablePlugins(JavaServerAppPackaging)
@@ -83,6 +93,7 @@ lazy val root = (project in file("."))
   .settings(commonSettings: _*)
   .settings(
     name := "gbf-raidfinder",
+    publish := (),
     mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
 
     stage <<= stage dependsOn (fullOptJS in (client, Compile)),

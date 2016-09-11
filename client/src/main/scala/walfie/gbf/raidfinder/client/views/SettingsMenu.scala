@@ -6,6 +6,7 @@ import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
+import walfie.gbf.raidfinder.BuildInfo
 import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.client.syntax.StringOps
 import walfie.gbf.raidfinder.client.ViewModel._
@@ -46,8 +47,14 @@ object SettingsMenu {
 
   @binding.dom
   def footer: Binding[HTMLDivElement] = {
+    val gitHash = BuildInfo.gitHeadCommit.getOrElse("")
+    val gitShortHash = gitHash.take(7)
+
     // TODO: Don't hardcode this
     <div class="gbfrf-settings__footer">
+      <span class="gbfrf-settings__version">{ "v" + BuildInfo.version }</span>
+      <span class="gbfrf-settings__sha" title={ gitHash }>{ gitShortHash }</span>
+      <br/>
       <a href="https://github.com/walfie/gbf-raidfinder" target="_blank">
         github.com/walfie/gbf-raidfinder
       </a>
