@@ -94,6 +94,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "gbf-raidfinder",
     publish := (),
+    releaseProcess -= ReleaseTransformations.publishArtifacts,
     mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
 
     stage <<= stage dependsOn (fullOptJS in (client, Compile)),
