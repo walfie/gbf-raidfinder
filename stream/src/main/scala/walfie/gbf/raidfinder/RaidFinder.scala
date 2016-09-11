@@ -20,19 +20,21 @@ object RaidFinder {
 
   /** Stream tweets without looking up old tweets first */
   def withoutBacklog(
-    twitterStream:    TwitterStream = TwitterStreamFactory.getSingleton,
-    cacheSizePerBoss: Int           = DefaultCacheSizePerBoss
+    twitterStream:       TwitterStream = TwitterStreamFactory.getSingleton,
+    cachedTweetsPerBoss: Int           = DefaultCacheSizePerBoss,
+    initialBosses:       Seq[RaidBoss] = Seq.empty
   )(implicit scheduler: Scheduler): DefaultRaidFinder = {
     val statuses = TwitterStreamer(twitterStream).observable
-    new DefaultRaidFinder(statuses, cacheSizePerBoss)
+    new DefaultRaidFinder(statuses, cachedTweetsPerBoss, initialBosses)
   }
 
   /** Search for old tweets first before streaming new tweets */
   def withBacklog(
-    twitter:          Twitter       = TwitterFactory.getSingleton,
-    twitterStream:    TwitterStream = TwitterStreamFactory.getSingleton,
-    backlogSize:      Int           = DefaultBacklogSize,
-    cacheSizePerBoss: Int           = DefaultCacheSizePerBoss
+    twitter:             Twitter       = TwitterFactory.getSingleton,
+    twitterStream:       TwitterStream = TwitterStreamFactory.getSingleton,
+    backlogSize:         Int           = DefaultBacklogSize,
+    cachedTweetsPerBoss: Int           = DefaultCacheSizePerBoss,
+    initialBosses:       Seq[RaidBoss] = Seq.empty
   )(implicit scheduler: Scheduler): DefaultRaidFinder = {
     import TwitterSearcher._
 
@@ -50,7 +52,9 @@ object RaidFinder {
     val backlogObservable = Observable.fromTask(backlogTask).flatMap(Observable.fromIterable)
     val newStatusesObservable = TwitterStreamer(twitterStream).observable
 
-    new DefaultRaidFinder(backlogObservable ++ newStatusesObservable, cacheSizePerBoss) {
+    new DefaultRaidFinder(
+      backlogObservable ++ newStatusesObservable, cachedTweetsPerBoss, initialBosses
+    ) {
       override def onShutdown(): Unit = {
         twitterStream.cleanUp()
         twitterStream.shutdown()
@@ -60,8 +64,9 @@ object RaidFinder {
 }
 
 class DefaultRaidFinder(
-  statusesObservable: Observable[Status],
-  cacheSizePerBoss:   Int
+  statusesObservable:  Observable[Status],
+  cachedTweetsPerBoss: Int,
+  initialBosses:       Seq[RaidBoss]
 )(implicit scheduler: Scheduler) extends RaidFinder {
   /** Override this to perform additional cleanup on shutdown */
   protected def onShutdown(): Unit = ()
@@ -79,10 +84,10 @@ class DefaultRaidFinder(
     .publish
 
   private val (partitioner, partitionerCancelable) = CachedRaidTweetsPartitioner
-    .fromUngroupedObservable(raidInfos.map(_.tweet), cacheSizePerBoss)
+    .fromUngroupedObservable(raidInfos.map(_.tweet), cachedTweetsPerBoss)
 
   private val (knownBosses, knownBossesCancelable) = KnownBossesObserver
-    .fromRaidInfoObservable(raidInfos)
+    .fromRaidInfoObservable(raidInfos, initialBosses)
 
   private val raidInfosCancelable = raidInfos.connect()
   private val newBossCancelable = newBossObservable.connect()

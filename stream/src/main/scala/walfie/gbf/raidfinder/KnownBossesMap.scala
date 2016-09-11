@@ -12,9 +12,10 @@ trait KnownBossesMap {
 
 object KnownBossesObserver {
   def fromRaidInfoObservable(
-    observable: Observable[RaidInfo]
+    observable:    Observable[RaidInfo],
+    initialBosses: Seq[RaidBoss]
   )(implicit scheduler: Scheduler): (KnownBossesObserver, Cancelable) = {
-    val observer = new KnownBossesObserver
+    val observer = new KnownBossesObserver(initialBosses)
     val cancelable = observable.subscribe(observer)
     (observer, cancelable)
   }
@@ -22,10 +23,14 @@ object KnownBossesObserver {
 
 /**
   * Takes incoming `RaidInfo`s and keeps the latest of each raid boss.
-  * This can be implemented trivially with [[Observable#scan]] but eh.
+  * This can be implemented trivially with `Observable#scan` but eh.
   */
-class KnownBossesObserver(implicit ec: ExecutionContext) extends Observer[RaidInfo] with KnownBossesMap {
-  val agent = Agent[Map[BossName, RaidBoss]](Map.empty)
+class KnownBossesObserver(
+  initialBosses: Seq[RaidBoss]
+)(implicit ec: ExecutionContext) extends Observer[RaidInfo] with KnownBossesMap {
+  private val agent = Agent[Map[BossName, RaidBoss]](
+    initialBosses.map(boss => boss.name -> boss).toMap
+  )
 
   def onComplete(): Unit = ()
   def onError(e: Throwable): Unit = ()
