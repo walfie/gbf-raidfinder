@@ -41,7 +41,10 @@ object Application {
       // Purge old bosses and then update the cache
       val purgeMinDate = new Date(System.currentTimeMillis() - bossStorageConfig.ttl.toMillis)
       for {
-        bosses <- raidFinder.purgeOldBosses(purgeMinDate)
+        bosses <- raidFinder.purgeOldBosses(
+          minDate = purgeMinDate,
+          levelThreshold = bossStorageConfig.levelThreshold
+        )
         cacheObj = RaidBossesResponse(raidBosses = bosses.values.map(_.toProtocol).toSeq)
         _ <- BlockingIO.future(protobufStorage.set(bossStorageConfig.cacheKey, cacheObj))
       } yield ()
@@ -100,8 +103,9 @@ object Application {
 }
 
 case class BossStorageConfig(
-  cacheKey:      String,
-  ttl:           FiniteDuration,
-  flushInterval: FiniteDuration
+  cacheKey:       String,
+  ttl:            FiniteDuration,
+  flushInterval:  FiniteDuration,
+  levelThreshold: Int
 )
 
