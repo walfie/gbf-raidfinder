@@ -45,6 +45,8 @@ lazy val protocolJS = protocol.js
 
 lazy val server = (project in file("server"))
   .settings(commonSettings: _*)
+  .settings(Defaults.itSettings: _*)
+  .configs(IntegrationTest)
   .settings(
     name := "gbf-raidfinder-server",
     resolvers += Resolver.jcenterRepo, // for ficus
@@ -52,8 +54,9 @@ lazy val server = (project in file("server"))
       "com.iheart" %% "ficus" % "1.2.6",
       "com.trueaccord.scalapb" %% "scalapb-json4s" % Versions.ScalaPB_json4s,
       "com.typesafe.play" %% "filters-helpers" % Versions.Play,
-      "com.typesafe.play" %% "play-netty-server" % Versions.Play,
       "com.typesafe.play" %% "play-logback" % Versions.Play,
+      "com.typesafe.play" %% "play-netty-server" % Versions.Play,
+      "org.scalatest" %% "scalatest" % Versions.ScalaTest % "it,test",
       "redis.clients" % "jedis" % "2.8.1"
     )
   )
