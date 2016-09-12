@@ -25,7 +25,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       name = "Lv60 オオゾラッコ",
       level = 60,
       image = Some("http://example.com/raid-image.png"),
-      lastSeen = now
+      lastSeen = now,
+      language = Language.Japanese
     )
 
     "with extra text" in {
@@ -77,7 +78,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       name = "Lvl 60 Ozorotter",
       level = 60,
       image = Some("http://example.com/raid-image.png"),
-      lastSeen = now
+      lastSeen = now,
+      language = Language.English
     )
 
     "with extra text" in {

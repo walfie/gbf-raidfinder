@@ -16,5 +16,11 @@ message RaidBoss {
   google.protobuf.StringValue image = 2;
   int64 lastSeen = 3 [(scalapb.field).type = "java.util.Date"];
   int32 level = 4;
+  Language language = 5;
+}
+
+enum Language {
+  JAPANESE = 0;
+  ENGLISH = 1;
 }
 

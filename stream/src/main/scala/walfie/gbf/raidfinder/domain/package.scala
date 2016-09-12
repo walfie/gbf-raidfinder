@@ -9,6 +9,13 @@ package object domain {
 }
 
 package domain {
+
+  sealed trait Language
+  object Language {
+    case object English extends Language
+    case object Japanese extends Language
+  }
+
   case class RaidInfo(
     tweet: RaidTweet,
     boss:  RaidBoss
@@ -28,7 +35,8 @@ package domain {
     name:     BossName,
     level:    Int,
     image:    Option[RaidImage],
-    lastSeen: Date
+    lastSeen: Date,
+    language: Language
   )
 }
 

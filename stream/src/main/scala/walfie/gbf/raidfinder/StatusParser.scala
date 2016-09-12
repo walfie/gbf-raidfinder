@@ -23,16 +23,16 @@ object StatusParser {
     case _ if status.getSource != GranblueSource => None
 
     case RaidRegexJapanese(extraText, raidId, boss) =>
-      Some(TweetParts(status, extraText, raidId, boss).toRaidInfo)
+      Some(TweetParts(status, extraText, raidId, boss).toRaidInfo(Language.Japanese))
 
     case RaidRegexEnglish(extraText, raidId, boss) =>
-      Some(TweetParts(status, extraText, raidId, boss).toRaidInfo)
+      Some(TweetParts(status, extraText, raidId, boss).toRaidInfo(Language.English))
 
     case _ => None
   }
 
   private case class TweetParts(status: Status, extraText: String, raidId: String, boss: String) {
-    def toRaidInfo(): RaidInfo = {
+    def toRaidInfo(language: Language): RaidInfo = {
       val bossName = boss.trim
 
       val raidTweet = RaidTweet(
@@ -56,7 +56,8 @@ object StatusParser {
         name = bossName,
         level = bossLevel,
         image = getImageFromStatus(status),
-        lastSeen = status.getCreatedAt
+        lastSeen = status.getCreatedAt,
+        language = language
       )
 
       RaidInfo(raidTweet, raidBoss)
