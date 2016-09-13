@@ -71,13 +71,15 @@ object ViewModel {
     currentTab:     Var[DialogTab]    = Var(DialogTab.Follow),
     imageQuality:   Var[ImageQuality] = Var(ImageQuality.Default),
     timeFormat:     Var[TimeFormat]   = Var(TimeFormat.Default),
-    showUserImages: Var[Boolean]      = Var(false)
+    showUserImages: Var[Boolean]      = Var(false),
+    nightMode:      Var[Boolean]      = Var(false)
   ) { state =>
     def toJsObject: JsState = new JsState {
       val currentTab: js.UndefOr[String] = state.currentTab.get.label
       val imageQuality: js.UndefOr[String] = state.imageQuality.get.label
       val timeFormat: js.UndefOr[String] = state.timeFormat.get.label
       val showUserImages: js.UndefOr[Boolean] = state.showUserImages.get
+      val nightMode: js.UndefOr[Boolean] = state.nightMode.get
     }
   }
 
@@ -86,7 +88,8 @@ object ViewModel {
       currentTab = Var(fromField(jsState.currentTab, DialogTab.fromString, DialogTab.Follow)),
       imageQuality = Var(fromField(jsState.imageQuality, ImageQuality.fromString, ImageQuality.Default)),
       timeFormat = Var(fromField(jsState.timeFormat, TimeFormat.fromString, TimeFormat.Default)),
-      showUserImages = Var(jsState.showUserImages.getOrElse(false))
+      showUserImages = Var(jsState.showUserImages.getOrElse(false)),
+      nightMode = Var(jsState.nightMode.getOrElse(false))
     )
   }
 
@@ -100,6 +103,7 @@ object ViewModel {
     def imageQuality: js.UndefOr[String]
     def timeFormat: js.UndefOr[String]
     def showUserImages: js.UndefOr[Boolean]
+    def nightMode: js.UndefOr[Boolean]
   }
 }
 

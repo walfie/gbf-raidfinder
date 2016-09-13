@@ -23,6 +23,8 @@ object MainContent {
   ): Binding[Constants[HTMLElement]] = {
     val dialog = Dialog.element(client, viewState).bind
 
+    handleNightMode(viewState.nightMode).watch
+
     val main =
       <div class="gbfrf-main-content">
         { notification.binding.bind }
@@ -44,6 +46,23 @@ object MainContent {
       dialog,
       main
     )
+  }
+
+  /** Handle night mode toggle */
+  @binding.dom
+  def handleNightMode(nightMode: Var[Boolean]): Binding[Unit] = {
+    val bodyClasses = dom.document.body.classList
+    val themePrefix = "gbfrf-theme--"
+    val lightTheme = themePrefix + "light"
+    val darkTheme = themePrefix + "dark"
+
+    if (nightMode.bind) {
+      bodyClasses.add(darkTheme)
+      bodyClasses.remove(lightTheme)
+    } else {
+      bodyClasses.add(lightTheme)
+      bodyClasses.remove(darkTheme)
+    }
   }
 
   @binding.dom
