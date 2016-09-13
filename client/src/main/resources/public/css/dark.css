@@ -9,6 +9,12 @@
 }
 
 .gbfrf-theme--dark
+.gbfrf-follow__boss-box {
+  color: white;
+  background-color: #222426;
+}
+
+.gbfrf-theme--dark
 .gbfrf-tweet {
   color: white;
 }
