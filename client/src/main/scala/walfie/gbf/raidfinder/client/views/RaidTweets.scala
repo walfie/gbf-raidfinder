@@ -24,7 +24,7 @@ object RaidTweets {
     notification: Notification,
     viewState:    ViewModel.State
   ): Binding[HTMLDivElement] = {
-    <div class="gbfrf-column mdl-shadow--4dp">
+    <div class="gbfrf-column mdl-shadow--2dp">
       <div class="mdl-layout mdl-layout--fixed-header">
         { raidBossHeader(raidBoss, viewState.imageQuality, client).bind }
         <div class="mdl-layout__content">

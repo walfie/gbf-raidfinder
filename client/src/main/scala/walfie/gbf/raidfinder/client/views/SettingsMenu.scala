@@ -39,6 +39,11 @@ object SettingsMenu {
               checkboxAction("gbfrf-setting__user-image", viewState.showUserImages, onChange)
             }.bind
           }
+          {
+            settingsListItem("Night mode") {
+              checkboxAction("gbfrf-setting__night-mode", viewState.nightMode, onChange)
+            }.bind
+          }
         </ul>
         { footer.bind }
       </div>
