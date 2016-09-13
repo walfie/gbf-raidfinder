@@ -31,14 +31,17 @@
 
 - Preserve bosses between server restarts [\#37](https://github.com/walfie/gbf-raidfinder/issues/37)
 - More efficient boss list refresh [\#35](https://github.com/walfie/gbf-raidfinder/issues/35)
-- Handle case where \>100 tweets are made per tick [\#5](https://github.com/walfie/gbf-raidfinder/issues/5)
-- Handle rate limiting [\#4](https://github.com/walfie/gbf-raidfinder/issues/4)
 - Include English raid tweets [\#3](https://github.com/walfie/gbf-raidfinder/issues/3)
 
 **Fixed bugs:**
 
 - Application stops immediately in prod mode [\#32](https://github.com/walfie/gbf-raidfinder/issues/32)
 - Dialog element doesn't work in Firefox [\#20](https://github.com/walfie/gbf-raidfinder/issues/20)
+
+**Closed issues:**
+
+- Handle case where \>100 tweets are made per tick [\#5](https://github.com/walfie/gbf-raidfinder/issues/5)
+- Handle rate limiting [\#4](https://github.com/walfie/gbf-raidfinder/issues/4)
 
 **Merged pull requests:**
 
