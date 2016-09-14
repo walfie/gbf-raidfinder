@@ -17,9 +17,15 @@ trait RaidFinderClient {
   def updateBosses(bossNames: Seq[BossName]): Unit
   def updateAllBosses(): Unit
   def resetBossList(): Unit
+
   def follow(bossName: BossName): Unit
   def unfollow(bossName: BossName): Unit
   def toggleFollow(bossName: BossName): Unit
+
+  def subscribe(bossName: BossName): Unit
+  def unsubscribe(bossName: BossName): Unit
+  def toggleSubscribe(bossName: BossName): Unit
+
   def clear(bossName: BossName): Unit
   def move(bossName: BossName, displacement: Int): Unit
 
@@ -36,11 +42,13 @@ class WebSocketRaidFinderClient(
 
   private var allBossesMap: Map[BossName, RaidBossColumn] = Map.empty
 
-  // Load bosses from localStorage and follow them
-  private val followedBossesStorageKey = "followedBosses"
+  // Load bosses from localStorage and refollow/resubscribe
+  private val FollowedBossesStorageKey = "followedBosses"
+  private val SubscribedBossesStorageKey = "subscribedBosses"
   val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
-  Option(storage.getItem(followedBossesStorageKey))
-    .foreach(_.split(",").foreach(follow))
+
+  fetchLocalStorageCsv(FollowedBossesStorageKey).foreach(follow)
+  fetchLocalStorageCsv(SubscribedBossesStorageKey).foreach(subscribe)
 
   override def onWebSocketOpen(): Unit = {
     resetBossList()
@@ -56,20 +64,6 @@ class WebSocketRaidFinderClient(
     isConnected := false
   }
 
-  private def refollowBosses(): Unit = {
-    val followedBosses = state.followedBosses.get.map(_.raidBoss.get.name)
-    websocket.send(FollowRequest(bossNames = followedBosses))
-    updateBosses(followedBosses)
-  }
-
-  private def updateLocalStorage(): Unit = {
-    val bossNames = state.followedBosses.get.map(_.raidBoss.get.name)
-    if (bossNames.isEmpty)
-      storage.removeItem(followedBossesStorageKey)
-    else
-      storage.setItem(followedBossesStorageKey, bossNames.mkString(","))
-  }
-
   def updateBosses(bossNames: Seq[BossName]): Unit =
     websocket.send(RaidBossesRequest(bossNames))
   def updateAllBosses(): Unit =
@@ -79,6 +73,7 @@ class WebSocketRaidFinderClient(
     val followed = state.followedBosses.get
     state.allBosses.get := followed
     allBossesMap = followed.map(column => column.raidBoss.get.name -> column).toMap
+
     updateAllBosses()
   }
 
@@ -99,7 +94,7 @@ class WebSocketRaidFinderClient(
     })
 
     state.followedBosses.get += column
-    updateLocalStorage()
+    updateLocalStorageFollowed()
   }
 
   def unfollow(bossName: BossName): Unit = columnIndex(bossName).foreach { index =>
@@ -109,13 +104,24 @@ class WebSocketRaidFinderClient(
 
     followedBosses.remove(index)
     allBossesMap.get(bossName).foreach(_.clear())
-    updateLocalStorage()
+    updateLocalStorageFollowed()
   }
 
   def toggleFollow(bossName: BossName): Unit = {
     if (columnIndex(bossName).isDefined) unfollow(bossName)
     else follow(bossName)
   }
+
+  private def setSubscription(bossName: BossName, changeState: Boolean => Boolean): Unit = {
+    allBossesMap.get(bossName).foreach { boss =>
+      boss.isSubscribed := changeState(boss.isSubscribed.get)
+    }
+    updateLocalStorageSubscribed()
+  }
+
+  def subscribe(bossName: BossName): Unit = setSubscription(bossName, _ => true)
+  def unsubscribe(bossName: BossName): Unit = setSubscription(bossName, _ => false)
+  def toggleSubscribe(bossName: BossName): Unit = setSubscription(bossName, !_)
 
   def clear(bossName: BossName): Unit = {
     allBossesMap.get(bossName).foreach(_.clear())
@@ -134,7 +140,7 @@ class WebSocketRaidFinderClient(
       }
     }
 
-    updateLocalStorage()
+    updateLocalStorageFollowed()
   }
 
   def truncateColumns(maxColumnSize: Int): Unit = {
@@ -180,7 +186,11 @@ class WebSocketRaidFinderClient(
       allBossesMap.get(bossName) match {
         case None if expired => // Do nothing
         case None => // Add to our list of known bosses
-          val newColumn = RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+          val newColumn = RaidBossColumn(
+            raidBoss = Var(raidBoss),
+            raidTweets = Vars.empty,
+            isSubscribed = Var(false)
+          )
           allBossesMap = allBossesMap.updated(bossName, newColumn)
           shouldUpdateState = true
 
@@ -204,18 +214,53 @@ class WebSocketRaidFinderClient(
     val minDate = clock.now().getTime - raidBossTtl.milliseconds
     raidBoss.lastSeen.getTime < minDate
   }
+
+  private def refollowBosses(): Unit = {
+    val followedBosses = state.followedBosses.get.map(_.raidBoss.get.name)
+    websocket.send(FollowRequest(bossNames = followedBosses))
+    updateBosses(followedBosses)
+  }
+
+  private def updateLocalStorageFollowed(): Unit = {
+    val followedBossNames = state.followedBosses.get.map(_.raidBoss.get.name)
+    updateLocalStorageCsv(FollowedBossesStorageKey, followedBossNames)
+  }
+
+  private def updateLocalStorageSubscribed(): Unit = {
+    val subscribedBossNames = state.allBosses.get.collect {
+      case column if column.isSubscribed.get => column.raidBoss.get.name
+    }
+    updateLocalStorageCsv(SubscribedBossesStorageKey, subscribedBossNames)
+  }
+
+  private def updateLocalStorageCsv(key: String, values: Seq[String]): Unit = {
+    if (values.isEmpty)
+      storage.removeItem(key)
+    else
+      storage.setItem(key, values.mkString(","))
+  }
+
+  private def fetchLocalStorageCsv(key: String): Seq[String] = {
+    Option(storage.getItem(key)).fold(Seq.empty[String])(_.split(","))
+  }
+
 }
 
 object RaidFinderClient {
   case class RaidBossColumn(
-    raidBoss:   Var[RaidBoss],
-    raidTweets: Vars[RaidTweetResponse]
+    raidBoss:     Var[RaidBoss],
+    raidTweets:   Vars[RaidTweetResponse],
+    isSubscribed: Var[Boolean]
   ) { def clear(): Unit = raidTweets.get.clear() }
 
   object RaidBossColumn {
     def empty(bossName: BossName): RaidBossColumn = {
       val raidBoss = RaidBoss(name = bossName)
-      RaidBossColumn(raidBoss = Var(raidBoss), raidTweets = Vars.empty)
+      RaidBossColumn(
+        raidBoss = Var(raidBoss),
+        raidTweets = Vars.empty,
+        isSubscribed = Var(false)
+      )
     }
   }
 

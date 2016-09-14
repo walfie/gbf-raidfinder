@@ -61,12 +61,25 @@ html, body, .gbfrf-container {
 }
 
 .gbfrf-column__header-row {
+  position: relative;
   padding: 20px !important;
   background-position: 0 20%;
   background-size: 100% !important;
 }
 
 .gbfrf-column__header-row-icon {
+  vertical-align: middle;
+}
+
+.gbfrf-column__notification-banner {
+  text-align: center;
+  background-color: #eaeaea;
+  color: #292f33;
+  line-height: 30px;
+}
+
+.gbfrf-column__notification-banner-icon {
+  font-size: 1.25em;
   vertical-align: middle;
 }
 

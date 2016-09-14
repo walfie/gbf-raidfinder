@@ -33,8 +33,7 @@ object MainContent {
           {
             client.state.followedBosses.map { column =>
               RaidTweets.raidTweetColumn(
-                column.raidBoss, column.raidTweets, currentTime,
-                client, notification, viewState
+                column, currentTime, client, notification, viewState
               ).bind
             }
           }

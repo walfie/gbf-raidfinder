@@ -3,6 +3,13 @@
   background: #222426;
 }
 
+
+.gbfrf-theme--dark
+.gbfrf-column__notification-banner {
+  background-color: #3c444a;
+  color: #fff;
+}
+
 .gbfrf-theme--dark
 .gbfrf-dialog {
   background: #222426;
@@ -10,13 +17,13 @@
 
 .gbfrf-theme--dark
 .gbfrf-follow__boss-box {
-  color: white;
+  color: #fff;
   background-color: #222426;
 }
 
 .gbfrf-theme--dark
 .gbfrf-tweet {
-  color: white;
+  color: #fff;
 }
 
 .gbfrf-theme--dark
@@ -26,12 +33,12 @@
 
 .gbfrf-theme--dark
 .gbfrf-settings__item {
-  color: white;
+  color: #fff;
 }
 
 .gbfrf-theme--dark
 .gbfrf-dialog__button {
-  color: white;
+  color: #fff;
 }
 
 .gbfrf-theme--dark
