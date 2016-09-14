@@ -1,5 +1,17 @@
 # Change Log
 
+## [v0.1.3](https://github.com/walfie/gbf-raidfinder/tree/v0.1.3) (2016-09-14)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.2...v0.1.3)
+
+**Implemented enhancements:**
+
+- Add desktop notifications [\#52](https://github.com/walfie/gbf-raidfinder/issues/52)
+
+**Merged pull requests:**
+
+- Add desktop notifications [\#53](https://github.com/walfie/gbf-raidfinder/pull/53) ([walfie](https://github.com/walfie))
+- Fix background color of boss selector [\#51](https://github.com/walfie/gbf-raidfinder/pull/51) ([walfie](https://github.com/walfie))
+
 ## [v0.1.2](https://github.com/walfie/gbf-raidfinder/tree/v0.1.2) (2016-09-13)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.1...v0.1.2)
 
