@@ -1,8 +1,10 @@
 package walfie.gbf.raidfinder.client.util
 
+import org.scalajs.dom.experimental.{Notification, NotificationOptions}
 import org.scalajs.dom.raw._
 import org.scalajs.dom.{console, document}
 import scala.annotation.tailrec
+import scala.scalajs.js
 import scala.util.{Success, Failure, Try}
 
 object HtmlHelpers {
@@ -14,6 +16,32 @@ object HtmlHelpers {
     else Option(element.parentNode) match {
       case Some(parentElement: Element) => findParent(parentElement, predicate)
       case _ => None
+    }
+  }
+
+  def requestNotificationPermission(onSuccess: => Unit = ()): Unit = {
+    if (Notification.permission == "granted")
+      onSuccess
+    else Notification.requestPermission { result: String =>
+      if (result == "granted") onSuccess
+    }
+  }
+
+  def desktopNotification(
+    title:        String,
+    body:         js.UndefOr[String],
+    icon:         js.UndefOr[String],
+    tag:          js.UndefOr[String],
+    onClick:      Event => Unit,
+    closeOnClick: Boolean
+  ): Unit = {
+    requestNotificationPermission {
+      val options = NotificationOptions(body = body, icon = icon, tag = tag)
+      val notification = new Notification(title, options)
+      notification.asInstanceOf[js.Dynamic].onclick = { e: Event =>
+        onClick(e)
+        if (closeOnClick) notification.close()
+      }
     }
   }
 

@@ -7,9 +7,12 @@ import org.scalajs.dom
 import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.syntax.BufferOps
+import walfie.gbf.raidfinder.client.util.HtmlHelpers
 import walfie.gbf.raidfinder.client.util.time.{Clock, Duration}
 import walfie.gbf.raidfinder.client.ViewModel._
 import walfie.gbf.raidfinder.protocol._
+
+import js.JSConverters._
 
 trait RaidFinderClient {
   def state: RaidFinderClient.State
@@ -119,7 +122,11 @@ class WebSocketRaidFinderClient(
     updateLocalStorageSubscribed()
   }
 
-  def subscribe(bossName: BossName): Unit = setSubscription(bossName, _ => true)
+  def subscribe(bossName: BossName): Unit = {
+    HtmlHelpers.requestNotificationPermission(
+      setSubscription(bossName, _ => true)
+    )
+  }
   def unsubscribe(bossName: BossName): Unit = setSubscription(bossName, _ => false)
   def toggleSubscribe(bossName: BossName): Unit = setSubscription(bossName, !_)
 
@@ -166,6 +173,29 @@ class WebSocketRaidFinderClient(
           r.createdAt.after(firstTweetInColumn.createdAt)
         }
         if (shouldInsert) r +=: columnTweets
+
+        // Show desktop notification, if subscribed
+        // TODO: Put this in a method or something
+        val boss = column.raidBoss.get
+        if (column.isSubscribed.get) {
+          val body = Seq(
+            s"@${r.screenName}: ${r.raidId}",
+            r.text,
+            "\n(Click to copy raid ID)"
+          ).filter(_.nonEmpty).mkString("\n")
+
+          HtmlHelpers.desktopNotification(
+            title = r.bossName,
+            body = body,
+            icon = boss.image.orUndefined.map(_ + ":thumb"),
+            onClick = { event: dom.Event =>
+              event.preventDefault()
+              HtmlHelpers.copy(r.raidId)
+            },
+            tag = boss.name,
+            closeOnClick = true
+          )
+        }
       }
 
     case r: ErrorResponse =>
