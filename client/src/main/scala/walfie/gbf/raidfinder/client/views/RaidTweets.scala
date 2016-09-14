@@ -4,21 +4,21 @@ import com.momentjs.Moment
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
-import walfie.gbf.raidfinder.client.ViewModel
-import walfie.gbf.raidfinder.client.ViewModel.{ImageQuality, TimeFormat}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidFinderClient
+import walfie.gbf.raidfinder.client.RaidFinderClient.RaidBossColumn
 import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps, StringOps}
 import walfie.gbf.raidfinder.client.util.HtmlHelpers
+import walfie.gbf.raidfinder.client.ViewModel
+import walfie.gbf.raidfinder.client.ViewModel.{ImageQuality, TimeFormat}
 import walfie.gbf.raidfinder.protocol._
 
 object RaidTweets {
   @binding.dom
   def raidTweetColumn(
-    raidBoss:     Binding[RaidBoss],
-    raidTweets:   BindingSeq[RaidTweetResponse],
+    column:       RaidBossColumn,
     currentTime:  Binding[Double],
     client:       RaidFinderClient,
     notification: Notification,
@@ -26,9 +26,17 @@ object RaidTweets {
   ): Binding[HTMLDivElement] = {
     <div class="gbfrf-column mdl-shadow--2dp">
       <div class="mdl-layout mdl-layout--fixed-header">
-        { raidBossHeader(raidBoss, viewState.imageQuality, client).bind }
+        { raidBossHeader(column.raidBoss, viewState.imageQuality, column.isSubscribed, client).bind }
+        {
+          <div class={
+            "gbfrf-column__notification-banner mdl-shadow--4dp".addIf(!column.isSubscribed.bind, "is-hidden")
+          }>
+            <i class="gbfrf-column__notification-banner-icon material-icons">notifications</i>
+            Notifications on
+          </div>
+        }
         <div class="mdl-layout__content">
-          { raidTweetList(raidTweets, currentTime, notification, viewState).bind }
+          { raidTweetList(column.raidTweets, currentTime, notification, viewState).bind }
         </div>
       </div>
     </div>
@@ -125,6 +133,7 @@ object RaidTweets {
   def raidBossHeader(
     raidBoss:     Binding[RaidBoss],
     imageQuality: Binding[ImageQuality],
+    isSubscribed: Binding[Boolean],
     client:       RaidFinderClient
   ): Binding[HTMLElement] = {
     val boss = raidBoss.bind
@@ -136,7 +145,7 @@ object RaidTweets {
         <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(boss.name) }>
           <i class="material-icons">more_vert</i>
         </button>
-        { raidBossHeaderMenu(boss.name, client).bind }
+        { raidBossHeaderMenu(boss.name, isSubscribed, client).bind }
       </div>
 
     headerRow.backgroundImageQuality(boss.image, 0.25, imageQuality.bind)
@@ -147,12 +156,22 @@ object RaidTweets {
   }.mdl
 
   @binding.dom
-  def raidBossHeaderMenu(bossName: String, client: RaidFinderClient): Binding[HTMLUListElement] = {
+  def raidBossHeaderMenu(
+    bossName:     String,
+    isSubscribed: Binding[Boolean],
+    client:       RaidFinderClient
+  ): Binding[HTMLUListElement] = {
     <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" data:for={ menuId(bossName) }>
       { menuItem("Move Left", "keyboard_arrow_left", _ => client.move(bossName, -1)).bind }
       { menuItem("Move Right", "keyboard_arrow_right", _ => client.move(bossName, 1)).bind }
       { menuItem("Clear", "clear_all", _ => client.clear(bossName)).bind }
       { menuItem("Unfollow", "delete", _ => client.unfollow(bossName)).bind }
+      {
+        val (text, icon) =
+          if (isSubscribed.bind) ("Unsubscribe", "notifications_off")
+          else ("Subscribe", "notifications_on")
+        menuItem(text, icon, _ => client.toggleSubscribe(bossName)).bind
+      }
     </ul>
   }
 
