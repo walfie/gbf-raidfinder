@@ -19,11 +19,11 @@ object HtmlHelpers {
     }
   }
 
-  def requestNotificationPermission(onSuccess: => Unit = ()): Unit = {
+  def requestNotificationPermission(onSuccess: () => Unit): Unit = {
     if (Notification.permission == "granted")
-      onSuccess
+      onSuccess()
     else Notification.requestPermission { result: String =>
-      if (result == "granted") onSuccess
+      if (result == "granted") onSuccess()
     }
   }
 
@@ -35,7 +35,7 @@ object HtmlHelpers {
     onClick:      Event => Unit,
     closeOnClick: Boolean
   ): Unit = {
-    requestNotificationPermission {
+    requestNotificationPermission { () =>
       val options = NotificationOptions(body = body, icon = icon, tag = tag)
       val notification = new Notification(title, options)
       notification.asInstanceOf[js.Dynamic].onclick = { e: Event =>

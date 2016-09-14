@@ -116,17 +116,15 @@ class WebSocketRaidFinderClient(
   }
 
   private def setSubscription(bossName: BossName, changeState: Boolean => Boolean): Unit = {
-    allBossesMap.get(bossName).foreach { boss =>
-      boss.isSubscribed := changeState(boss.isSubscribed.get)
+    HtmlHelpers.requestNotificationPermission { () =>
+      allBossesMap.get(bossName).foreach { boss =>
+        boss.isSubscribed := changeState(boss.isSubscribed.get)
+      }
+      updateLocalStorageSubscribed()
     }
-    updateLocalStorageSubscribed()
   }
 
-  def subscribe(bossName: BossName): Unit = {
-    HtmlHelpers.requestNotificationPermission(
-      setSubscription(bossName, _ => true)
-    )
-  }
+  def subscribe(bossName: BossName): Unit = setSubscription(bossName, _ => true)
   def unsubscribe(bossName: BossName): Unit = setSubscription(bossName, _ => false)
   def toggleSubscribe(bossName: BossName): Unit = setSubscription(bossName, !_)
 
