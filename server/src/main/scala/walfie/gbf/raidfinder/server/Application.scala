@@ -35,8 +35,7 @@ object Application {
 
     // Periodically flush bosses to cache
     val bossFlushCancelable = scheduler.scheduleWithFixedDelay(
-      bossStorageConfig.flushInterval,
-      bossStorageConfig.flushInterval
+      bossStorageConfig.flushInterval, bossStorageConfig.flushInterval
     ) {
       // Purge old bosses and then update the cache
       val purgeMinDate = new Date(System.currentTimeMillis() - bossStorageConfig.ttl.toMillis)
@@ -50,6 +49,18 @@ object Application {
       } yield ()
     }
 
+    val translatorConfig = appConfig.as[TranslatorConfig]("translator")
+    val translator = new ImageBasedBossNameTranslator(
+      initialBossData = Seq.empty, // TODO: Get from cache
+      imageSimilarityThreshold = translatorConfig.imageSimilarityThreshold
+    )
+
+    val translationRefreshCancelable = scheduler.scheduleWithFixedDelay(
+      translatorConfig.refreshInterval, translatorConfig.refreshInterval
+    ) {
+      translator.update(raidFinder.getKnownBosses())
+    }
+
     // Start server
     val port = config.as[Int]("http.port")
     val mode = getMode(appConfig.as[String]("mode"))
@@ -61,6 +72,7 @@ object Application {
     val shutdown = () => {
       server.stop()
       bossFlushCancelable.cancel()
+      translationRefreshCancelable.cancel()
       protobufStorage.close()
     }
 
@@ -107,5 +119,10 @@ case class BossStorageConfig(
   ttl:            FiniteDuration,
   flushInterval:  FiniteDuration,
   levelThreshold: Int
+)
+
+case class TranslatorConfig(
+  imageSimilarityThreshold: Double,
+  refreshInterval:          FiniteDuration
 )
 

@@ -7,6 +7,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import walfie.gbf.raidfinder.domain._
 import walfie.gbf.raidfinder.util.BlockingIO
 
+// TODO: Add an Observable for new translation notifications?
 trait BossNameTranslator {
   def translate(bossName: BossName): Option[BossName]
   def update(latestBosses: Map[BossName, RaidBoss]): Unit
@@ -43,6 +44,8 @@ class ImageBasedBossNameTranslator(
   private def updateBossData(bossData: BossData): Unit = {
     bossDataAgent.alter(_.updated(bossData.name, bossData)).foreach { _ =>
       findTranslation(bossData).foreach { translatedName =>
+        println(s"Found translation: ${bossData.name} -> $translatedName") // TODO: Remove
+
         val newValues = Map(
           bossData.name -> translatedName,
           translatedName -> bossData.name
@@ -59,6 +62,9 @@ class ImageBasedBossNameTranslator(
   private def getBossData(boss: RaidBoss): Future[BossData] = BlockingIO.future {
     val imageStream = new URL(boss.image.get + ":small").openStream // TODO: Make this testable
     val hash = ImageHash(pHash.getHashAsLong(imageStream))
+
+    println(s"boss data: ${boss.name} -> $hash") // TODO: Remove
+
     BossData(name = boss.name, level = boss.level, language = boss.language, hash: ImageHash)
   }
 
