@@ -1,5 +1,6 @@
 package com.pastebin.Pj9d8jt5;
-// http://pastebin.com/Pj9d8jt5
+// Based on http://pastebin.com/Pj9d8jt5 but with additional methods
+// for using bit-level comparison for hashes instead of strings
 
 import java.awt.color.ColorSpace;
 import java.awt.Graphics2D;
@@ -17,15 +18,9 @@ public class ImagePHash {
 
   private int size = 32;
   private int smallerSize = 8;
+  private int totalBitsInHash = (smallerSize - 1) * (smallerSize - 1);
 
   public ImagePHash() {
-    initCoefficients();
-  }
-
-  public ImagePHash(int size, int smallerSize) {
-    this.size = size;
-    this.smallerSize = smallerSize;
-
     initCoefficients();
   }
 
@@ -37,6 +32,14 @@ public class ImagePHash {
       }
     }
     return counter;
+  }
+
+  public double similarity(Long l1, Long l2) {
+    return 1 - Long.bitCount(l1 ^ l2) / ((double) this.totalBitsInHash);
+  }
+
+  public Long getHashAsLong(InputStream is) throws Exception {
+    return Long.parseLong(getHash(is), 2);
   }
 
   // Returns a 'binary string' (like. 001010111011100010) which is easy to do a hamming distance on.

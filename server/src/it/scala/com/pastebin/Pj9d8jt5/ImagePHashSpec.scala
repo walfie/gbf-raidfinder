@@ -10,6 +10,15 @@ import walfie.gbf.raidfinder.util.BlockingIO
 class ImagePHashSpec extends FreeSpec {
   val pHash = new ImagePHash
 
+  case class BossSimilarity(similarity: Double, boss1: String, boss2: String)
+
+  sealed trait Language
+  case object JP extends Language
+  case object EN extends Language
+  case class RaidBoss(name: String, level: Int, language: Language, url: String)
+
+  case class RaidBossWithHash(boss: RaidBoss, hash: Long)
+
   "Find similar boss images" in {
     import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -19,7 +28,7 @@ class ImagePHashSpec extends FreeSpec {
 
         BlockingIO.future {
           val stream = new URL(url).openStream
-          RaidBossWithHash(boss, pHash.getHash(stream))
+          RaidBossWithHash(boss, pHash.getHashAsLong(stream))
         }
       }
     }
@@ -30,8 +39,7 @@ class ImagePHashSpec extends FreeSpec {
 
     val results = hashes.toSeq.combinations(2).collect {
       case Seq(hashed1, hashed2) if shouldCompare(hashed1.boss, hashed2.boss) =>
-        val hammingDistance = pHash.distance(hashed1.hash, hashed2.hash)
-        val similarity = 1 - (hammingDistance.toDouble / hashed1.hash.size)
+        val similarity = pHash.similarity(hashed1.hash, hashed2.hash)
         BossSimilarity(similarity, hashed1.boss.name, hashed2.boss.name)
     }.filter(_.similarity >= similarityThreshold)
 
@@ -79,15 +87,6 @@ class ImagePHashSpec extends FreeSpec {
   def shouldCompare(boss1: RaidBoss, boss2: RaidBoss): Boolean = {
     (boss1.language != boss2.language) && (boss1.level == boss2.level)
   }
-
-  case class BossSimilarity(similarity: Double, boss1: String, boss2: String)
-
-  sealed trait Language
-  case object JP extends Language
-  case object EN extends Language
-  case class RaidBoss(name: String, level: Int, language: Language, url: String)
-
-  case class RaidBossWithHash(boss: RaidBoss, hash: String)
 
   lazy val japaneseBosses = List(
     RaidBoss("Lv30 クレイゴーレム", 30, JP, "https://pbs.twimg.com/media/Crtprh7UIAARax2.jpg"),
