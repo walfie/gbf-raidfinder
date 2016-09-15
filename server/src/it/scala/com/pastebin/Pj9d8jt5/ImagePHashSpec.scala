@@ -37,6 +37,10 @@ class ImagePHashSpec extends FreeSpec {
 
     val similarityThreshold = 0.8
 
+    def shouldCompare(boss1: RaidBoss, boss2: RaidBoss): Boolean = {
+      (boss1.language != boss2.language) && (boss1.level == boss2.level)
+    }
+
     val results = hashes.toSeq.combinations(2).collect {
       case Seq(hashed1, hashed2) if shouldCompare(hashed1.boss, hashed2.boss) =>
         val similarity = pHash.similarity(hashed1.hash, hashed2.hash)
@@ -82,10 +86,6 @@ class ImagePHashSpec extends FreeSpec {
       "Lv120 マキュラ・マリウス" -> "Lvl 120 Macula Marius",
       "Lv150 プロトバハムート" -> "Lvl 150 Proto Bahamut"
     )
-  }
-
-  def shouldCompare(boss1: RaidBoss, boss2: RaidBoss): Boolean = {
-    (boss1.language != boss2.language) && (boss1.level == boss2.level)
   }
 
   lazy val japaneseBosses = List(
