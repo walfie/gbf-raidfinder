@@ -1,5 +1,17 @@
 // TODO: Put all dependencies in a Dependencies.scala file with versions
 
+lazy val commonSettings = Seq(
+  scalaVersion := "2.11.8",
+  organization := "com.github.walfie",
+  scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint"),
+
+  // Disable publishing of {java,scala}doc
+  publishArtifact in (Compile, packageDoc) := false,
+  publishArtifact in packageDoc := false,
+  sources in (Compile, doc) := Seq.empty,
+  Scalariform.settings
+)
+
 lazy val buildInfo = (crossProject.crossType(CrossType.Pure) in file(".build-info"))
   .enablePlugins(ScalaJSPlugin, BuildInfoPlugin)
   .settings(commonSettings: _*)
@@ -9,13 +21,6 @@ lazy val buildInfo = (crossProject.crossType(CrossType.Pure) in file(".build-inf
   )
 lazy val buildInfoJVM = buildInfo.jvm
 lazy val buildInfoJS = buildInfo.js
-
-lazy val commonSettings = Seq(
-  scalaVersion := "2.11.8",
-  organization := "com.github.walfie",
-  scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint"),
-  Scalariform.settings
-)
 
 lazy val stream = (project in file("stream"))
   .settings(commonSettings: _*)
