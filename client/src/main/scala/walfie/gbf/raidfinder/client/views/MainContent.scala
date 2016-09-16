@@ -24,6 +24,7 @@ object MainContent {
     val dialog = Dialog.element(client, viewState).bind
 
     handleNightMode(viewState.nightMode).watch
+    handleCompactMode(viewState.compactMode).watch
 
     val main =
       <div class="gbfrf-main-content">
@@ -61,6 +62,18 @@ object MainContent {
     } else {
       bodyClasses.add(lightTheme)
       bodyClasses.remove(darkTheme)
+    }
+  }
+
+  @binding.dom
+  def handleCompactMode(compactMode: Var[Boolean]): Binding[Unit] = {
+    val bodyClasses = dom.document.body.classList
+    val compactModeClass = "gbfrf--compact"
+
+    if (compactMode.bind) {
+      bodyClasses.add(compactModeClass)
+    } else {
+      bodyClasses.remove(compactModeClass)
     }
   }
 

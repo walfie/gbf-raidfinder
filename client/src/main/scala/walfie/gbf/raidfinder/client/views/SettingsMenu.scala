@@ -44,6 +44,11 @@ object SettingsMenu {
               checkboxAction("gbfrf-setting__night-mode", viewState.nightMode, onChange)
             }.bind
           }
+          {
+            settingsListItem("Compact mode") {
+              checkboxAction("gbfrf-setting__compact-mode", viewState.compactMode, onChange)
+            }.bind
+          }
         </ul>
         { footer.bind }
       </div>

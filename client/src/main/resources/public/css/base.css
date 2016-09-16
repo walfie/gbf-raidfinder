@@ -44,6 +44,22 @@ html, body, .gbfrf-container {
   flex: 0 0 auto;
 }
 
+.gbfrf--compact
+.gbfrf-column {
+  width: 260px;
+}
+
+.gbfrf--compact
+.gbfrf-tweet {
+  padding: 10px;
+}
+
+.gbfrf--compact
+.gbfrf-tweet__text {
+  font-size: 0.8em;
+  margin-right: 5px;
+}
+
 @media (max-width: 460px) {
   .gbfrf-column {
     width: 90%;
