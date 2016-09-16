@@ -49,7 +49,7 @@ object Application {
       } yield ()
     }
 
-    val translatorConfig = appConfig.as[TranslatorConfig]("translator")
+    val translatorConfig = appConfig.as[TranslationsConfig]("translations")
     val translator = new ImageBasedBossNameTranslator(
       initialBossData = Seq.empty, // TODO: Get from cache
       imageSimilarityThreshold = translatorConfig.imageSimilarityThreshold
@@ -121,7 +121,7 @@ case class BossStorageConfig(
   levelThreshold: Int
 )
 
-case class TranslatorConfig(
+case class TranslationsConfig(
   imageSimilarityThreshold: Double,
   refreshInterval:          FiniteDuration
 )

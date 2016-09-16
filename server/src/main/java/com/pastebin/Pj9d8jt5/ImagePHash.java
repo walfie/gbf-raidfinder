@@ -46,6 +46,10 @@ public class ImagePHash {
   public String getHash(InputStream is) throws Exception {
     BufferedImage img = ImageIO.read(is);
 
+    // TODO: Change this method to accept a BufferedImage instead of InputStream
+    // Comparison of raid boss images is perfect if we crop it
+    img = img.getSubimage(0, 0, img.getWidth(), img.getHeight() * 3/4);
+
     /* 1. Reduce size.
      * Like Average Hash, pHash starts with a small image.
      * However, the image is larger than 8x8; 32x32 is a good size.

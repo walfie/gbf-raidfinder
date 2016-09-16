@@ -92,11 +92,8 @@ class ImageBasedBossNameTranslator(
 }
 
 object ImageBasedBossNameTranslator {
+  case class Translation(from: BossName, to: BossName)
   case class BossData(name: BossName, level: Int, language: Language, hash: ImageHash)
-  case class ImageHash(value: Long) extends AnyVal {
-    def similarity(otherHash: ImageHash)(implicit pHash: ImagePHash) = {
-      pHash.similarity(value, otherHash.value)
-    }
-  }
+  case class ImageHash(value: Long) extends AnyVal
 }
 

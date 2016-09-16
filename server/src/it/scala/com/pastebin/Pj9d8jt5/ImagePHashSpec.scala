@@ -35,7 +35,7 @@ class ImagePHashSpec extends FreeSpec {
 
     val hashes = Await.result(hashesF, 30.seconds)
 
-    val similarityThreshold = 0.8
+    val similarityThreshold = 1.0
 
     def shouldCompare(boss1: RaidBoss, boss2: RaidBoss): Boolean = {
       (boss1.language != boss2.language) && (boss1.level == boss2.level)
@@ -47,7 +47,14 @@ class ImagePHashSpec extends FreeSpec {
         BossSimilarity(similarity, hashed1.boss.name, hashed2.boss.name)
     }.filter(_.similarity >= similarityThreshold)
 
-    results.map(b => b.boss1 -> b.boss2).toMap shouldBe Map(
+    results.map(b => b.boss1 -> b.boss2).toSet shouldBe Set(
+      "Lv40 ゲイザー" -> "Lvl 40 Ogler",
+      "Lv40 ヨグ＝ソトース" -> "Lvl 40 Yog-Sothoth",
+      "Lv60 グガランナ" -> "Lvl 60 Gugalanna",
+      "Lv60 マヒシャ" -> "Lvl 60 Mahisha",
+      "Lv75 スーペルヒガンテ" -> "Lvl 75 Supergigante",
+      "Lv75 エメラルドホーン" -> "Lvl 75 Viridian Horn",
+
       "Lv50 セレスト" -> "Lvl 50 Celeste",
       "Lv50 ティアマト" -> "Lvl 50 Tiamat",
       "Lv50 ティアマト・マグナ" -> "Lvl 50 Tiamat Omega",
@@ -89,6 +96,13 @@ class ImagePHashSpec extends FreeSpec {
   }
 
   lazy val japaneseBosses = List(
+    RaidBoss("Lv40 ゲイザー", 40, JP, "https://pbs.twimg.com/media/Cn7opV5VUAAfgDz.jpg"),
+    RaidBoss("Lv40 ヨグ＝ソトース", 40, JP, "https://pbs.twimg.com/media/Cqlrx16VUAAU1-Z.jpg"),
+    RaidBoss("Lv60 グガランナ", 60, JP, "https://pbs.twimg.com/media/Cn7o2sYVYAEP45o.jpg"),
+    RaidBoss("Lv60 マヒシャ", 60, JP, "https://pbs.twimg.com/media/Cqlr4E5VMAAOGqb.jpg"),
+    RaidBoss("Lv75 スーペルヒガンテ", 75, JP, "https://pbs.twimg.com/media/Cqlr_RRVYAEabiO.jpg"),
+    RaidBoss("Lv75 エメラルドホーン", 75, JP, "https://pbs.twimg.com/media/Cn7o767UkAEX8-H.jpg"),
+
     RaidBoss("Lv30 クレイゴーレム", 30, JP, "https://pbs.twimg.com/media/Crtprh7UIAARax2.jpg"),
     RaidBoss("Lv30 コロッサス", 30, JP, "https://pbs.twimg.com/media/CT6cUf8VEAEBaEb.jpg"),
     RaidBoss("Lv30 セレスト", 30, JP, "https://pbs.twimg.com/media/CT6cmzjUcAIvSo_.jpg"),
@@ -138,6 +152,13 @@ class ImagePHashSpec extends FreeSpec {
   )
 
   lazy val englishBosses = List(
+    RaidBoss("Lvl 40 Ogler", 40, EN, "https://pbs.twimg.com/media/Cn7oqbPUkAEimW2.jpg"),
+    RaidBoss("Lvl 40 Yog-Sothoth", 40, EN, "https://pbs.twimg.com/media/Cqlr0pRVUAQxZ5g.jpg"),
+    RaidBoss("Lvl 60 Mahisha", 60, EN, "https://pbs.twimg.com/media/Cqlr51CUAAA9lp3.jpg"),
+    RaidBoss("Lvl 60 Gugalanna", 60, EN, "https://pbs.twimg.com/media/Cn7o6ppVUAArahp.jpg"),
+    RaidBoss("Lvl 75 Supergigante", 75, EN, "https://pbs.twimg.com/media/CqlsAzGUkAAAcRT.jpg"),
+    RaidBoss("Lvl 75 Viridian Horn", 75, EN, "https://pbs.twimg.com/media/Cn7o85cUEAAnlh0.jpg"),
+
     RaidBoss("Lvl 50 Celeste", 50, EN, "https://pbs.twimg.com/media/CfqXLhHUEAAF92L.jpg"),
     RaidBoss("Lvl 50 Leviathan", 50, EN, "https://pbs.twimg.com/media/CfqW-MVUIAEJrDP.jpg"),
     RaidBoss("Lvl 50 Tiamat Omega", 50, EN, "https://pbs.twimg.com/media/CfqXQA3UMAEMV7O.jpg"),
