@@ -31,7 +31,7 @@ object Application {
     val cachedBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
 
     // Start RaidFinder
-    val raidFinder = RaidFinder.withBacklog(initialBosses = cachedBosses)
+    val raidFinder = RaidFinder.withBackfill(initialBosses = cachedBosses)
 
     // Periodically flush bosses to cache
     val bossFlushCancelable = scheduler.scheduleWithFixedDelay(

@@ -19,10 +19,10 @@ trait RaidFinder {
 
 object RaidFinder {
   val DefaultCacheSizePerBoss = 20
-  val DefaultBacklogSize = 200
+  val DefaultBackfillSize = 200
 
   /** Stream tweets without looking up old tweets first */
-  def withoutBacklog(
+  def withoutBackfill(
     twitterStream:       TwitterStream = TwitterStreamFactory.getSingleton,
     cachedTweetsPerBoss: Int           = DefaultCacheSizePerBoss,
     initialBosses:       Seq[RaidBoss] = Seq.empty
@@ -32,31 +32,31 @@ object RaidFinder {
   }
 
   /** Search for old tweets first before streaming new tweets */
-  def withBacklog(
+  def withBackfill(
     twitter:             Twitter       = TwitterFactory.getSingleton,
     twitterStream:       TwitterStream = TwitterStreamFactory.getSingleton,
-    backlogSize:         Int           = DefaultBacklogSize,
+    backfillSize:        Int           = DefaultBackfillSize,
     cachedTweetsPerBoss: Int           = DefaultCacheSizePerBoss,
     initialBosses:       Seq[RaidBoss] = Seq.empty
   )(implicit scheduler: Scheduler): DefaultRaidFinder = {
     import TwitterSearcher._
 
-    // Get backlog of tweets, then sort them by earliest first
+    // Get backfill of tweets, then sort them by earliest first
     // TODO: This is getting kinda complex -- should write a test
-    val backlogTask: Task[Seq[Status]] =
+    val backfillTask: Task[Seq[Status]] =
       TwitterSearcher(twitter, TwitterSearcher.ReverseChronological)
         .observable(DefaultSearchTerm, None, MaxCount)
         .flatMap(Observable.fromIterable)
-        .take(backlogSize)
+        .take(backfillSize)
         .toListL
         .map(_.sortBy(_.getCreatedAt)) // earliest first
 
-    // Once the backlog is populated, new tweets will stream in
-    val backlogObservable = Observable.fromTask(backlogTask).flatMap(Observable.fromIterable)
+    // Once the backfill is populated, new tweets will stream in
+    val backfillObservable = Observable.fromTask(backfillTask).flatMap(Observable.fromIterable)
     val newStatusesObservable = TwitterStreamer(twitterStream).observable
 
     new DefaultRaidFinder(
-      backlogObservable ++ newStatusesObservable, cachedTweetsPerBoss, initialBosses
+      backfillObservable ++ newStatusesObservable, cachedTweetsPerBoss, initialBosses
     ) {
       override def onShutdown(): Unit = {
         twitterStream.cleanUp()
