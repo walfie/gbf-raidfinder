@@ -36,7 +36,7 @@ trait RaidFinderClient {
 }
 
 class WebSocketRaidFinderClient(
-  websocket: WebSocketClient, storage: Storage, raidBossTtl: Duration, clock: Clock
+  websocket: WebSocketClient, storage: Storage, clock: Clock
 ) extends RaidFinderClient with WebSocketSubscriber {
   import RaidFinderClient._
 
@@ -205,14 +205,10 @@ class WebSocketRaidFinderClient(
   private def handleRaidBossesResponse(
     raidBosses: Seq[RaidBoss]
   ): Unit = {
-    var shouldUpdateState = false // Sorry about the var
-
     raidBosses.foreach { raidBoss =>
       val bossName = raidBoss.name
-      val expired = isExpired(raidBoss)
 
       allBossesMap.get(bossName) match {
-        case None if expired => // Do nothing
         case None => // Add to our list of known bosses
           val newColumn = RaidBossColumn(
             raidBoss = Var(raidBoss),
@@ -220,27 +216,16 @@ class WebSocketRaidFinderClient(
             isSubscribed = Var(false)
           )
           allBossesMap = allBossesMap.updated(bossName, newColumn)
-          shouldUpdateState = true
 
-        case Some(column) if expired => // Remove from allBosses list
-          allBossesMap = allBossesMap - bossName
-          shouldUpdateState = true
+          state.allBosses.get := allBossesMap.values.toArray.sortBy { column =>
+            val boss = column.raidBoss.get
+            (boss.level, boss.name)
+          }
+
         case Some(column) => // Update existing raid boss data
           column.raidBoss := raidBoss
       }
     }
-
-    if (shouldUpdateState) {
-      state.allBosses.get := allBossesMap.values.toArray.sortBy { column =>
-        val boss = column.raidBoss.get
-        (boss.level, boss.name)
-      }
-    }
-  }
-
-  private def isExpired(raidBoss: RaidBoss): Boolean = {
-    val minDate = clock.now().getTime - raidBossTtl.milliseconds
-    raidBoss.lastSeen.getTime < minDate
   }
 
   private def refollowBosses(): Unit = {
