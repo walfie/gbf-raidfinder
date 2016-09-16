@@ -15,14 +15,12 @@ import walfie.gbf.raidfinder.protocol._
 object Application {
   @JSExport
   def init(url: String): Unit = {
-    val bossTtl = Duration.hours(6)
-
     val maxReconnectInterval = Duration.seconds(10)
 
     val websocket = new BinaryProtobufWebSocketClient(url, maxReconnectInterval)
 
     val client = new WebSocketRaidFinderClient(
-      websocket, dom.window.localStorage, bossTtl, SystemClock
+      websocket, dom.window.localStorage, SystemClock
     )
 
     Moment.defineLocale("en-short", MomentShortLocale)
