@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.1.5](https://github.com/walfie/gbf-raidfinder/tree/v0.1.5) (2016-09-16)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.4...v0.1.5)
+
+**Merged pull requests:**
+
+- Handle newlines in raid text message [\#57](https://github.com/walfie/gbf-raidfinder/pull/57) ([walfie](https://github.com/walfie))
+
 ## [v0.1.4](https://github.com/walfie/gbf-raidfinder/tree/v0.1.4) (2016-09-16)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.3...v0.1.4)
 
