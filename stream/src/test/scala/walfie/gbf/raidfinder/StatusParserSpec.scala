@@ -34,11 +34,26 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       }
     }
 
+    "with newlines in extra text" in {
+      val text = """
+        |Hey
+        |Newlines
+        |Are
+        |Cool
+        |参加者募集！参戦ID：ABCD1234
+        |Lv60 オオゾラッコ
+        |http://example.com/image-that-is-ignored.png""".stripMargin.trim
+
+      StatusParser.parse(mockStatus(text = text)) shouldBe Some {
+        RaidInfo(expectedRaidTweet.copy(text = "Hey\nNewlines\nAre\nCool"), expectedRaidBoss)
+      }
+    }
+
     "without extra text" in {
       val text = """
         |参加者募集！参戦ID：ABCD1234
         |Lv60 オオゾラッコ
-        |http://example.com/raid-image.png""".stripMargin.trim
+        |http://example.com/image-that-is-ignored.png""".stripMargin.trim
 
       StatusParser.parse(mockStatus(text = text)) shouldBe Some {
         RaidInfo(expectedRaidTweet.copy(text = ""), expectedRaidBoss)
@@ -76,10 +91,27 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       }
     }
 
+    "with newlines in extra text" in {
+      val text = """
+        |Hey
+        |Newlines
+        |Are
+        |Cool
+        |I need backup!Battle ID: ABCD1234
+        |Lvl 60 Ozorotter
+        |http://example.com/image-that-is-ignored.png""".stripMargin.trim
+      val status = mockStatus(text = text)
+
+      StatusParser.parse(status) shouldBe Some {
+        RaidInfo(expectedRaidTweet.copy(text = "Hey\nNewlines\nAre\nCool"), expectedRaidBoss)
+      }
+    }
+
     "without extra text" in {
       val text = """
         |I need backup!Battle ID: ABCD1234
-        |Lvl 60 Ozorotter""".stripMargin.trim
+        |Lvl 60 Ozorotter
+        |http://example.com/image-that-is-ignored.png""".stripMargin.trim
       val status = mockStatus(text = text)
 
       StatusParser.parse(status) shouldBe Some {
