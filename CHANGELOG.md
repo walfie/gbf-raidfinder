@@ -1,5 +1,16 @@
 # Change Log
 
+## [v0.1.4](https://github.com/walfie/gbf-raidfinder/tree/v0.1.4) (2016-09-16)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.3...v0.1.4)
+
+**Implemented enhancements:**
+
+- Don't remove high level bosses [\#46](https://github.com/walfie/gbf-raidfinder/issues/46)
+
+**Merged pull requests:**
+
+- Don't remove old bosses in frontend [\#56](https://github.com/walfie/gbf-raidfinder/pull/56) ([walfie](https://github.com/walfie))
+
 ## [v0.1.3](https://github.com/walfie/gbf-raidfinder/tree/v0.1.3) (2016-09-14)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.2...v0.1.3)
 
@@ -17,7 +28,6 @@
 
 **Implemented enhancements:**
 
-- Don't remove high level bosses [\#46](https://github.com/walfie/gbf-raidfinder/issues/46)
 - Night mode [\#44](https://github.com/walfie/gbf-raidfinder/issues/44)
 
 **Merged pull requests:**
