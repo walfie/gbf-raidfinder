@@ -10,7 +10,7 @@ import twitter4j._
 import walfie.gbf.raidfinder.domain._
 
 class StatusParserSpec extends StatusParserSpecHelpers {
-  "parse a valid status in Japanese" in {
+  "parse a valid status in Japanese" - {
     val expectedRaidTweet = RaidTweet(
       tweetId = 12345L,
       screenName = "walfieee",
@@ -28,12 +28,26 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       lastSeen = now
     )
 
-    StatusParser.parse(mockStatus()) shouldBe Some {
-      RaidInfo(expectedRaidTweet, expectedRaidBoss)
+    "with extra text" in {
+      StatusParser.parse(mockStatus()) shouldBe Some {
+        RaidInfo(expectedRaidTweet, expectedRaidBoss)
+      }
     }
+
+    "without extra text" in {
+      val text = """
+        |参加者募集！参戦ID：ABCD1234
+        |Lv60 オオゾラッコ
+        |http://example.com/raid-image.png""".stripMargin.trim
+
+      StatusParser.parse(mockStatus(text = text)) shouldBe Some {
+        RaidInfo(expectedRaidTweet.copy(text = ""), expectedRaidBoss)
+      }
+    }
+
   }
 
-  "parse a valid status in English" in {
+  "parse a valid status in English" - {
     val expectedRaidTweet = RaidTweet(
       tweetId = 12345L,
       screenName = "walfieee",
@@ -51,13 +65,26 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       lastSeen = now
     )
 
-    val text = """
-      |INSERT CUSTOM MESSAGE HERE I need backup!Battle ID: ABCD1234
-      |Lvl 60 Ozorotter""".stripMargin.trim
-    val status = mockStatus(text = text)
+    "with extra text" in {
+      val text = """
+        |INSERT CUSTOM MESSAGE HERE I need backup!Battle ID: ABCD1234
+        |Lvl 60 Ozorotter""".stripMargin.trim
+      val status = mockStatus(text = text)
 
-    StatusParser.parse(status) shouldBe Some {
-      RaidInfo(expectedRaidTweet, expectedRaidBoss)
+      StatusParser.parse(status) shouldBe Some {
+        RaidInfo(expectedRaidTweet, expectedRaidBoss)
+      }
+    }
+
+    "without extra text" in {
+      val text = """
+        |I need backup!Battle ID: ABCD1234
+        |Lvl 60 Ozorotter""".stripMargin.trim
+      val status = mockStatus(text = text)
+
+      StatusParser.parse(status) shouldBe Some {
+        RaidInfo(expectedRaidTweet.copy(text = ""), expectedRaidBoss)
+      }
     }
   }
 
