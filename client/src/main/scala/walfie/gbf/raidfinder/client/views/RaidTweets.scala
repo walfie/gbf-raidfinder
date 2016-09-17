@@ -87,8 +87,9 @@ object RaidTweets {
     val hasText = raidTweet.text.nonEmpty
     val avatar = {
       val url = raidTweet.profileImage.replace("_normal.", "_mini.")
-      val imageClass = "gbfrf-tweet__avatar".addIf(hasText, "gbfrf-tweet__avatar--offset")
-      <img class={ imageClass } src={
+      val imageClass = "gbfrf-tweet__avatar"
+        .addIf(hasText, "gbfrf-tweet__avatar--offset")
+      <img class={ imageClass.addIf(!showUserImages.bind, "is-hidden") } src={
         if (showUserImages.bind) url else HtmlHelpers.BlankImage
       }/>
     }
@@ -136,19 +137,19 @@ object RaidTweets {
     isSubscribed: Binding[Boolean],
     client:       RaidFinderClient
   ): Binding[HTMLElement] = {
-    val boss = raidBoss.bind
+    val bossName = Binding(raidBoss.bind.name)
 
     val headerRow =
       <div class="mdl-layout__header-row gbfrf-column__header-row">
-        <div class="mdl-layout-title gbfrf-column__header">{ boss.name }</div>
+        <div class="mdl-layout-title gbfrf-column__header">{ bossName.bind }</div>
         <div class="mdl-layout-spacer"></div>
-        <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(boss.name) }>
+        <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(bossName.bind) }>
           <i class="material-icons">more_vert</i>
         </button>
-        { raidBossHeaderMenu(boss.name, isSubscribed, client).bind }
+        { raidBossHeaderMenu(bossName.bind, isSubscribed, client).bind }
       </div>
 
-    headerRow.backgroundImageQuality(boss.image, 0.25, imageQuality.bind)
+    headerRow.backgroundImageQuality(raidBoss.bind.image, 0.25, imageQuality.bind)
 
     <header class="mdl-layout__header">
       { headerRow }
