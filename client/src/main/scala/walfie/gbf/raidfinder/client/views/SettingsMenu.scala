@@ -6,6 +6,7 @@ import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
+import scala.util.Try
 import walfie.gbf.raidfinder.BuildInfo
 import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.client.syntax.StringOps
@@ -32,6 +33,15 @@ object SettingsMenu {
           {
             settingsListItem("Boss image quality") {
               radioSelector(ImageQuality.all, viewState.imageQuality, onChange)
+            }.bind
+          }
+          {
+            settingsListItem("Column width") {
+              slider(
+                id = "gbfrf-setting__column-width",
+                min = 0.0, max = 1.0, step = 0.1,
+                value = viewState.columnWidthScale, onChange
+              )
             }.bind
           }
           {
@@ -94,6 +104,25 @@ object SettingsMenu {
     <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for={ id }>
       { input }
     </label>
+  }
+
+  @binding.dom
+  def slider(
+    id: String, min: Double, max: Double, step: Double, value: Var[Double], onChange: () => Unit
+  ): Binding[HTMLInputElement] = {
+    // format: OFF
+    val input = <input
+      type="range" id={ id } class="mdl-slider mdl-js-slider"
+      min={ min.toString } max={ max.toString } step={ step.toString } value={ value.bind.toString }
+      onchange={ (e: dom.Event) => onChange() }
+    />
+    // format: ON
+
+    input.oninput = { event: dom.Event =>
+      Try(input.value.toDouble).foreach(value := _)
+    }
+
+    input
   }
 
   @binding.dom

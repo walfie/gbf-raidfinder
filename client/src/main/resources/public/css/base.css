@@ -44,6 +44,18 @@ html, body, .gbfrf-container {
   flex: 0 0 auto;
 }
 
+.gbfrf-settings__item
+.mdl-slider__container {
+  width: 60%;
+  margin-right: -20px;
+}
+
+.gbfrf-settings__item
+.mdl-slider__background-flex {
+  height: 4px;
+  margin-top: -1.25px;
+}
+
 @media (max-width: 460px) {
   .gbfrf-column {
     width: 90%;
@@ -89,6 +101,7 @@ html, body, .gbfrf-container {
 }
 
 .gbfrf-tweet {
+  padding: 14px;
   border-bottom: 1px dashed grey;
   transition: background-color 0.3s ease;
   letter-spacing: 0.02em !important;
@@ -108,8 +121,6 @@ html, body, .gbfrf-container {
 }
 
 .gbfrf-tweet__avatar {
-  width: 24px;
-  height: 24px;
   border-radius: 10%;
   margin-right: 10px;
   align-self: baseline;

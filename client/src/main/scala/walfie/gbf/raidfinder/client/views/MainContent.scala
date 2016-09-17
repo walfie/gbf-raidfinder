@@ -25,8 +25,12 @@ object MainContent {
 
     handleNightMode(viewState.nightMode).watch
 
+    val styleElement = <style></style>
+    handleColumnWidth(viewState.columnWidthScale, styleElement).watch
+
     val main =
       <div class="gbfrf-main-content">
+        { styleElement }
         { notification.binding.bind }
         { floatingActionButton(dialog, client, viewState.currentTab).bind }
         <div class="gbfrf-columns">
@@ -62,6 +66,15 @@ object MainContent {
       bodyClasses.add(lightTheme)
       bodyClasses.remove(darkTheme)
     }
+  }
+
+  @binding.dom
+  def handleColumnWidth(columnWidthScale: Var[Double], style: HTMLStyleElement): Binding[Unit] = {
+    val scale = columnWidthScale.bind
+    style.innerHTML = js.Array(
+      s".gbfrf-column { width: ${270 + scale * 80}px; }",
+      s".gbfrf-tweet__text { font-size: ${0.8 + scale * 0.2}em; margin-right: ${5 * (1 - scale)}px; }"
+    ).join("\n")
   }
 
   @binding.dom
