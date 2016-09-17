@@ -8,7 +8,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.InputStream;
 
-import javax.imageio.ImageIO;
 /*
  * pHash-like image hash.
  * Author: Elliot Shepherd (elliot@jarofworms.com
@@ -38,18 +37,12 @@ public class ImagePHash {
     return 1 - Long.bitCount(l1 ^ l2) / ((double) this.totalBitsInHash);
   }
 
-  public Long getHashAsLong(InputStream is) throws Exception {
-    return Long.parseLong(getHash(is), 2);
+  public Long getHashAsLong(BufferedImage img) throws Exception {
+    return Long.parseLong(getHash(img), 2);
   }
 
   // Returns a 'binary string' (like. 001010111011100010) which is easy to do a hamming distance on.
-  public String getHash(InputStream is) throws Exception {
-    BufferedImage img = ImageIO.read(is);
-
-    // TODO: Change this method to accept a BufferedImage instead of InputStream
-    // Comparison of raid boss images is perfect if we crop it
-    img = img.getSubimage(0, 0, img.getWidth(), img.getHeight() * 3/4);
-
+  public String getHash(BufferedImage img) throws Exception {
     /* 1. Reduce size.
      * Like Average Hash, pHash starts with a small image.
      * However, the image is larger than 8x8; 32x32 is a good size.

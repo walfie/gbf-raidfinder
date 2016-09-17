@@ -1,6 +1,8 @@
 package com.pastebin.Pj9d8jt5
 
+import java.awt.image.BufferedImage
 import java.net.URL
+import javax.imageio.ImageIO
 import org.scalatest._
 import org.scalatest.Matchers._
 import scala.concurrent.duration._
@@ -27,15 +29,19 @@ class ImagePHashSpec extends FreeSpec {
         val url = boss.url + ":small"
 
         BlockingIO.future {
+          // Get image and crop out the bottom 25%
           val stream = new URL(url).openStream
-          RaidBossWithHash(boss, pHash.getHashAsLong(stream))
+          val image: BufferedImage = ImageIO.read(stream)
+          val croppedImage = image.getSubimage(
+            0, 0, image.getWidth(), image.getHeight() * 3/4
+          )
+
+          RaidBossWithHash(boss, pHash.getHashAsLong(croppedImage))
         }
       }
     }
 
     val hashes = Await.result(hashesF, 30.seconds)
-
-    val similarityThreshold = 1.0
 
     def shouldCompare(boss1: RaidBoss, boss2: RaidBoss): Boolean = {
       (boss1.language != boss2.language) && (boss1.level == boss2.level)
@@ -45,7 +51,7 @@ class ImagePHashSpec extends FreeSpec {
       case Seq(hashed1, hashed2) if shouldCompare(hashed1.boss, hashed2.boss) =>
         val similarity = pHash.similarity(hashed1.hash, hashed2.hash)
         BossSimilarity(similarity, hashed1.boss.name, hashed2.boss.name)
-    }.filter(_.similarity >= similarityThreshold)
+    }.filter(_.similarity == 1.0)
 
     results.map(b => b.boss1 -> b.boss2).toSet shouldBe Set(
       "Lv40 ゲイザー" -> "Lvl 40 Ogler",

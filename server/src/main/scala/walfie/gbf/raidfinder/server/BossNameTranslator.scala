@@ -2,7 +2,9 @@ package walfie.gbf.raidfinder.server
 
 import akka.agent.Agent
 import com.pastebin.Pj9d8jt5.ImagePHash
+import java.awt.image.BufferedImage
 import java.net.URL
+import javax.imageio.ImageIO
 import scala.concurrent.{ExecutionContext, Future}
 import walfie.gbf.raidfinder.domain._
 import walfie.gbf.raidfinder.util.BlockingIO
@@ -60,12 +62,19 @@ class ImageBasedBossNameTranslator(
 
   // IMPORTANT: Only call this on a boss that has an image, otherwise it will fail
   private def getBossData(boss: RaidBoss): Future[BossData] = BlockingIO.future {
-    val imageStream = new URL(boss.image.get + ":small").openStream // TODO: Make this testable
-    val hash = ImageHash(pHash.getHashAsLong(imageStream))
+    val imageUrl = new URL(boss.image.get + ":small") // TODO: Make this testable
+    val hash = ImageHash(pHash.getHashAsLong(croppedImageFromUrl(imageUrl)))
 
     println(s"boss data: ${boss.name} -> $hash") // TODO: Remove
 
     BossData(name = boss.name, level = boss.level, language = boss.language, hash: ImageHash)
+  }
+
+  /** Read the image and crop out the bottom 25% */
+  private def croppedImageFromUrl(url: URL): BufferedImage = {
+    // TODO: Use a real HTTP client to get the image
+    val image = ImageIO.read(url.openStream())
+    image.getSubimage(0, 0, image.getWidth(), image.getHeight() * 3 / 4);
   }
 
   private case class BossSimilarity(name: BossName, similarity: Double)
