@@ -1,5 +1,23 @@
 # Change Log
 
+## [v0.1.6](https://github.com/walfie/gbf-raidfinder/tree/v0.1.6) (2016-09-17)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.5...v0.1.6)
+
+**Implemented enhancements:**
+
+- Compact mode [\#54](https://github.com/walfie/gbf-raidfinder/issues/54)
+
+**Fixed bugs:**
+
+- English raids only show up if they also have the Japanese name [\#59](https://github.com/walfie/gbf-raidfinder/issues/59)
+- Sometimes list items are re-rendered unnecessarily [\#55](https://github.com/walfie/gbf-raidfinder/issues/55)
+
+**Merged pull requests:**
+
+- Reduce minimum column width to 240px [\#61](https://github.com/walfie/gbf-raidfinder/pull/61) ([walfie](https://github.com/walfie))
+- Fix English tweets being excluded from stream [\#60](https://github.com/walfie/gbf-raidfinder/pull/60) ([walfie](https://github.com/walfie))
+- Allow configurable column width [\#58](https://github.com/walfie/gbf-raidfinder/pull/58) ([walfie](https://github.com/walfie))
+
 ## [v0.1.5](https://github.com/walfie/gbf-raidfinder/tree/v0.1.5) (2016-09-16)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.4...v0.1.5)
 
