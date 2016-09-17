@@ -25,3 +25,15 @@ enum Language {
   ENGLISH = 2;
 }
 
+// Used internally, for persistence
+message TranslationData {
+  string name = 1;
+  int32 level = 2;
+  Language language = 3;
+  int64 imageHash = 4;
+}
+
+message TranslationsData {
+  repeated TranslationData data = 1;
+}
+

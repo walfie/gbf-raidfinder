@@ -10,6 +10,7 @@ import scala.concurrent.duration._
 import walfie.gbf.raidfinder.domain
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.RaidFinder
+import walfie.gbf.raidfinder.server.{ImageBasedBossNameTranslator => translator}
 import walfie.gbf.raidfinder.server.persistence._
 import walfie.gbf.raidfinder.server.syntax.ProtocolConverters._
 import walfie.gbf.raidfinder.util.BlockingIO
@@ -20,18 +21,23 @@ object Application {
 
     val config = ConfigFactory.load()
     val appConfig = config.getConfig("application")
+    val bossStorageConfig = appConfig.as[BossStorageConfig]("cache.bosses")
+    val translationsConfig = appConfig.as[TranslationsConfig]("translations")
 
-    // Get initial bosses from cache
+    // Get initial data from cache
     val protobufStorage = {
       val url = appConfig.as[Option[String]]("cache.redisUrl").filter(_.nonEmpty)
       getProtobufStorage(url)
     }
 
-    val bossStorageConfig = appConfig.as[BossStorageConfig]("cache.bosses")
-    val cachedBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
-
     // Start RaidFinder
-    val raidFinder = RaidFinder.withBackfill(initialBosses = cachedBosses)
+    val raidFinder = RaidFinder.withBackfill(
+      initialBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
+    )
+
+    val translator = new ImageBasedBossNameTranslator(
+      initialTranslationData = getCachedTranslationData(protobufStorage, translationsConfig.cacheKey)
+    )
 
     // Periodically flush bosses to cache
     val bossFlushCancelable = scheduler.scheduleWithFixedDelay(
@@ -49,15 +55,16 @@ object Application {
       } yield ()
     }
 
-    val translatorConfig = appConfig.as[TranslationsConfig]("translations")
-    val translator = new ImageBasedBossNameTranslator(
-      initialBossData = Seq.empty // TODO: Get from cache
-    )
-
+    // Periodically update new translations and save translation data to cache
     val translationRefreshCancelable = scheduler.scheduleWithFixedDelay(
-      Duration.Zero, translatorConfig.refreshInterval
+      Duration.Zero, translationsConfig.refreshInterval
     ) {
-      translator.update(raidFinder.getKnownBosses())
+      for {
+        _ <- translator.update(raidFinder.getKnownBosses())
+        bossData = translator.getTranslationData.values.map(_.toProtocol).toSeq
+        cacheObj = TranslationsData(data = bossData)
+        _ <- BlockingIO.future(protobufStorage.set(translationsConfig.cacheKey, cacheObj))
+      } yield ()
     }
 
     // Start server
@@ -98,6 +105,12 @@ object Application {
       .fold(Seq.empty[domain.RaidBoss])(_.raidBosses.map(_.toDomain))
   }
 
+  def getCachedTranslationData(storage: ProtobufStorage, key: String): Seq[translator.TranslationData] = {
+    storage
+      .get[TranslationsData](key)
+      .fold(Seq.empty[translator.TranslationData])(_.data.map(_.toDomain))
+  }
+
   def handleShutdown(mode: Mode.Mode, shutdown: () => Unit) = {
     if (mode == Mode.Dev) {
       Logger.info("Press ENTER to stop the application.")
@@ -120,8 +133,8 @@ case class BossStorageConfig(
   levelThreshold: Int
 )
 
-// TODO: cacheKey
 case class TranslationsConfig(
+  cacheKey:        String,
   refreshInterval: FiniteDuration
 )
 
