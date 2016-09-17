@@ -40,13 +40,19 @@ object ProtocolConverters {
     }
   }
 
+  private val JapaneseRegex = """.*[\p{IsKatakana}\p{IsHan}\p{IsHiragana}].*""".r
+
   implicit class LanguageProtocolOps(val lang: protocol.Language) extends AnyVal {
     def toDomain(bossName: => domain.BossName): domain.Language = lang match {
       case protocol.Language.ENGLISH => domain.Language.English
       case protocol.Language.JAPANESE => domain.Language.Japanese
+
       case protocol.Language.UNSPECIFIED | protocol.Language.Unrecognized(_) =>
-        // English raid boses start with "Lvl " (e.g., "Lvl 100 InsertNameHere")
-        if (bossName.startsWith("Lvl ")) domain.Language.English
+        // English raid boses usually start with "Lvl " (e.g., "Lvl 100 InsertNameHere").
+        // Sometimes event bosses have no level in the name, so we check if there are any
+        // Japanese characters in the name.
+        if (bossName.startsWith("Lvl ") || !JapaneseRegex.pattern.matcher(bossName).matches)
+          domain.Language.English
         else domain.Language.Japanese
     }
   }
