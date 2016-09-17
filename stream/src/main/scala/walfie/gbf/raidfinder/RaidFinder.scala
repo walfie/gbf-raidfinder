@@ -74,6 +74,7 @@ class DefaultRaidFinder(
   /** Override this to perform additional cleanup on shutdown */
   protected def onShutdown(): Unit = ()
 
+  // TODO: Parsing happens twice somewhere -- should figure out where
   private val raidInfos = statusesObservable
     .collect(Function.unlift(StatusParser.parse))
     .publish

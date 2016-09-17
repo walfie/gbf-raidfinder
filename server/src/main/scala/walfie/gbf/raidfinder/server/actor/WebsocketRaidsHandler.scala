@@ -48,7 +48,7 @@ class WebsocketRaidsHandler(
 
     case r: FollowRequest =>
       val cancelables = r.bossNames
-        .filterNot(followed.keys.toSeq.contains)
+        .filterNot(followed.keys.toSet.contains)
         .map { bossName =>
           bossName -> raidFinder.getRaidTweets(bossName).foreach { r: RaidTweet =>
             // TODO: Add utils for converting domain objects to protobuf messages
