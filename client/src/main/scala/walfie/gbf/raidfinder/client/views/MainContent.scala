@@ -72,7 +72,7 @@ object MainContent {
   def handleColumnWidth(columnWidthScale: Var[Double], style: HTMLStyleElement): Binding[Unit] = {
     val scale = columnWidthScale.bind
     style.innerHTML = js.Array(
-      s".gbfrf-column { width: ${270 + scale * 80}px; }",
+      s".gbfrf-column { width: ${240 + scale * 110}px; }",
       s".gbfrf-tweet__text { font-size: ${0.8 + scale * 0.2}em; margin-right: ${5 * (1 - scale)}px; }"
     ).join("\n")
   }

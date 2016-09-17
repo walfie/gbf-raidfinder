@@ -121,6 +121,7 @@ html, body, .gbfrf-container {
 }
 
 .gbfrf-tweet__avatar {
+  height: 24px;
   border-radius: 10%;
   margin-right: 10px;
   align-self: baseline;
@@ -137,6 +138,7 @@ html, body, .gbfrf-container {
 }
 
 .gbfrf-tweet__username {
+  word-break: break-word;
   font-size: small;
 }
 
