@@ -50,7 +50,7 @@ object Application {
           minDate = purgeMinDate,
           levelThreshold = bossStorageConfig.levelThreshold
         )
-        cacheObj = RaidBossesResponse(raidBosses = bosses.values.map(_.toProtocol).toSeq)
+        cacheObj = RaidBossesItem(raidBosses = bosses.values.map(_.toProtocol).toSeq)
         _ <- BlockingIO.future(protobufStorage.set(bossStorageConfig.cacheKey, cacheObj))
       } yield ()
     }
@@ -62,7 +62,7 @@ object Application {
       for {
         _ <- translator.update(raidFinder.getKnownBosses())
         bossData = translator.getTranslationData.values.map(_.toProtocol).toSeq
-        cacheObj = TranslationsData(data = bossData)
+        cacheObj = TranslationDataItem(data = bossData)
         _ <- BlockingIO.future(protobufStorage.set(translationsConfig.cacheKey, cacheObj))
       } yield ()
     }
@@ -101,13 +101,13 @@ object Application {
 
   def getCachedBosses(storage: ProtobufStorage, key: String): Seq[domain.RaidBoss] = {
     storage
-      .get[RaidBossesResponse](key)
+      .get[RaidBossesItem](key)
       .fold(Seq.empty[domain.RaidBoss])(_.raidBosses.map(_.toDomain))
   }
 
   def getCachedTranslationData(storage: ProtobufStorage, key: String): Seq[translator.TranslationData] = {
     storage
-      .get[TranslationsData](key)
+      .get[TranslationDataItem](key)
       .fold(Seq.empty[translator.TranslationData])(_.data.map(_.toDomain))
   }
 
