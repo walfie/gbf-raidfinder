@@ -23,8 +23,12 @@ object ProtocolConverters {
       val language = rb.language match {
         case protocol.Language.ENGLISH => domain.Language.English
         case protocol.Language.JAPANESE => domain.Language.Japanese
-        case protocol.Language.Unrecognized(_) => domain.Language.Japanese
+        case protocol.Language.UNSPECIFIED | protocol.Language.Unrecognized(_) =>
+          // English raid boses start with "Lvl " (e.g., "Lvl 100 InsertNameHere")
+          if (rb.name.startsWith("Lvl ")) domain.Language.English
+          else domain.Language.Japanese
       }
+
       domain.RaidBoss(
         name = rb.name, level = rb.level, image = rb.image,
         lastSeen = rb.lastSeen, language = language

@@ -20,7 +20,8 @@ message RaidBoss {
 }
 
 enum Language {
-  JAPANESE = 0;
-  ENGLISH = 1;
+  UNSPECIFIED = 0;
+  JAPANESE = 1;
+  ENGLISH = 2;
 }
 

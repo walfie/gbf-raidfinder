@@ -16,8 +16,7 @@ trait BossNameTranslator {
 }
 
 class ImageBasedBossNameTranslator(
-  initialBossData:          Seq[ImageBasedBossNameTranslator.BossData],
-  imageSimilarityThreshold: Double
+  initialBossData: Seq[ImageBasedBossNameTranslator.BossData]
 )(implicit ec: ExecutionContext) extends BossNameTranslator {
   import ImageBasedBossNameTranslator._
 
@@ -46,8 +45,6 @@ class ImageBasedBossNameTranslator(
   private def updateBossData(bossData: BossData): Unit = {
     bossDataAgent.alter(_.updated(bossData.name, bossData)).foreach { _ =>
       findTranslation(bossData).foreach { translatedName =>
-        println(s"Found translation: ${bossData.name} -> $translatedName") // TODO: Remove
-
         val newValues = Map(
           bossData.name -> translatedName,
           translatedName -> bossData.name
@@ -65,8 +62,6 @@ class ImageBasedBossNameTranslator(
     val imageUrl = new URL(boss.image.get + ":small") // TODO: Make this testable
     val hash = ImageHash(pHash.getHashAsLong(croppedImageFromUrl(imageUrl)))
 
-    println(s"boss data: ${boss.name} -> $hash") // TODO: Remove
-
     BossData(name = boss.name, level = boss.level, language = boss.language, hash: ImageHash)
   }
 
@@ -77,26 +72,13 @@ class ImageBasedBossNameTranslator(
     image.getSubimage(0, 0, image.getWidth(), image.getHeight() * 3 / 4);
   }
 
-  private case class BossSimilarity(name: BossName, similarity: Double)
-
   // This assumes there are only two languages (which is true currently)
   private def findTranslation(newData: BossData): Option[BossName] = {
-    val similarities = bossDataAgent.get.values.collect {
-      case existingData if shouldCompare(newData, existingData) =>
-        val similarity = pHash.similarity(newData.hash.value, existingData.hash.value)
-
-        BossSimilarity(
-          name = existingData.name,
-          similarity = similarity
-        )
-    }.filter(_.similarity >= imageSimilarityThreshold)
-
-    if (similarities.isEmpty) None
-    else Some(similarities.maxBy(_.similarity).name)
-  }
-
-  private def shouldCompare(data1: BossData, data2: BossData): Boolean = {
-    data1.language != data2.language && data1.level == data2.level
+    bossDataAgent.get.values.find { existingData =>
+      newData.hash == existingData.hash &&
+        newData.language != existingData.language &&
+        newData.level == existingData.level
+    }.map(_.name)
   }
 }
 

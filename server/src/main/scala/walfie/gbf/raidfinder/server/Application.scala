@@ -51,12 +51,11 @@ object Application {
 
     val translatorConfig = appConfig.as[TranslationsConfig]("translations")
     val translator = new ImageBasedBossNameTranslator(
-      initialBossData = Seq.empty, // TODO: Get from cache
-      imageSimilarityThreshold = translatorConfig.imageSimilarityThreshold
+      initialBossData = Seq.empty // TODO: Get from cache
     )
 
     val translationRefreshCancelable = scheduler.scheduleWithFixedDelay(
-      translatorConfig.refreshInterval, translatorConfig.refreshInterval
+      Duration.Zero, translatorConfig.refreshInterval
     ) {
       translator.update(raidFinder.getKnownBosses())
     }
@@ -121,8 +120,8 @@ case class BossStorageConfig(
   levelThreshold: Int
 )
 
+// TODO: cacheKey
 case class TranslationsConfig(
-  imageSimilarityThreshold: Double,
-  refreshInterval:          FiniteDuration
+  refreshInterval: FiniteDuration
 )
 
