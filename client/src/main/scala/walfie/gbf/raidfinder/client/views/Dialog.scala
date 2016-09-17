@@ -69,7 +69,7 @@ object Dialog {
     reloadBosses: Event => Unit
   ): Binding[HTMLDivElement] = {
     <div class="mdl-dialog__actions">
-      <button type="button" class="mdl-button gbfrf-dialog__button" onclick={ closeModal }>Cancel</button>
+      <button type="button" class="mdl-button gbfrf-dialog__button" onclick={ closeModal }>Close</button>
       <button type="button" class={
         "gbfrf-dialog__button mdl-button".addIf(currentTab.bind != DialogTab.Follow, "is-hidden")
       } onclick={ reloadBosses }>

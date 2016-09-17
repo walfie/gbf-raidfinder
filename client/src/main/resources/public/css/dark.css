@@ -3,6 +3,23 @@
   background: #222426;
 }
 
+.gbfrf-theme--dark
+.gbfrf-settings__item
+.mdl-slider__background-upper {
+  background: #444;
+}
+
+.gbfrf-theme--dark
+.gbfrf-settings__item
+.mdl-slider.is-lowest-value::-webkit-slider-thumb {
+  background: #bbb;
+}
+
+.gbfrf-theme--dark
+.gbfrf-settings__item
+.mdl-slider.is-lowest-value::-moz-range-thumb {
+  background: #bbb;
+}
 
 .gbfrf-theme--dark
 .gbfrf-column__notification-banner {

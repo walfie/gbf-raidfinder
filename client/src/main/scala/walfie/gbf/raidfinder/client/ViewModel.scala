@@ -68,12 +68,12 @@ object ViewModel {
   }
 
   case class State(
-    currentTab:     Var[DialogTab]    = Var(DialogTab.Follow),
-    imageQuality:   Var[ImageQuality] = Var(ImageQuality.Default),
-    timeFormat:     Var[TimeFormat]   = Var(TimeFormat.Default),
-    showUserImages: Var[Boolean]      = Var(false),
-    nightMode:      Var[Boolean]      = Var(false),
-    compactMode:    Var[Boolean]      = Var(false)
+    currentTab:       Var[DialogTab]    = Var(DialogTab.Follow),
+    imageQuality:     Var[ImageQuality] = Var(ImageQuality.Default),
+    timeFormat:       Var[TimeFormat]   = Var(TimeFormat.Default),
+    showUserImages:   Var[Boolean]      = Var(false),
+    nightMode:        Var[Boolean]      = Var(false),
+    columnWidthScale: Var[Double]       = Var(1.0)
   ) { state =>
     def toJsObject: JsState = new JsState {
       val currentTab: js.UndefOr[String] = state.currentTab.get.label
@@ -81,7 +81,7 @@ object ViewModel {
       val timeFormat: js.UndefOr[String] = state.timeFormat.get.label
       val showUserImages: js.UndefOr[Boolean] = state.showUserImages.get
       val nightMode: js.UndefOr[Boolean] = state.nightMode.get
-      val compactMode: js.UndefOr[Boolean] = state.compactMode.get
+      val columnWidthScale: js.UndefOr[Double] = state.columnWidthScale.get
     }
   }
 
@@ -92,7 +92,7 @@ object ViewModel {
       timeFormat = Var(fromField(jsState.timeFormat, TimeFormat.fromString, TimeFormat.Default)),
       showUserImages = Var(jsState.showUserImages.getOrElse(false)),
       nightMode = Var(jsState.nightMode.getOrElse(false)),
-      compactMode = Var(jsState.compactMode.getOrElse(false))
+      columnWidthScale = Var(jsState.columnWidthScale.getOrElse(1.0))
     )
   }
 
@@ -107,7 +107,7 @@ object ViewModel {
     def timeFormat: js.UndefOr[String]
     def showUserImages: js.UndefOr[Boolean]
     def nightMode: js.UndefOr[Boolean]
-    def compactMode: js.UndefOr[Boolean]
+    def columnWidthScale: js.UndefOr[Double]
   }
 }
 
