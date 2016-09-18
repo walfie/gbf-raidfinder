@@ -225,9 +225,7 @@ class WebSocketRaidFinderClient(
     )
   }
 
-  private def handleRaidBossesResponse(
-    raidBosses: Seq[RaidBoss]
-  ): Unit = {
+  private def handleRaidBossesResponse(raidBosses: Seq[RaidBoss]): Unit = {
     raidBosses.foreach { raidBoss =>
       val bossName = raidBoss.name
 
