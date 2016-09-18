@@ -223,6 +223,10 @@ html, body, .gbfrf-container {
   border-bottom: none;
 }
 
+.gbfrf-follow__boss-box-subtitle {
+  color: inherit !important;
+}
+
 .gbfrf-follow__boss-box:hover {
   cursor: pointer;
 }

@@ -79,29 +79,21 @@ class DefaultRaidFinder(
     .collect(Function.unlift(StatusParser.parse))
     .publish
 
-  // Whenever a new boss comes in, info gets published here
-  // TODO: Maybe add test?
-  val newBossObservable = raidInfos
-    .map(_.boss)
-    .groupBy(_.name)
-    .flatMap(_.headF)
-    .publish
-
   private val (partitioner, partitionerCancelable) = CachedRaidTweetsPartitioner
     .fromUngroupedObservable(raidInfos.map(_.tweet), cachedTweetsPerBoss)
 
   private val (knownBosses, knownBossesCancelable) = KnownBossesObserver
     .fromRaidInfoObservable(raidInfos, initialBosses)
 
+  val newBossObservable = knownBosses.newBossObservable
+
   private val raidInfosCancelable = raidInfos.connect()
-  private val newBossCancelable = newBossObservable.connect()
 
   private val cancelable = Cancelable { () =>
     List(
       raidInfosCancelable,
       partitionerCancelable,
-      knownBossesCancelable,
-      newBossCancelable
+      knownBossesCancelable
     ).foreach(_.cancel)
     onShutdown()
   }
