@@ -28,6 +28,11 @@ class WebsocketRaidsHandler(
 
   val newTranslationCancelable = translator.observable.foreach { translation =>
     raidFinder.getKnownBosses.get(translation.from).foreach { boss =>
+      // If a boss we're following gets a new translation, follow the translated boss too
+      if (followed.isDefinedAt(translation.from)) {
+        follow(Seq(translation.to))
+      }
+
       val bosses = Seq(boss.toProtocol(Option(translation.to)))
       this push RaidBossesResponse(raidBosses = bosses)
     }
@@ -57,27 +62,38 @@ class WebsocketRaidsHandler(
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
 
     case r: FollowRequest =>
-      // TODO: Also follow translated boss
+      // Follow bosses and their translated counterparts
+      follow(r.bossNames)
+      follow(r.bossNames.flatMap(translator.translate))
 
-      val cancelables = r.bossNames
-        .filterNot(followed.keys.toSet.contains)
-        .map { bossName =>
-          val cancelable = raidFinder
-            .getRaidTweets(bossName)
-            .foreach(raidTweet => this.push(raidTweet.toProtocol))
-
-          bossName -> cancelable
-        }
-
-      followed = followed ++ cancelables
       this push FollowStatusResponse(followed.keys.toSeq)
 
     case r: UnfollowRequest =>
-      r.bossNames.map { bossName =>
-        followed.get(bossName).foreach(_.cancel())
-      }
-      followed = followed -- r.bossNames
+      // Unfollow bosses and their translated counterparts
+      unfollow(r.bossNames)
+      unfollow(r.bossNames.flatMap(translator.translate))
+
       this push FollowStatusResponse(followed.keys.toSeq)
+  }
+
+  def follow(bossNames: Seq[BossName]): Unit = {
+    // Filter out bosses we're already following
+    val newBosses = bossNames.filterNot(followed.keys.toSet.contains)
+
+    val cancelables = newBosses.map { bossName =>
+      val cancelable = raidFinder
+        .getRaidTweets(bossName)
+        .foreach(raidTweet => this.push(raidTweet.toProtocol))
+
+      bossName -> cancelable
+    }
+
+    followed = followed ++ cancelables
+  }
+
+  def unfollow(bossNames: Seq[BossName]): Unit = {
+    bossNames.flatMap(followed.get).foreach(_.cancel())
+    followed = followed -- bossNames
   }
 
   override def postStop(): Unit = {

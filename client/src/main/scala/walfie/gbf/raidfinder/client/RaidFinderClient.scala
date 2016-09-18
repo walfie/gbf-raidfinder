@@ -100,14 +100,21 @@ class WebSocketRaidFinderClient(
     updateLocalStorageFollowed()
   }
 
-  def unfollow(bossName: BossName): Unit = columnIndex(bossName).foreach { index =>
-    websocket.send(UnfollowRequest(bossNames = List(bossName)))
+  def unfollow(bossName: BossName): Unit = {
+    columnIndex(bossName).foreach { index =>
+      allBossesMap.get(bossName).foreach { column =>
+        // Only unfollow in the backend if we're not explicitly following
+        // both the English+Japanese versions of the same boss
+        if (column.raidBoss.get.translatedName.flatMap(columnIndex).isEmpty) {
+          websocket.send(UnfollowRequest(bossNames = List(bossName)))
+        }
+        column.clear()
+      }
 
-    val followedBosses = state.followedBosses.get
-
-    followedBosses.remove(index)
-    allBossesMap.get(bossName).foreach(_.clear())
-    updateLocalStorageFollowed()
+      val followedBosses = state.followedBosses.get
+      followedBosses.remove(index)
+      updateLocalStorageFollowed()
+    }
   }
 
   def toggleFollow(bossName: BossName): Unit = {
@@ -164,42 +171,58 @@ class WebSocketRaidFinderClient(
     case r: FollowStatusResponse =>
     // Ignore. Also TODO: Figure out why this doesn't come back consistently
 
-    case r: RaidTweetResponse =>
-      allBossesMap.get(r.bossName).foreach { column =>
-        val columnTweets = column.raidTweets.get
-        val shouldInsert = columnTweets.headOption.forall { firstTweetInColumn =>
-          r.createdAt.after(firstTweetInColumn.createdAt)
-        }
-        if (shouldInsert) r +=: columnTweets
+    case tweet: RaidTweetResponse =>
+      allBossesMap.get(tweet.bossName).foreach { column =>
+        addRaidTweetToColumn(tweet, column)
 
-        // Show desktop notification, if subscribed
-        // TODO: Put this in a method or something
-        val boss = column.raidBoss.get
-        if (column.isSubscribed.get) {
-          val body = Seq(
-            s"@${r.screenName}: ${r.raidId}",
-            r.text,
-            "\n(Click to copy raid ID)"
-          ).filter(_.nonEmpty).mkString("\n")
-
-          HtmlHelpers.desktopNotification(
-            title = r.bossName,
-            body = body,
-            icon = boss.image.orUndefined.map(_ + ":thumb"),
-            onClick = { event: dom.Event =>
-              event.preventDefault()
-              HtmlHelpers.copy(r.raidId)
-            },
-            tag = boss.name,
-            closeOnClick = true
-          )
-        }
+        for {
+          translatedName <- column.raidBoss.get.translatedName
+          if columnIndex(translatedName).nonEmpty
+          column <- allBossesMap.get(translatedName)
+        } yield addRaidTweetToColumn(tweet, column)
       }
 
     case r: ErrorResponse =>
       dom.window.console.error(r.message) // TODO: Better error handling
 
     case r: KeepAliveResponse => // Ignore
+  }
+
+  private def addRaidTweetToColumn(tweet: RaidTweetResponse, column: RaidBossColumn): Unit = {
+    val columnTweets = column.raidTweets.get
+    val shouldInsert = columnTweets.headOption.forall { firstTweetInColumn =>
+      tweet.createdAt.after(firstTweetInColumn.createdAt)
+    }
+    if (shouldInsert) tweet +=: columnTweets
+
+    // Show desktop notification, if subscribed
+    if (column.isSubscribed.get) {
+      val image = column.raidBoss.get.image.map(_ + ":thumb")
+      desktopNotification(tweet, image)
+    }
+  }
+
+  private def desktopNotification(tweet: RaidTweetResponse, image: Option[String]) = {
+    val body = Seq(
+      s"@${tweet.screenName}: ${tweet.raidId}",
+      tweet.text,
+      "\n(Click to copy raid ID)"
+    ).filter(_.nonEmpty).mkString("\n")
+
+    val onClick = { event: dom.Event =>
+      event.preventDefault()
+      HtmlHelpers.copy(tweet.raidId)
+      ()
+    }
+
+    HtmlHelpers.desktopNotification(
+      title = tweet.bossName,
+      body = body,
+      icon = image.orUndefined,
+      onClick = onClick,
+      tag = tweet.bossName,
+      closeOnClick = true
+    )
   }
 
   private def handleRaidBossesResponse(
