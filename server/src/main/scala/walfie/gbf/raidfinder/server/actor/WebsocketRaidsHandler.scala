@@ -8,17 +8,21 @@ import walfie.gbf.raidfinder.protocol
 import walfie.gbf.raidfinder.protocol.syntax._
 import walfie.gbf.raidfinder.protocol.{RaidBoss => _, _}
 import walfie.gbf.raidfinder.RaidFinder
-import walfie.gbf.raidfinder.server.syntax.ProtocolConverters.RaidBossDomainOps
+import walfie.gbf.raidfinder.server.BossNameTranslator
+import walfie.gbf.raidfinder.server.syntax.ProtocolConverters.{RaidBossDomainOps, RaidTweetDomainOps}
 
 class WebsocketRaidsHandler(
   out:               ActorRef,
   raidFinder:        RaidFinder,
+  translator:        BossNameTranslator,
   keepAliveInterval: Option[FiniteDuration]
 ) extends Actor {
   implicit val scheduler = Scheduler(context.system.dispatcher)
+  implicit val implicitTranslator: BossNameTranslator = translator
 
   var followed: Map[BossName, Cancelable] = Map.empty
   val newBossListener: Cancelable = raidFinder.newBossObservable.foreach { boss =>
+    // TODO: Update this to handle translations
     val bosses = Seq(boss.toProtocol)
     this push RaidBossesResponse(raidBosses = bosses)
   }
@@ -47,23 +51,16 @@ class WebsocketRaidsHandler(
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
 
     case r: FollowRequest =>
+      // TODO: Also follow translated boss
+
       val cancelables = r.bossNames
         .filterNot(followed.keys.toSet.contains)
         .map { bossName =>
-          bossName -> raidFinder.getRaidTweets(bossName).foreach { r: RaidTweet =>
-            // TODO: Add utils for converting domain objects to protobuf messages
-            val resp = RaidTweetResponse(
-              bossName = r.bossName,
-              raidId = r.raidId,
-              screenName = r.screenName,
-              tweetId = r.tweetId,
-              profileImage = r.profileImage,
-              text = r.text,
-              createdAt = r.createdAt
-            )
+          val cancelable = raidFinder
+            .getRaidTweets(bossName)
+            .foreach(raidTweet => this.push(raidTweet.toProtocol))
 
-            this push resp
-          }
+          bossName -> cancelable
         }
 
       followed = followed ++ cancelables
@@ -88,9 +85,10 @@ object WebsocketRaidsHandler {
   def props(
     out:               ActorRef,
     raidFinder:        RaidFinder,
+    translator:        BossNameTranslator,
     keepAliveInterval: Option[FiniteDuration]
   ): Props = Props {
-    new WebsocketRaidsHandler(out, raidFinder, keepAliveInterval)
+    new WebsocketRaidsHandler(out, raidFinder, translator, keepAliveInterval)
   }.withDeploy(Deploy.local)
 }
 

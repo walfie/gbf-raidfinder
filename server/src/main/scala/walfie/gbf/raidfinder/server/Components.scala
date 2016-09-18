@@ -17,6 +17,7 @@ import walfie.gbf.raidfinder.server.controller._
 
 class Components(
   raidFinder:                 RaidFinder,
+  translator:                 BossNameTranslator,
   port:                       Int,
   mode:                       Mode,
   websocketKeepAliveInterval: FiniteDuration
@@ -28,7 +29,7 @@ class Components(
   override lazy val httpFilters = List(gzipFilter)
 
   lazy val websocketController = new WebsocketController(
-    raidFinder, websocketKeepAliveInterval
+    raidFinder, translator, websocketKeepAliveInterval
   )(actorSystem, materializer)
 
   lazy val router = Router.from {

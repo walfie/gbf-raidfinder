@@ -46,11 +46,14 @@ object Application {
       // Purge old bosses and then update the cache
       val purgeMinDate = new Date(System.currentTimeMillis() - bossStorageConfig.ttl.toMillis)
       for {
-        bosses <- raidFinder.purgeOldBosses(
+        domainBosses <- raidFinder.purgeOldBosses(
           minDate = purgeMinDate,
           levelThreshold = bossStorageConfig.levelThreshold
         )
-        cacheObj = RaidBossesItem(raidBosses = bosses.values.map(_.toProtocol).toSeq)
+        protocolBosses = domainBosses.values.map { boss =>
+          boss.toProtocol(translator.translate(boss.name))
+        }
+        cacheObj = RaidBossesItem(raidBosses = protocolBosses.toSeq)
         _ <- BlockingIO.future(protobufStorage.set(bossStorageConfig.cacheKey, cacheObj))
       } yield ()
     }
@@ -71,7 +74,7 @@ object Application {
     val port = config.as[Int]("http.port")
     val mode = getMode(appConfig.as[String]("mode"))
     val keepAliveInterval = appConfig.as[FiniteDuration]("websocket.keepAliveInterval")
-    val components = new Components(raidFinder, port, mode, keepAliveInterval)
+    val components = new Components(raidFinder, translator, port, mode, keepAliveInterval)
     val server = components.server
 
     // Shutdown handling

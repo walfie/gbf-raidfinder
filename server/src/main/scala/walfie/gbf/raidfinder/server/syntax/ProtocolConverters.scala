@@ -2,14 +2,30 @@ package walfie.gbf.raidfinder.server.syntax
 
 import walfie.gbf.raidfinder.domain
 import walfie.gbf.raidfinder.protocol
+import walfie.gbf.raidfinder.server.BossNameTranslator
 import walfie.gbf.raidfinder.server.{ImageBasedBossNameTranslator => translator}
 
 /** Convenient converters between domain objects and protobuf objects */
 object ProtocolConverters {
+  implicit class RaidTweetDomainOps(val r: domain.RaidTweet) extends AnyVal {
+    def toProtocol(): protocol.RaidTweetResponse = protocol.RaidTweetResponse(
+      bossName = r.bossName,
+      raidId = r.raidId,
+      screenName = r.screenName,
+      tweetId = r.tweetId,
+      profileImage = r.profileImage,
+      text = r.text,
+      createdAt = r.createdAt
+    )
+  }
+
   implicit class RaidBossDomainOps(val rb: domain.RaidBoss) extends AnyVal {
-    def toProtocol(): protocol.RaidBoss = protocol.RaidBoss(
-      name = rb.name, level = rb.level, image = rb.image,
-      lastSeen = rb.lastSeen, language = rb.language.toProtocol
+    def toProtocol(implicit translator: BossNameTranslator): protocol.RaidBoss =
+      toProtocol(translatedName = translator.translate(rb.name))
+
+    def toProtocol(translatedName: Option[domain.BossName]): protocol.RaidBoss = protocol.RaidBoss(
+      name = rb.name, level = rb.level, image = rb.image, lastSeen = rb.lastSeen,
+      language = rb.language.toProtocol, translatedName = translatedName
     )
   }
 
