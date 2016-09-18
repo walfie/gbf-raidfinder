@@ -5,27 +5,39 @@ import com.pastebin.Pj9d8jt5.ImagePHash
 import java.awt.image.BufferedImage
 import java.net.URL
 import javax.imageio.ImageIO
+import monix.execution.Scheduler
+import monix.reactive._
+import monix.reactive.subjects.ConcurrentSubject
 import scala.concurrent.{ExecutionContext, Future}
 import walfie.gbf.raidfinder.domain._
 import walfie.gbf.raidfinder.util.BlockingIO
 
-// TODO: Add an Observable for new translation notifications?
 trait BossNameTranslator {
+  import BossNameTranslator.Translation
+
   def translate(bossName: BossName): Option[BossName]
   def update(latestBosses: Map[BossName, RaidBoss]): Future[Unit]
-  def getTranslations(): Map[BossName, BossName]
+  def observable(): Observable[Translation]
+}
+
+object BossNameTranslator {
+  case class Translation(from: BossName, to: BossName)
 }
 
 class ImageBasedBossNameTranslator(
   initialTranslationData: Seq[ImageBasedBossNameTranslator.TranslationData]
-)(implicit ec: ExecutionContext) extends BossNameTranslator {
+)(implicit scheduler: Scheduler) extends BossNameTranslator {
   import ImageBasedBossNameTranslator._
+  import BossNameTranslator.Translation
 
   private val pHash = new ImagePHash()
 
   private val translationDataAgent: Agent[Map[BossName, TranslationData]] = Agent {
     initialTranslationData.map(data => data.name -> data).toMap
   }
+
+  private val subject = ConcurrentSubject.publish[Translation]
+  val observable: Observable[Translation] = subject
 
   def getTranslationData(): Map[BossName, TranslationData] = translationDataAgent.get
 
@@ -36,8 +48,6 @@ class ImageBasedBossNameTranslator(
       findTranslation(data).map(data.name -> _)
     }.toMap
   }
-
-  def getTranslations(): Map[BossName, BossName] = translationsAgent.get
 
   def update(latestBosses: Map[BossName, RaidBoss]): Future[Unit] = {
     val futures: Iterable[Future[Unit]] = latestBosses.map {
@@ -56,6 +66,11 @@ class ImageBasedBossNameTranslator(
         Future.successful[Any](())
       } { translatedName =>
         translationsAgent.alter { translations: Map[BossName, BossName] =>
+          // Update the Observable with new translations
+          subject.onNext(Translation(translationData.name, translatedName))
+          subject.onNext(Translation(translatedName, translationData.name))
+
+          // Update the Agent's stored Map
           translations + (translationData.name -> translatedName) + (translatedName -> translationData.name)
         }
       }
@@ -92,6 +107,7 @@ class ImageBasedBossNameTranslator(
 
 object ImageBasedBossNameTranslator {
   case class TranslationData(name: BossName, level: Int, language: Language, hash: ImageHash)
+
   case class ImageHash(value: Long) extends AnyVal
 }
 

@@ -21,10 +21,16 @@ class WebsocketRaidsHandler(
   implicit val implicitTranslator: BossNameTranslator = translator
 
   var followed: Map[BossName, Cancelable] = Map.empty
-  val newBossListener: Cancelable = raidFinder.newBossObservable.foreach { boss =>
-    // TODO: Update this to handle translations
+  val newBossCancelable = raidFinder.newBossObservable.foreach { boss =>
     val bosses = Seq(boss.toProtocol)
     this push RaidBossesResponse(raidBosses = bosses)
+  }
+
+  val newTranslationCancelable = translator.observable.foreach { translation =>
+    raidFinder.getKnownBosses.get(translation.from).foreach { boss =>
+      val bosses = Seq(boss.toProtocol(Option(translation.to)))
+      this push RaidBossesResponse(raidBosses = bosses)
+    }
   }
 
   def receive: Receive = {
@@ -75,7 +81,8 @@ class WebsocketRaidsHandler(
   }
 
   override def postStop(): Unit = {
-    newBossListener.cancel()
+    newTranslationCancelable.cancel()
+    newBossCancelable.cancel()
     keepAliveCancelable.foreach(_.cancel())
     followed.values.foreach(_.cancel())
   }
