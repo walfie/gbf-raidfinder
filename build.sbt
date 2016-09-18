@@ -35,7 +35,7 @@ lazy val stream = (project in file("stream"))
     )
   )
 
-lazy val protocol = (crossProject.crossType(CrossType.Pure) in file("protocol"))
+lazy val protocol = (crossProject in file("protocol"))
   .settings(name := "gbf-raidfinder-protocol")
   .enablePlugins(ScalaJSPlugin)
   .settings(commonSettings: _*)
