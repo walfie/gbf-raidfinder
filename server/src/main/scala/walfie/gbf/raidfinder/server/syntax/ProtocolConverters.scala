@@ -15,7 +15,8 @@ object ProtocolConverters {
       tweetId = r.tweetId,
       profileImage = r.profileImage,
       text = r.text,
-      createdAt = r.createdAt
+      createdAt = r.createdAt,
+      language = r.language.toProtocol
     )
   }
 

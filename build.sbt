@@ -95,6 +95,8 @@ lazy val client = (project in file("client"))
   )
   .dependsOn(protocolJS, buildInfoJS)
 
+// TODO: Running `test` on the root project doesn't test `stream` project
+// TODO: `run` should depend on `client/fastOptJS`
 lazy val root = (project in file("."))
   .enablePlugins(JavaServerAppPackaging)
   .dependsOn(server, client)

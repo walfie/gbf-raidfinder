@@ -3,11 +3,12 @@ package walfie.gbf.raidfinder.client
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
-import walfie.gbf.raidfinder.client.ViewModel.ImageQuality
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.collection.mutable.Buffer
 import scala.scalajs.js
+import walfie.gbf.raidfinder.client.ViewModel.ImageQuality
+import walfie.gbf.raidfinder.protocol._
 
 import js.Dynamic.global
 
@@ -65,6 +66,14 @@ package object syntax {
   implicit class StringOps(val string: String) extends AnyVal {
     def addIf(condition: Boolean, s: String): String =
       if (condition) s"$string $s" else string
+  }
+
+  implicit class LanguageOps(val language: Language) extends AnyVal {
+    def shortName: Option[String] = language match {
+      case Language.JAPANESE => Some("JP")
+      case Language.ENGLISH => Some("EN")
+      case _ => None
+    }
   }
 }
 

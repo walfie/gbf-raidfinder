@@ -28,7 +28,8 @@ package domain {
     tweetId:      TweetId,
     profileImage: String,
     text:         String,
-    createdAt:    Date
+    createdAt:    Date,
+    language:     Language
   )
 
   case class RaidBoss(

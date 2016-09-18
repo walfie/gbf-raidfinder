@@ -18,7 +18,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       raidId = "ABCD1234",
       profileImage = "http://example.com/profile-image_normal.png",
       text = "INSERT CUSTOM MESSAGE HERE",
-      createdAt = now
+      createdAt = now,
+      language = Language.Japanese
     )
 
     val expectedRaidBoss = RaidBoss(
@@ -71,7 +72,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
       raidId = "ABCD1234",
       profileImage = "http://example.com/profile-image_normal.png",
       text = "INSERT CUSTOM MESSAGE HERE",
-      createdAt = now
+      createdAt = now,
+      language = Language.English
     )
 
     val expectedRaidBoss = RaidBoss(

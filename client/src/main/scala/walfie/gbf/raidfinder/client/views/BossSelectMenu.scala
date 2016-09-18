@@ -44,9 +44,14 @@ object BossSelectMenu {
     <ul class="mdl-list" style="padding: 0; margin: 0;">
       {
         client.state.allBosses.map { bossColumn =>
-          val isFollowing = client.state.followedBossNames.bind
           val boss = bossColumn.raidBoss.bind
-          bossListItem(boss, isFollowing(boss.name), imageQuality).bind
+          val isFollowing = client.state.followedBossNames.bind(boss.name)
+
+          // Only show Japanese bosses unless there is no translation
+          // TODO: This is kinda hacky, maybe think of a better way
+          if (boss.language == Language.JAPANESE || boss.translatedName.isEmpty || isFollowing)
+            bossListItem(boss, isFollowing, imageQuality).bind
+          else <li></li>
         }
       }
     </ul>

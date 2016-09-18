@@ -9,7 +9,7 @@ import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client.RaidFinderClient
 import walfie.gbf.raidfinder.client.RaidFinderClient.RaidBossColumn
-import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps, StringOps}
+import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps, LanguageOps, StringOps}
 import walfie.gbf.raidfinder.client.util.HtmlHelpers
 import walfie.gbf.raidfinder.client.ViewModel
 import walfie.gbf.raidfinder.client.ViewModel.{ImageQuality, TimeFormat}
@@ -100,6 +100,12 @@ object RaidTweets {
         <div class="gbfrf-tweet__content">
           <div>
             <span class="gbfrf-tweet__username">{ raidTweet.screenName }</span>
+            {
+              if (raidTweet.language != Language.JAPANESE) {
+                val lang = raidTweet.language.shortName.getOrElse("")
+                Constants(<span class="gbfrf-tweet__language gbfrf-parentheses">{ lang }</span>)
+              } else Constants()
+            }
             <span class="gbfrf-tweet__timestamp">
               {
                 val moment = Moment(raidTweet.createdAt.getTime)

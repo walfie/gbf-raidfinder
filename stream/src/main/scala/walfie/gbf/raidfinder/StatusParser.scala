@@ -42,7 +42,8 @@ object StatusParser {
         raidId = raidId.trim,
         profileImage = status.getUser.getProfileImageURLHttps,
         text = extraText.trim,
-        createdAt = status.getCreatedAt
+        createdAt = status.getCreatedAt,
+        language = language
       )
 
       val defaultLevel = 0
