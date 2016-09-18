@@ -4,7 +4,6 @@ import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
-import walfie.gbf.raidfinder.protocol.Language
 
 object ViewModel {
   trait Labeled {
@@ -52,19 +51,6 @@ object ViewModel {
       all.map(format => format.label -> format).toMap.get _
   }
 
-  sealed abstract class PreferredLanguage(val label: String, val protocol: Language) extends Labeled {
-    def id: String = s"gbfrf-settings__preferred-language--$label"
-  }
-  object PreferredLanguage {
-    case object EN extends PreferredLanguage("EN", Language.ENGLISH)
-    case object JP extends PreferredLanguage("JP", Language.JAPANESE)
-
-    val Default = EN
-    val all = List(EN, JP)
-    val fromString: String => Option[PreferredLanguage] =
-      all.map(l => l.label -> l).toMap.get _
-  }
-
   // TODO: Maybe put this somewhere else
   private val StateStorageKey = "settings"
   private val storage = dom.window.localStorage
@@ -82,18 +68,16 @@ object ViewModel {
   }
 
   case class State(
-    currentTab:        Var[DialogTab]         = Var(DialogTab.Follow),
-    imageQuality:      Var[ImageQuality]      = Var(ImageQuality.Default),
-    timeFormat:        Var[TimeFormat]        = Var(TimeFormat.Default),
-    preferredLanguage: Var[PreferredLanguage] = Var(PreferredLanguage.Default),
-    showUserImages:    Var[Boolean]           = Var(false),
-    nightMode:         Var[Boolean]           = Var(false),
-    columnWidthScale:  Var[Double]            = Var(1.0)
+    currentTab:       Var[DialogTab]    = Var(DialogTab.Follow),
+    imageQuality:     Var[ImageQuality] = Var(ImageQuality.Default),
+    timeFormat:       Var[TimeFormat]   = Var(TimeFormat.Default),
+    showUserImages:   Var[Boolean]      = Var(false),
+    nightMode:        Var[Boolean]      = Var(false),
+    columnWidthScale: Var[Double]       = Var(1.0)
   ) { state =>
     def toJsObject: JsState = new JsState {
       val currentTab: js.UndefOr[String] = state.currentTab.get.label
       val imageQuality: js.UndefOr[String] = state.imageQuality.get.label
-      val preferredLanguage: js.UndefOr[String] = state.preferredLanguage.get.label
       val timeFormat: js.UndefOr[String] = state.timeFormat.get.label
       val showUserImages: js.UndefOr[Boolean] = state.showUserImages.get
       val nightMode: js.UndefOr[Boolean] = state.nightMode.get
@@ -106,7 +90,6 @@ object ViewModel {
       currentTab = Var(fromField(jsState.currentTab, DialogTab.fromString, DialogTab.Follow)),
       imageQuality = Var(fromField(jsState.imageQuality, ImageQuality.fromString, ImageQuality.Default)),
       timeFormat = Var(fromField(jsState.timeFormat, TimeFormat.fromString, TimeFormat.Default)),
-      preferredLanguage = Var(fromField(jsState.preferredLanguage, PreferredLanguage.fromString, PreferredLanguage.Default)),
       showUserImages = Var(jsState.showUserImages.getOrElse(false)),
       nightMode = Var(jsState.nightMode.getOrElse(false)),
       columnWidthScale = Var(jsState.columnWidthScale.getOrElse(1.0))
@@ -122,7 +105,6 @@ object ViewModel {
     def currentTab: js.UndefOr[String]
     def imageQuality: js.UndefOr[String]
     def timeFormat: js.UndefOr[String]
-    def preferredLanguage: js.UndefOr[String]
     def showUserImages: js.UndefOr[Boolean]
     def nightMode: js.UndefOr[Boolean]
     def columnWidthScale: js.UndefOr[Double]

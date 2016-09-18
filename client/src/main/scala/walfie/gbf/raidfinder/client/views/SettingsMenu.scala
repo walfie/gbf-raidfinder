@@ -36,11 +36,6 @@ object SettingsMenu {
             }.bind
           }
           {
-            settingsListItem("Preferred language") {
-              radioSelector(PreferredLanguage.all, viewState.preferredLanguage, onChange)
-            }.bind
-          }
-          {
             settingsListItem("Column width") {
               slider(
                 id = "gbfrf-setting__column-width",

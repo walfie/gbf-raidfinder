@@ -3,12 +3,11 @@ package walfie.gbf.raidfinder.client
 import com.thoughtworks.binding
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
+import walfie.gbf.raidfinder.client.ViewModel.ImageQuality
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.collection.mutable.Buffer
 import scala.scalajs.js
-import walfie.gbf.raidfinder.client.ViewModel.ImageQuality
-import walfie.gbf.raidfinder.protocol._
 
 import js.Dynamic.global
 
@@ -66,20 +65,6 @@ package object syntax {
   implicit class StringOps(val string: String) extends AnyVal {
     def addIf(condition: Boolean, s: String): String =
       if (condition) s"$string $s" else string
-  }
-
-  implicit class RaidBossOps(val boss: RaidBoss) extends AnyVal {
-    def getName(preferredLanguage: Language): String = {
-      if (boss.language == preferredLanguage) boss.name
-      else boss.translatedName.getOrElse(boss.name)
-    }
-
-    // This is basically the same as the other one but reverse
-    // TODO: DRY
-    def getOtherName(preferredLanguage: Language): String = {
-      if (boss.language != preferredLanguage) boss.name
-      else boss.translatedName.getOrElse(boss.name)
-    }
   }
 }
 
