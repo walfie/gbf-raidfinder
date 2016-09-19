@@ -83,6 +83,11 @@ html, body, .gbfrf-container {
   vertical-align: middle;
 }
 
+.gbfrf-column__header-translatedName {
+  font-size: 0.7em;
+  padding-top: 0.1em;
+}
+
 .gbfrf-column__notification-banner {
   text-align: center;
   background-color: #eaeaea;

@@ -123,8 +123,8 @@ object RaidTweets {
             </span>
           </div>
           {
-            if (hasText) List(<div class="gbfrf-tweet__text mdl-shadow--2dp">{ raidTweet.text }</div>)
-            else List.empty
+            if (hasText) Constants(<div class="gbfrf-tweet__text mdl-shadow--2dp">{ raidTweet.text }</div>)
+            else Constants()
           }
         </div>
       </div>
@@ -147,7 +147,17 @@ object RaidTweets {
 
     val headerRow =
       <div class="mdl-layout__header-row gbfrf-column__header-row">
-        <div class="mdl-layout-title gbfrf-column__header">{ bossName.bind }</div>
+        <div class="mdl-layout-title gbfrf-column__header">
+          <div class="gbfrf-column__header-name">{ bossName.bind }</div>
+          {
+            raidBoss.bind.translatedName match {
+              case Some(translatedName) => Constants(
+                <div class="gbfrf-column__header-translatedName">{ translatedName }</div>
+              )
+              case None => Constants()
+            }
+          }
+        </div>
         <div class="mdl-layout-spacer"></div>
         <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(bossName.bind) }>
           <i class="material-icons">more_vert</i>

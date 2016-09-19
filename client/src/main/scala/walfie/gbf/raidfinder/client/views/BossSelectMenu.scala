@@ -72,10 +72,10 @@ object BossSelectMenu {
           <span>{ boss.name }</span>
           {
             boss.translatedName match {
-              case Some(translatedName) => List(
+              case Some(translatedName) => Constants(
                 <span class="gbfrf-follow__boss-box-subtitle mdl-list__item-sub-title">{ translatedName }</span>
               )
-              case None => List.empty
+              case None => Constants()
             }
           }
         </span>

@@ -159,6 +159,7 @@ class WebSocketRaidFinderClient(
     allBossesMap.values.foreach { column =>
       val tweets = column.raidTweets.get
       if (tweets.length > maxColumnSize) {
+        // TODO: Change this to use `remove` to avoid re-rendering the whole column
         tweets := tweets.take(maxColumnSize)
       }
     }
