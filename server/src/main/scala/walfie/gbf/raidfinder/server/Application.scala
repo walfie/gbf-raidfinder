@@ -36,7 +36,8 @@ object Application {
     )
 
     val translator = new ImageBasedBossNameTranslator(
-      initialTranslationData = getCachedTranslationData(protobufStorage, translationsConfig.cacheKey)
+      initialTranslationData = getCachedTranslationData(protobufStorage, translationsConfig.cacheKey),
+      manualOverrides = translationsConfig.overrides
     )
 
     // Periodically flush bosses to cache
@@ -138,6 +139,7 @@ case class BossStorageConfig(
 
 case class TranslationsConfig(
   cacheKey:        String,
-  refreshInterval: FiniteDuration
+  refreshInterval: FiniteDuration,
+  overrides:       Map[BossName, BossName]
 )
 

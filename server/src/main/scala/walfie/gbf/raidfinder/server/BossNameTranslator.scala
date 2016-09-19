@@ -24,11 +24,21 @@ object BossNameTranslator {
   case class Translation(from: BossName, to: BossName)
 }
 
+/**
+  * @param initialTranslationData Initial image hashes to use
+  * {@param manualOverrides
+  *  Sometimes Granblue's boss images are just wrong between the English and Japanese
+  *  versions (e.g., Lvl 100 Medusa). Use this for manual overrides.
+  * }
+  */
 class ImageBasedBossNameTranslator(
-  initialTranslationData: Seq[ImageBasedBossNameTranslator.TranslationData]
+  initialTranslationData: Seq[ImageBasedBossNameTranslator.TranslationData],
+  manualOverrides:        Map[BossName, BossName]
 )(implicit scheduler: Scheduler) extends BossNameTranslator {
   import ImageBasedBossNameTranslator._
   import BossNameTranslator.Translation
+
+  private val overrides = manualOverrides ++ manualOverrides.map(_.swap)
 
   private val pHash = new ImagePHash()
 
@@ -78,7 +88,7 @@ class ImageBasedBossNameTranslator(
   }
 
   def translate(bossName: BossName): Option[BossName] =
-    translationsAgent.get.get(bossName)
+    overrides.get(bossName) orElse translationsAgent.get.get(bossName)
 
   // IMPORTANT: Only call this on a boss that has an image, otherwise it will fail
   private def getTranslationData(boss: RaidBoss): Future[TranslationData] = BlockingIO.future {
