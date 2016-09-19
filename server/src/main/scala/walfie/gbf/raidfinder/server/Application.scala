@@ -21,7 +21,7 @@ object Application {
 
     val config = ConfigFactory.load()
     val appConfig = config.getConfig("application")
-    val bossStorageConfig = appConfig.as[BossStorageConfig]("cache.bosses")
+    val bossStorageConfig = appConfig.as[BossStorageConfig]("bosses")
     val translationsConfig = appConfig.as[TranslationsConfig]("translations")
 
     // Get initial data from cache
