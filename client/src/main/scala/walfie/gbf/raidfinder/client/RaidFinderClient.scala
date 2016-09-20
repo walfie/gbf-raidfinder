@@ -50,11 +50,11 @@ class WebSocketRaidFinderClient(
   private val SubscribedBossesStorageKey = "subscribedBosses"
   val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
 
+  resetBossList()
   fetchLocalStorageCsv(FollowedBossesStorageKey).foreach(follow)
   fetchLocalStorageCsv(SubscribedBossesStorageKey).foreach(subscribe)
 
   override def onWebSocketOpen(): Unit = {
-    resetBossList()
     isConnected := true
   }
 
@@ -191,15 +191,27 @@ class WebSocketRaidFinderClient(
 
   private def addRaidTweetToColumn(tweet: RaidTweetResponse, column: RaidBossColumn): Unit = {
     val columnTweets = column.raidTweets.get
-    val shouldInsert = columnTweets.headOption.forall { firstTweetInColumn =>
+
+    val shouldInsertAtBeginning = columnTweets.headOption.forall { firstTweetInColumn =>
       tweet.createdAt.after(firstTweetInColumn.createdAt)
     }
-    if (shouldInsert) tweet +=: columnTweets
 
-    // Show desktop notification, if subscribed
-    if (column.isSubscribed.get) {
-      val image = column.raidBoss.get.image.map(_ + ":thumb")
-      desktopNotification(tweet, image)
+    if (shouldInsertAtBeginning) {
+      tweet +=: columnTweets
+
+      // Show desktop notification, if subscribed
+      if (column.isSubscribed.get) {
+        val image = column.raidBoss.get.image.map(_ + ":thumb")
+        desktopNotification(tweet, image)
+      }
+    } else if (!columnTweets.exists(_.tweetId == tweet.tweetId)) {
+      val insertIndex = columnTweets.indexWhere { existingTweet =>
+        existingTweet.createdAt after tweet.createdAt
+      }
+
+      if (insertIndex >= 0) {
+        columnTweets.insert(insertIndex, tweet)
+      } else columnTweets += tweet
     }
   }
 

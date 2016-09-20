@@ -78,7 +78,7 @@ class WebsocketRaidsHandler(
 
   def follow(bossNames: Seq[BossName]): Unit = {
     // Filter out bosses we're already following
-    val newBosses = bossNames.filterNot(followed.keys.toSet.contains)
+    val newBosses = bossNames.filterNot(followed.keys.toSet)
 
     val cancelables = newBosses.map { bossName =>
       val cancelable = raidFinder

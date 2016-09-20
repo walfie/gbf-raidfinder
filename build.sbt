@@ -96,7 +96,6 @@ lazy val client = (project in file("client"))
   .dependsOn(protocolJS, buildInfoJS)
 
 // TODO: Running `test` on the root project doesn't test `stream` project
-// TODO: `run` should depend on `client/fastOptJS`
 lazy val root = (project in file("."))
   .enablePlugins(JavaServerAppPackaging)
   .dependsOn(server, client)
@@ -107,6 +106,7 @@ lazy val root = (project in file("."))
     releaseProcess -= ReleaseTransformations.publishArtifacts,
     mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
 
+    run in Compile <<= (run in Compile) dependsOn (fastOptJS in (client, Compile)),
     stage <<= stage dependsOn (fullOptJS in (client, Compile)),
     herokuAppName in Compile := "gbf-raidfinder",
     herokuSkipSubProjects in Compile := false,
