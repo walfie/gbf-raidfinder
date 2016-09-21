@@ -60,7 +60,7 @@ lazy val server = (project in file("server"))
       "redis.clients" % "jedis" % "2.8.1"
     )
   )
-  .dependsOn(stream, protocolJVM)
+  .dependsOn(stream, protocolJVM, buildInfoJVM)
 
 val jsPath = settingKey[File]("Output directory for scala.js compiled files")
 lazy val client = (project in file("client"))

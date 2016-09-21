@@ -3,6 +3,7 @@ package walfie.gbf.raidfinder.server.actor
 import akka.actor._
 import monix.execution.{Cancelable, Scheduler}
 import scala.concurrent.duration.FiniteDuration
+import walfie.gbf.raidfinder.BuildInfo
 import walfie.gbf.raidfinder.domain._
 import walfie.gbf.raidfinder.protocol
 import walfie.gbf.raidfinder.protocol.syntax._
@@ -19,6 +20,11 @@ class WebsocketRaidsHandler(
 ) extends Actor {
   implicit val scheduler = Scheduler(context.system.dispatcher)
   implicit val implicitTranslator: BossNameTranslator = translator
+
+  // On connect, send current version
+  override def preStart(): Unit = {
+    this push VersionResponse(serverVersion = VersionString(BuildInfo.version))
+  }
 
   var followed: Map[BossName, Cancelable] = Map.empty
   val newBossCancelable = raidFinder.newBossObservable.foreach { boss =>

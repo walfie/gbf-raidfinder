@@ -16,10 +16,8 @@ object MessageFlowTransformerUtil {
   // Throwing a WebSocketCloseException doesn't seem to actually propagate the
   // close reason to the client, despite what the ScalaDoc page says.
   // https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.http.websocket.WebSocketCloseException
-  private val inputError = ErrorResponse(message = "Invalid input")
   private def closeWebsocket(binary: Boolean): WebSocketCloseException = {
-    val reason = if (binary) new String(inputError.toByteArray) else JsonFormat.toJsonString(inputError)
-    val closeMessage = CloseMessage(Some(CloseCodes.InconsistentData), reason)
+    val closeMessage = CloseMessage(Some(CloseCodes.InconsistentData), "Invalid input")
     WebSocketCloseException(closeMessage)
   }
 

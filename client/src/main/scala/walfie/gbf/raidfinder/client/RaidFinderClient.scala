@@ -6,6 +6,7 @@ import java.util.Date
 import org.scalajs.dom
 import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
+import walfie.gbf.raidfinder.BuildInfo
 import walfie.gbf.raidfinder.client.syntax.BufferOps
 import walfie.gbf.raidfinder.client.util.HtmlHelpers
 import walfie.gbf.raidfinder.client.util.time.{Clock, Duration}
@@ -183,8 +184,24 @@ class WebSocketRaidFinderClient(
         } yield addRaidTweetToColumn(tweet, column)
       }
 
-    case r: ErrorResponse =>
-      dom.window.console.error(r.message) // TODO: Better error handling
+    case r: VersionResponse =>
+      val isOutdatedOpt = for {
+        clientVersion <- VersionString(BuildInfo.version).parse
+        serverVersion <- r.serverVersion.parse
+      } yield {
+        serverVersion > clientVersion
+      }
+
+      if (isOutdatedOpt.getOrElse(false)) {
+        HtmlHelpers.desktopNotification(
+          title = s"Version ${r.serverVersion.value} is out!",
+          body = s"You are currently on version ${BuildInfo.version}\n\n(Click to reload page)",
+          icon = None.orUndefined,
+          tag = "update",
+          onClick = (e: dom.Event) => dom.window.location.reload(),
+          closeOnClick = true
+        )
+      }
 
     case r: KeepAliveResponse => // Ignore
   }
