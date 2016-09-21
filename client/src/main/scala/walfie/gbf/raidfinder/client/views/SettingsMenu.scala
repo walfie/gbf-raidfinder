@@ -68,7 +68,7 @@ object SettingsMenu {
     // TODO: Don't hardcode this
     <div class="gbfrf-settings__footer">
       <span class="gbfrf-settings__version">{ "v" + BuildInfo.version }</span>
-      <span class="gbfrf-settings__sha" title={ gitHash }>{ gitShortHash }</span>
+      <span class="gbfrf-settings__sha gbfrf-parentheses" title={ gitHash }>{ gitShortHash }</span>
       <br/>
       <a href="https://github.com/walfie/gbf-raidfinder" target="_blank">
         github.com/walfie/gbf-raidfinder

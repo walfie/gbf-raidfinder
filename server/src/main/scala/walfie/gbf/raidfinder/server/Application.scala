@@ -10,6 +10,7 @@ import scala.concurrent.duration._
 import walfie.gbf.raidfinder.domain
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.RaidFinder
+import walfie.gbf.raidfinder.server.{ImageBasedBossNameTranslator => translator}
 import walfie.gbf.raidfinder.server.persistence._
 import walfie.gbf.raidfinder.server.syntax.ProtocolConverters._
 import walfie.gbf.raidfinder.util.BlockingIO
@@ -20,33 +21,53 @@ object Application {
 
     val config = ConfigFactory.load()
     val appConfig = config.getConfig("application")
+    val bossStorageConfig = appConfig.as[BossStorageConfig]("bosses")
+    val translationsConfig = appConfig.as[TranslationsConfig]("translations")
 
-    // Get initial bosses from cache
+    // Get initial data from cache
     val protobufStorage = {
       val url = appConfig.as[Option[String]]("cache.redisUrl").filter(_.nonEmpty)
       getProtobufStorage(url)
     }
 
-    val bossStorageConfig = appConfig.as[BossStorageConfig]("cache.bosses")
-    val cachedBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
-
     // Start RaidFinder
-    val raidFinder = RaidFinder.withBackfill(initialBosses = cachedBosses)
+    val raidFinder = RaidFinder.withBackfill(
+      initialBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
+    )
+
+    val translator = new ImageBasedBossNameTranslator(
+      initialTranslationData = getCachedTranslationData(protobufStorage, translationsConfig.cacheKey),
+      manualOverrides = translationsConfig.overrides
+    )
 
     // Periodically flush bosses to cache
     val bossFlushCancelable = scheduler.scheduleWithFixedDelay(
-      bossStorageConfig.flushInterval,
-      bossStorageConfig.flushInterval
+      bossStorageConfig.flushInterval, bossStorageConfig.flushInterval
     ) {
       // Purge old bosses and then update the cache
       val purgeMinDate = new Date(System.currentTimeMillis() - bossStorageConfig.ttl.toMillis)
       for {
-        bosses <- raidFinder.purgeOldBosses(
+        domainBosses <- raidFinder.purgeOldBosses(
           minDate = purgeMinDate,
           levelThreshold = bossStorageConfig.levelThreshold
         )
-        cacheObj = RaidBossesResponse(raidBosses = bosses.values.map(_.toProtocol).toSeq)
+        protocolBosses = domainBosses.values.map { boss =>
+          boss.toProtocol(translator.translate(boss.name))
+        }
+        cacheObj = RaidBossesItem(raidBosses = protocolBosses.toSeq)
         _ <- BlockingIO.future(protobufStorage.set(bossStorageConfig.cacheKey, cacheObj))
+      } yield ()
+    }
+
+    // Periodically update new translations and save translation data to cache
+    val translationRefreshCancelable = scheduler.scheduleWithFixedDelay(
+      Duration.Zero, translationsConfig.refreshInterval
+    ) {
+      for {
+        _ <- translator.update(raidFinder.getKnownBosses())
+        bossData = translator.getTranslationData.values.map(_.toProtocol).toSeq
+        cacheObj = TranslationDataItem(data = bossData)
+        _ <- BlockingIO.future(protobufStorage.set(translationsConfig.cacheKey, cacheObj))
       } yield ()
     }
 
@@ -54,13 +75,14 @@ object Application {
     val port = config.as[Int]("http.port")
     val mode = getMode(appConfig.as[String]("mode"))
     val keepAliveInterval = appConfig.as[FiniteDuration]("websocket.keepAliveInterval")
-    val components = new Components(raidFinder, port, mode, keepAliveInterval)
+    val components = new Components(raidFinder, translator, port, mode, keepAliveInterval)
     val server = components.server
 
     // Shutdown handling
     val shutdown = () => {
       server.stop()
       bossFlushCancelable.cancel()
+      translationRefreshCancelable.cancel()
       protobufStorage.close()
     }
 
@@ -83,8 +105,14 @@ object Application {
 
   def getCachedBosses(storage: ProtobufStorage, key: String): Seq[domain.RaidBoss] = {
     storage
-      .get[RaidBossesResponse](key)
+      .get[RaidBossesItem](key)
       .fold(Seq.empty[domain.RaidBoss])(_.raidBosses.map(_.toDomain))
+  }
+
+  def getCachedTranslationData(storage: ProtobufStorage, key: String): Seq[translator.TranslationData] = {
+    storage
+      .get[TranslationDataItem](key)
+      .fold(Seq.empty[translator.TranslationData])(_.data.map(_.toDomain))
   }
 
   def handleShutdown(mode: Mode.Mode, shutdown: () => Unit) = {
@@ -107,5 +135,11 @@ case class BossStorageConfig(
   ttl:            FiniteDuration,
   flushInterval:  FiniteDuration,
   levelThreshold: Int
+)
+
+case class TranslationsConfig(
+  cacheKey:        String,
+  refreshInterval: FiniteDuration,
+  overrides:       Map[BossName, BossName]
 )
 

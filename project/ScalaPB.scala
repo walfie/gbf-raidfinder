@@ -15,12 +15,12 @@ object ScalaPB {
     "com.trueaccord.scalapb" %%% "scalapb-runtime" % Versions.ScalaPB % PB.protobufConfig
   )
 
-  val protobufSourceDirectory = file("protocol") / "src" / "main" / "protobuf"
+  val protobufSharedDirectory = file("protocol") / "shared" / "src" / "main" / "protobuf"
   private lazy val protobufConfigSettings = Seq(
     PB.flatPackage := true,
     PB.runProtoc := (args => Protoc.runProtoc("-v300" +: args.toArray)),
-    sourceDirectories += protobufSourceDirectory,
-    PB.includePaths += protobufSourceDirectory
+    sourceDirectories += protobufSharedDirectory,
+    PB.includePaths += protobufSharedDirectory
   )
 }
 

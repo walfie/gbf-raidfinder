@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package walfie.gbf.raidfinder.protocol;
+
+import "scalapb/scalapb.proto";
+import "walfie/gbf/raidfinder/protocol/domain.proto";
+
+option (scalapb.options) = {
+  single_file: true
+};
+
+message RaidBossesItem {
+  repeated RaidBoss raidBosses = 1;
+};
+
+message TranslationDataItem {
+  repeated TranslationData data = 1;
+};
+

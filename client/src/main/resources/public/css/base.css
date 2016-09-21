@@ -83,6 +83,11 @@ html, body, .gbfrf-container {
   vertical-align: middle;
 }
 
+.gbfrf-column__header-translatedName {
+  font-size: 0.7em;
+  padding-top: 0.1em;
+}
+
 .gbfrf-column__notification-banner {
   text-align: center;
   background-color: #eaeaea;
@@ -119,6 +124,13 @@ html, body, .gbfrf-container {
 .gbfrf-tweet__raid-id {
   font-weight: bold;
 }
+
+.gbfrf-tweet__language {
+  font-size: 0.6em;
+}
+
+.gbfrf-parentheses:not(:empty):before{ content:"(" }
+.gbfrf-parentheses:not(:empty):after{ content:")" }
 
 .gbfrf-tweet__avatar {
   height: 24px;
@@ -223,6 +235,10 @@ html, body, .gbfrf-container {
   border-bottom: none;
 }
 
+.gbfrf-follow__boss-box-subtitle {
+  color: inherit !important;
+}
+
 .gbfrf-follow__boss-box:hover {
   cursor: pointer;
 }
@@ -249,9 +265,6 @@ html, body, .gbfrf-container {
 .gbfrf-settings__item {
   border-bottom: 1px solid gray;
 }
-
-.gbfrf-settings__sha:not(:empty):before{ content:"(" }
-.gbfrf-settings__sha:not(:empty):after{ content:")" }
 
 .gbfrf-settings__radio-buttons {
   display: flex;

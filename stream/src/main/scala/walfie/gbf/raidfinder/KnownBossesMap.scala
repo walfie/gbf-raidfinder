@@ -4,11 +4,13 @@ import akka.agent.Agent
 import java.util.Date
 import monix.execution.{Ack, Cancelable, Scheduler}
 import monix.reactive._
+import monix.reactive.subjects.ConcurrentSubject
 import scala.concurrent.{ExecutionContext, Future}
 import walfie.gbf.raidfinder.domain._
 
 trait KnownBossesMap {
   def get(): Map[BossName, RaidBoss]
+  def newBossObservable(): Observable[RaidBoss]
 
   /**
     * @param minDate Remove bosses that haven't been seen since this date
@@ -34,16 +36,23 @@ object KnownBossesObserver {
   */
 class KnownBossesObserver(
   initialBosses: Seq[RaidBoss]
-)(implicit ec: ExecutionContext) extends Observer[RaidInfo] with KnownBossesMap {
+)(implicit scheduler: Scheduler) extends Observer[RaidInfo] with KnownBossesMap {
   private val agent = Agent[Map[BossName, RaidBoss]](
     initialBosses.map(boss => boss.name -> boss).toMap
   )
+
+  // TODO: Write test for this
+  private val subject = ConcurrentSubject.publish[RaidBoss]
+  val newBossObservable: Observable[RaidBoss] = subject
 
   def onComplete(): Unit = ()
   def onError(e: Throwable): Unit = ()
   def onNext(elem: RaidInfo): Future[Ack] = {
     val name = elem.tweet.bossName
     val raidBoss = elem.boss
+    if (!agent.get.isDefinedAt(name)) {
+      subject.onNext(raidBoss)
+    }
     agent.alter(_.updated(name, raidBoss)).flatMap(_ => Ack.Continue)
   }
 

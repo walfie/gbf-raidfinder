@@ -44,10 +44,14 @@ object BossSelectMenu {
     <ul class="mdl-list" style="padding: 0; margin: 0;">
       {
         client.state.allBosses.map { bossColumn =>
-          val isFollowing = client.state.followedBossNames.bind
           val boss = bossColumn.raidBoss.bind
-          val smallImage = boss.image
-          bossListItem(boss.name, smallImage, isFollowing(boss.name), imageQuality).bind
+          val isFollowing = client.state.followedBossNames.bind(boss.name)
+
+          // Only show Japanese bosses unless there is no translation
+          // TODO: This is kinda hacky, maybe think of a better way
+          if (boss.language == Language.JAPANESE || boss.translatedName.isEmpty || isFollowing)
+            bossListItem(boss, isFollowing, imageQuality).bind
+          else <li></li>
         }
       }
     </ul>
@@ -55,16 +59,26 @@ object BossSelectMenu {
 
   @binding.dom
   def bossListItem(
-    bossName: String, image: Option[String], isFollowing: Boolean, imageQuality: Binding[ImageQuality]
+    boss: RaidBoss, isFollowing: Boolean, imageQuality: Binding[ImageQuality]
   ): Binding[HTMLLIElement] = {
     val elem =
       <li class={
         "gbfrf-js-bossSelect gbfrf-follow__boss-box mdl-list__item".addIf(
           imageQuality.bind != ImageQuality.Off,
           "gbfrf-follow__boss-box--with-image mdl-shadow--2dp"
-        )
-      } data:data-bossName={ bossName }>
-        <span class="mdl-list__item-primary-content">{ bossName }</span>
+        ).addIf(boss.translatedName.nonEmpty, "mdl-list__item--two-line")
+      } data:data-bossName={ boss.name }>
+        <span class="mdl-list__item-primary-content">
+          <span>{ boss.name }</span>
+          {
+            boss.translatedName match {
+              case Some(translatedName) => Constants(
+                <span class="gbfrf-follow__boss-box-subtitle mdl-list__item-sub-title">{ translatedName }</span>
+              )
+              case None => Constants()
+            }
+          }
+        </span>
         <div class="mdl-layout-spacer"></div>
         {
           if (isFollowing) List(<div class="mdl-badge mdl-badge--overlap" data:data-badge="★"></div>)
@@ -72,7 +86,7 @@ object BossSelectMenu {
         }
       </li>
 
-    elem.backgroundImageQuality(image, 0.25, imageQuality.bind)
+    elem.backgroundImageQuality(boss.image, 0.25, imageQuality.bind)
   }
 }
 

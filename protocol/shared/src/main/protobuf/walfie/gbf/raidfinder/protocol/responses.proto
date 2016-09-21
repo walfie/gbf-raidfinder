@@ -13,7 +13,7 @@ option (scalapb.options) = {
 
 message ResponseMessage {
   oneof data {
-    ErrorResponse errorMessage = 1;
+    VersionResponse versionMessage = 1;
     FollowStatusResponse followStatusMessage = 2;
     RaidTweetResponse raidTweetMessage = 3;
     RaidBossesResponse raidBossesMessage = 4;
@@ -21,10 +21,10 @@ message ResponseMessage {
   };
 };
 
-message ErrorResponse {
+message VersionResponse {
   option (scalapb.message).extends = "Response";
 
-  string message = 1;
+  string serverVersion = 1 [(scalapb.field).type = "VersionString"];
 };
 
 message FollowStatusResponse {
@@ -43,6 +43,7 @@ message RaidTweetResponse {
   string profileImage = 5;
   string text = 6;
   int64 createdAt = 7 [(scalapb.field).type = "java.util.Date"];
+  Language language = 8;
 };
 
 message RaidBossesResponse {

@@ -6,6 +6,7 @@ import java.util.Date
 import org.scalajs.dom
 import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
+import walfie.gbf.raidfinder.BuildInfo
 import walfie.gbf.raidfinder.client.syntax.BufferOps
 import walfie.gbf.raidfinder.client.util.HtmlHelpers
 import walfie.gbf.raidfinder.client.util.time.{Clock, Duration}
@@ -50,11 +51,11 @@ class WebSocketRaidFinderClient(
   private val SubscribedBossesStorageKey = "subscribedBosses"
   val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
 
+  resetBossList()
   fetchLocalStorageCsv(FollowedBossesStorageKey).foreach(follow)
   fetchLocalStorageCsv(SubscribedBossesStorageKey).foreach(subscribe)
 
   override def onWebSocketOpen(): Unit = {
-    resetBossList()
     isConnected := true
   }
 
@@ -100,14 +101,21 @@ class WebSocketRaidFinderClient(
     updateLocalStorageFollowed()
   }
 
-  def unfollow(bossName: BossName): Unit = columnIndex(bossName).foreach { index =>
-    websocket.send(UnfollowRequest(bossNames = List(bossName)))
+  def unfollow(bossName: BossName): Unit = {
+    columnIndex(bossName).foreach { index =>
+      allBossesMap.get(bossName).foreach { column =>
+        // Only unfollow in the backend if we're not explicitly following
+        // both the English+Japanese versions of the same boss
+        if (column.raidBoss.get.translatedName.flatMap(columnIndex).isEmpty) {
+          websocket.send(UnfollowRequest(bossNames = List(bossName)))
+        }
+        column.clear()
+      }
 
-    val followedBosses = state.followedBosses.get
-
-    followedBosses.remove(index)
-    allBossesMap.get(bossName).foreach(_.clear())
-    updateLocalStorageFollowed()
+      val followedBosses = state.followedBosses.get
+      followedBosses.remove(index)
+      updateLocalStorageFollowed()
+    }
   }
 
   def toggleFollow(bossName: BossName): Unit = {
@@ -149,10 +157,11 @@ class WebSocketRaidFinderClient(
   }
 
   def truncateColumns(maxColumnSize: Int): Unit = {
-    allBossesMap.values.foreach { column =>
+    state.allBosses.get.foreach { column =>
       val tweets = column.raidTweets.get
+
       if (tweets.length > maxColumnSize) {
-        tweets := tweets.take(maxColumnSize)
+        tweets.trimEnd(tweets.length - maxColumnSize)
       }
     }
   }
@@ -164,42 +173,86 @@ class WebSocketRaidFinderClient(
     case r: FollowStatusResponse =>
     // Ignore. Also TODO: Figure out why this doesn't come back consistently
 
-    case r: RaidTweetResponse =>
-      allBossesMap.get(r.bossName).foreach { column =>
-        val columnTweets = column.raidTweets.get
-        val shouldInsert = columnTweets.headOption.forall { firstTweetInColumn =>
-          r.createdAt.after(firstTweetInColumn.createdAt)
-        }
-        if (shouldInsert) r +=: columnTweets
+    case tweet: RaidTweetResponse =>
+      allBossesMap.get(tweet.bossName).foreach { column =>
+        addRaidTweetToColumn(tweet, column)
 
-        // Show desktop notification, if subscribed
-        // TODO: Put this in a method or something
-        val boss = column.raidBoss.get
-        if (column.isSubscribed.get) {
-          val body = Seq(
-            s"@${r.screenName}: ${r.raidId}",
-            r.text,
-            "\n(Click to copy raid ID)"
-          ).filter(_.nonEmpty).mkString("\n")
-
-          HtmlHelpers.desktopNotification(
-            title = r.bossName,
-            body = body,
-            icon = boss.image.orUndefined.map(_ + ":thumb"),
-            onClick = { event: dom.Event =>
-              event.preventDefault()
-              HtmlHelpers.copy(r.raidId)
-            },
-            tag = boss.name,
-            closeOnClick = true
-          )
-        }
+        for {
+          translatedName <- column.raidBoss.get.translatedName
+          if columnIndex(translatedName).nonEmpty
+          column <- allBossesMap.get(translatedName)
+        } yield addRaidTweetToColumn(tweet, column)
       }
 
-    case r: ErrorResponse =>
-      dom.window.console.error(r.message) // TODO: Better error handling
+    case r: VersionResponse =>
+      val isOutdatedOpt = for {
+        clientVersion <- VersionString(BuildInfo.version).parse
+        serverVersion <- r.serverVersion.parse
+      } yield {
+        serverVersion > clientVersion
+      }
+
+      if (isOutdatedOpt.getOrElse(false)) {
+        HtmlHelpers.desktopNotification(
+          title = s"Version ${r.serverVersion.value} is out!",
+          body = s"You are currently on version ${BuildInfo.version}\n\n(Click to reload page)",
+          icon = None.orUndefined,
+          tag = "update",
+          onClick = (e: dom.Event) => dom.window.location.reload(),
+          closeOnClick = true
+        )
+      }
 
     case r: KeepAliveResponse => // Ignore
+  }
+
+  private def addRaidTweetToColumn(tweet: RaidTweetResponse, column: RaidBossColumn): Unit = {
+    val columnTweets = column.raidTweets.get
+
+    val shouldInsertAtBeginning = columnTweets.headOption.forall { firstTweetInColumn =>
+      tweet.createdAt.after(firstTweetInColumn.createdAt)
+    }
+
+    if (shouldInsertAtBeginning) {
+      tweet +=: columnTweets
+
+      // Show desktop notification, if subscribed
+      if (column.isSubscribed.get) {
+        val image = column.raidBoss.get.image.map(_ + ":thumb")
+        desktopNotification(tweet, image)
+      }
+    } else if (!columnTweets.exists(_.tweetId == tweet.tweetId)) {
+      val insertIndex = columnTweets.indexWhere { existingTweet =>
+        tweet.createdAt.after(existingTweet.createdAt)
+      }
+
+      if (insertIndex >= 0) {
+        columnTweets.insert(insertIndex, tweet)
+      } else columnTweets += tweet
+    }
+  }
+
+  private def desktopNotification(tweet: RaidTweetResponse, image: Option[String]) = {
+    val body = Seq(
+      s"@${tweet.screenName}: ${tweet.raidId}",
+      tweet.text,
+      "\n(Click to copy raid ID)"
+    ).filter(_.nonEmpty).mkString("\n")
+
+    val onClick = { event: dom.Event =>
+      event.preventDefault()
+      HtmlHelpers.copy(tweet.raidId)
+      ()
+    }
+
+    HtmlHelpers.desktopNotification(
+      title = tweet.bossName,
+      body = body,
+      icon = image.orUndefined,
+      onClick = onClick,
+      tag = tweet.bossName,
+      closeOnClick = true
+    )
   }
 
   private def handleRaidBossesResponse(

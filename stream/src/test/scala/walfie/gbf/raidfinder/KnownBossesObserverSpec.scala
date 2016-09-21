@@ -43,7 +43,7 @@ class KnownBossesObserverSpec extends KnownBossesObserverSpecHelpers {
   "purgeOldBosses" - {
     "remove old bosses" in new ObserverFixture {
       val bosses = (1 to 10).map { i =>
-        RaidBoss(name = i.toString, level = i, image = None, lastSeen = new Date(i))
+        RaidBoss(name = i.toString, level = i, image = None, lastSeen = new Date(i), language = Language.Japanese)
       }
       override val initialBosses = bosses
 
@@ -59,7 +59,7 @@ class KnownBossesObserverSpec extends KnownBossesObserverSpecHelpers {
 
     "keep bosses that are above a certain level" in new ObserverFixture {
       val bosses = Seq(10, 50, 100, 120, 150).map { i =>
-        RaidBoss(name = i.toString, level = i, image = None, lastSeen = new Date(0))
+        RaidBoss(name = i.toString, level = i, image = None, lastSeen = new Date(0), language = Language.English)
       }
       override val initialBosses = bosses
 
