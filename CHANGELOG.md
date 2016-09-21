@@ -1,5 +1,22 @@
 # Change Log
 
+## [v0.2.0](https://github.com/walfie/gbf-raidfinder/tree/v0.2.0) (2016-09-21)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.6...v0.2.0)
+
+**Implemented enhancements:**
+
+- Japanese/English boss name synonyms [\#49](https://github.com/walfie/gbf-raidfinder/issues/49)
+- Notify client when server is updated [\#39](https://github.com/walfie/gbf-raidfinder/issues/39)
+
+**Fixed bugs:**
+
+- Sometimes list items are re-rendered unnecessarily [\#55](https://github.com/walfie/gbf-raidfinder/issues/55)
+- Sometimes bosses aren't loaded on startup [\#45](https://github.com/walfie/gbf-raidfinder/issues/45)
+
+**Merged pull requests:**
+
+- Auto-translate bosses based on image similarity [\#65](https://github.com/walfie/gbf-raidfinder/pull/65) ([walfie](https://github.com/walfie))
+
 ## [v0.1.6](https://github.com/walfie/gbf-raidfinder/tree/v0.1.6) (2016-09-17)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.5...v0.1.6)
 
@@ -10,7 +27,6 @@
 **Fixed bugs:**
 
 - English raids only show up if they also have the Japanese name [\#59](https://github.com/walfie/gbf-raidfinder/issues/59)
-- Sometimes list items are re-rendered unnecessarily [\#55](https://github.com/walfie/gbf-raidfinder/issues/55)
 
 **Merged pull requests:**
 
@@ -84,11 +100,6 @@
 
 - Application stops immediately in prod mode [\#32](https://github.com/walfie/gbf-raidfinder/issues/32)
 - Dialog element doesn't work in Firefox [\#20](https://github.com/walfie/gbf-raidfinder/issues/20)
-
-**Closed issues:**
-
-- Handle case where \>100 tweets are made per tick [\#5](https://github.com/walfie/gbf-raidfinder/issues/5)
-- Handle rate limiting [\#4](https://github.com/walfie/gbf-raidfinder/issues/4)
 
 **Merged pull requests:**
 
