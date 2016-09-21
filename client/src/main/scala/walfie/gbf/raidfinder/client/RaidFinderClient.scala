@@ -156,11 +156,11 @@ class WebSocketRaidFinderClient(
   }
 
   def truncateColumns(maxColumnSize: Int): Unit = {
-    allBossesMap.values.foreach { column =>
+    state.allBosses.get.foreach { column =>
       val tweets = column.raidTweets.get
+
       if (tweets.length > maxColumnSize) {
-        // TODO: Change this to use `remove` to avoid re-rendering the whole column
-        tweets := tweets.take(maxColumnSize)
+        tweets.trimEnd(tweets.length - maxColumnSize)
       }
     }
   }
@@ -206,7 +206,7 @@ class WebSocketRaidFinderClient(
       }
     } else if (!columnTweets.exists(_.tweetId == tweet.tweetId)) {
       val insertIndex = columnTweets.indexWhere { existingTweet =>
-        existingTweet.createdAt after tweet.createdAt
+        tweet.createdAt.after(existingTweet.createdAt)
       }
 
       if (insertIndex >= 0) {
