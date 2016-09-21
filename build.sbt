@@ -79,7 +79,7 @@ lazy val client = (project in file("client"))
 
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.1",
-      "com.thoughtworks.binding" %%% "dom" % "9.0.0",
+      "com.thoughtworks.binding" %%% "dom" % "9.0.2",
       "org.webjars.npm" % "moment" % Versions.MomentJS,
       "org.webjars.bower" % "dialog-polyfill" % Versions.DialogPolyfillJS,
       compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
