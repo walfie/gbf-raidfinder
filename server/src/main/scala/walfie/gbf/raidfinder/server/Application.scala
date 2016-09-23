@@ -59,6 +59,10 @@ object Application {
       } yield ()
     }
 
+    val translatorNewBossCancelable = raidFinder.newBossObservable.foreach { boss =>
+      translator.update(Map(boss.name -> boss))
+    }
+
     // Periodically update new translations and save translation data to cache
     val translationRefreshCancelable = scheduler.scheduleWithFixedDelay(
       Duration.Zero, translationsConfig.refreshInterval
@@ -81,6 +85,7 @@ object Application {
     // Shutdown handling
     val shutdown = () => {
       server.stop()
+      translatorNewBossCancelable.cancel()
       bossFlushCancelable.cancel()
       translationRefreshCancelable.cancel()
       protobufStorage.close()
