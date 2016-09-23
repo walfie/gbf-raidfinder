@@ -26,7 +26,7 @@ class ImagePHashSpec extends FreeSpec {
 
     val hashesF = Future.sequence {
       (japaneseBosses ++ englishBosses).map { boss =>
-        val url = boss.url + ":small"
+        val url = boss.url + ":large"
 
         BlockingIO.future {
           // Get image and crop out the bottom 25%
@@ -54,6 +54,11 @@ class ImagePHashSpec extends FreeSpec {
     }.filter(_.similarity == 1.0)
 
     results.map(b => b.boss1 -> b.boss2).toSet shouldBe Set(
+      "Lv30 アーフラー" -> "Lvl 30 Ahura",
+      "Lv40 アーフラー" -> "Lvl 40 Ahura",
+      "Lv50 ベオウルフ" -> "Lvl 50 Grendel",
+      "Lv60 ベオウルフ" -> "Lvl 60 Grendel",
+
       "Lv40 ゲイザー" -> "Lvl 40 Ogler",
       "Lv40 ヨグ＝ソトース" -> "Lvl 40 Yog-Sothoth",
       "Lv60 グガランナ" -> "Lvl 60 Gugalanna",
@@ -102,6 +107,11 @@ class ImagePHashSpec extends FreeSpec {
   }
 
   lazy val japaneseBosses = List(
+    RaidBoss("Lv30 アーフラー", 30, JP, "https://pbs.twimg.com/media/CeSO4quUYAAy8U1.jpg"),
+    RaidBoss("Lv40 アーフラー", 40, JP, "https://pbs.twimg.com/media/CeSO6aAWAAAAOGe.jpg"),
+    RaidBoss("Lv50 ベオウルフ", 50, JP, "https://pbs.twimg.com/media/CeSO8gHWAAEnMGl.jpg"),
+    RaidBoss("Lv60 ベオウルフ", 60, JP, "https://pbs.twimg.com/media/CeSO-QrWwAECCG1.jpg"),
+
     RaidBoss("Lv40 ゲイザー", 40, JP, "https://pbs.twimg.com/media/Cn7opV5VUAAfgDz.jpg"),
     RaidBoss("Lv40 ヨグ＝ソトース", 40, JP, "https://pbs.twimg.com/media/Cqlrx16VUAAU1-Z.jpg"),
     RaidBoss("Lv60 グガランナ", 60, JP, "https://pbs.twimg.com/media/Cn7o2sYVYAEP45o.jpg"),
@@ -158,6 +168,11 @@ class ImagePHashSpec extends FreeSpec {
   )
 
   lazy val englishBosses = List(
+    RaidBoss("Lvl 30 Ahura", 30, EN, "https://pbs.twimg.com/media/Cs1w7-QUIAApnHh.jpg"),
+    RaidBoss("Lvl 40 Ahura", 40, EN, "https://pbs.twimg.com/media/Cs1w9nhVIAABgqg.jpg"),
+    RaidBoss("Lvl 50 Grendel", 50, EN, "https://pbs.twimg.com/media/Cs1w-68UEAEjhEV.jpg"),
+    RaidBoss("Lvl 60 Grendel", 60, EN, "https://pbs.twimg.com/media/Cs1xAKcVIAEXC9a.jpg"),
+
     RaidBoss("Lvl 40 Ogler", 40, EN, "https://pbs.twimg.com/media/Cn7oqbPUkAEimW2.jpg"),
     RaidBoss("Lvl 40 Yog-Sothoth", 40, EN, "https://pbs.twimg.com/media/Cqlr0pRVUAQxZ5g.jpg"),
     RaidBoss("Lvl 60 Mahisha", 60, EN, "https://pbs.twimg.com/media/Cqlr51CUAAA9lp3.jpg"),
