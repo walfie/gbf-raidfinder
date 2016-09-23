@@ -1,5 +1,16 @@
 # Change Log
 
+## [v0.2.1](https://github.com/walfie/gbf-raidfinder/tree/v0.2.1) (2016-09-23)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.2.0...v0.2.1)
+
+**Fixed bugs:**
+
+- New guild wars bosses are not automatically translated [\#66](https://github.com/walfie/gbf-raidfinder/issues/66)
+
+**Merged pull requests:**
+
+- Use large image for image hashes [\#67](https://github.com/walfie/gbf-raidfinder/pull/67) ([walfie](https://github.com/walfie))
+
 ## [v0.2.0](https://github.com/walfie/gbf-raidfinder/tree/v0.2.0) (2016-09-21)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.1.6...v0.2.0)
 
