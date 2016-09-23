@@ -92,7 +92,9 @@ class ImageBasedBossNameTranslator(
 
   // IMPORTANT: Only call this on a boss that has an image, otherwise it will fail
   private def getTranslationData(boss: RaidBoss): Future[TranslationData] = BlockingIO.future {
-    val imageUrl = new URL(boss.image.get + ":small") // TODO: Make this testable
+    // Must use large image because thumb/small sizes have too much variance when shifted slightly
+    // TODO: Make this testable
+    val imageUrl = new URL(boss.image.get + ":large")
     val hash = ImageHash(pHash.getHashAsLong(croppedImageFromUrl(imageUrl)))
 
     TranslationData(name = boss.name, level = boss.level, language = boss.language, hash = hash)
