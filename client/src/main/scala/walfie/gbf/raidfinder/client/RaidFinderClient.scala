@@ -219,6 +219,9 @@ class WebSocketRaidFinderClient(
     if (shouldInsertAtBeginning) {
       tweet +=: columnTweets
 
+      // Play notification sound for the column, if one is set
+      column.notificationSound.get.foreach(_.play)
+
       // Show desktop notification, if subscribed
       if (column.isSubscribed.get) {
         val image = column.raidBoss.get.image.map(_ + ":thumb")
@@ -269,7 +272,8 @@ class WebSocketRaidFinderClient(
           val newColumn = RaidBossColumn(
             raidBoss = Var(raidBoss),
             raidTweets = Vars.empty,
-            isSubscribed = Var(false)
+            isSubscribed = Var(false),
+            notificationSound = Var(None)
           )
           allBossesMap = allBossesMap.updated(bossName, newColumn)
 
@@ -361,9 +365,10 @@ class WebSocketRaidFinderClient(
 
 object RaidFinderClient {
   case class RaidBossColumn(
-    raidBoss:     Var[RaidBoss],
-    raidTweets:   Vars[RaidTweetResponse],
-    isSubscribed: Var[Boolean]
+    raidBoss:          Var[RaidBoss],
+    raidTweets:        Vars[RaidTweetResponse],
+    isSubscribed:      Var[Boolean],
+    notificationSound: Var[Option[NotificationSound]]
   ) { def clear(): Unit = raidTweets.get.clear() }
 
   object RaidBossColumn {
@@ -372,7 +377,8 @@ object RaidFinderClient {
       RaidBossColumn(
         raidBoss = Var(raidBoss),
         raidTweets = Vars.empty,
-        isSubscribed = Var(false)
+        isSubscribed = Var(false),
+        notificationSound = Var(None)
       )
     }
   }

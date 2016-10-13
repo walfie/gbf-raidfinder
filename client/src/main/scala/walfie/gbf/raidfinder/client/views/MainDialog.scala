@@ -11,7 +11,7 @@ import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps
 import walfie.gbf.raidfinder.client.ViewModel._
 import walfie.gbf.raidfinder.protocol._
 
-object Dialog {
+object MainDialog {
   @binding.dom
   def element(client: RaidFinderClient, viewState: ViewModel.State): Binding[HTMLElement] = {
     val dialog = dom.document.createElement("dialog").asInstanceOf[HTMLElement]

@@ -21,7 +21,7 @@ object MainContent {
     currentTime:  Binding[Double],
     isConnected:  Binding[Boolean]
   ): Binding[Constants[HTMLElement]] = {
-    val dialog = Dialog.element(client, viewState).bind
+    val dialog = MainDialog.element(client, viewState).bind
 
     handleNightMode(viewState.nightMode).watch
 

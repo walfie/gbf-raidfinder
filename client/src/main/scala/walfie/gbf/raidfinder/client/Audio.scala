@@ -27,7 +27,6 @@ package object audio {
     5 -> "tweet.ogg",
     6 -> "youve-been-informed.ogg",
     7 -> "you-wouldnt-believe.ogg"
-  // When adding new files, add to bottom of list so IDs are preserved
   ).map {
       case (id, fileName) => id -> NotificationSound(id, fileName)
     }.toMap
