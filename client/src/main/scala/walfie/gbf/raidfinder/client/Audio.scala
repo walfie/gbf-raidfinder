@@ -18,17 +18,21 @@ package object audio {
 
   private[audio] val pathPrefix = "audio/"
 
-  val NotificationSounds: Map[NotificationSoundId, NotificationSound] = Seq(
-    0 -> "oh-finally.ogg",
-    1 -> "oringz-w425.ogg",
-    2 -> "pedantic.ogg",
-    3 -> "suppressed.ogg",
-    4 -> "system.ogg",
-    5 -> "tweet.ogg",
-    6 -> "youve-been-informed.ogg",
-    7 -> "you-wouldnt-believe.ogg"
-  ).map {
-      case (id, fileName) => id -> NotificationSound(id, fileName)
-    }.toMap
+  object NotificationSounds {
+    // When adding new items, don't change the numeric IDs
+    val all: Seq[NotificationSound] = Seq(
+      1 -> "oh-finally.ogg",
+      2 -> "oringz-w425.ogg",
+      3 -> "pedantic.ogg",
+      4 -> "suppressed.ogg",
+      5 -> "system.ogg",
+      6 -> "tweet.ogg",
+      7 -> "you-wouldnt-believe.ogg",
+      8 -> "youve-been-informed.ogg"
+    ).map { case (id, fileName) => NotificationSound(id, fileName) }.sortBy(_.fileName)
+
+    val findById: NotificationSoundId => Option[NotificationSound] =
+      all.map(n => n.id -> n).toMap.get _
+  }
 }
 

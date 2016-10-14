@@ -7,6 +7,7 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
+import walfie.gbf.raidfinder.client.audio._
 import walfie.gbf.raidfinder.client.syntax._
 import walfie.gbf.raidfinder.client.ViewModel
 import walfie.gbf.raidfinder.client.ViewModel.DialogTab
@@ -21,7 +22,10 @@ object MainContent {
     currentTime:  Binding[Double],
     isConnected:  Binding[Boolean]
   ): Binding[Constants[HTMLElement]] = {
-    val dialog = MainDialog.element(client, viewState).bind
+    val mainDialog = MainDialog.element(client, viewState).bind
+    val soundSelectionDialog = SoundSelectionDialog.element { selectedSoundId =>
+      println(selectedSoundId)
+    }.bind
 
     handleNightMode(viewState.nightMode).watch
 
@@ -32,7 +36,7 @@ object MainContent {
       <div class="gbfrf-main-content">
         { styleElement }
         { notification.binding.bind }
-        { floatingActionButton(dialog, client, viewState.currentTab).bind }
+        { floatingActionButton(mainDialog, client, viewState.currentTab).bind }
         <div class="gbfrf-columns">
           {
             client.state.followedBosses.map { column =>
@@ -46,7 +50,8 @@ object MainContent {
 
     Constants(
       loadingBar(isConnected).bind,
-      dialog,
+      mainDialog,
+      soundSelectionDialog,
       main
     )
   }

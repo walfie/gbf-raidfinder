@@ -31,7 +31,7 @@ object MainDialog {
     val currentTab = viewState.currentTab
 
     val inner =
-      <div class="gbfrf-dialog__container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
+      <div class="gbfrf-main-dialog gbfrf-dialog__container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
         { dialogHeader(viewState.currentTab, onClose = closeModal, onTabChange = onTabChange).bind }
         { BossSelectMenu.content(client, closeModal, currentTab, viewState.imageQuality).bind }
         { SettingsMenu.content(client, viewState).bind }
