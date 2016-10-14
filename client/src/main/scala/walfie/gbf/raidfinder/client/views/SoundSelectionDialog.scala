@@ -70,6 +70,7 @@ object SoundSelectionDialog {
     <ul class="mdl-list" style="padding: 0; margin: 0;">
       {
         val name = "gbfrf-sound-option"
+        val mdlIsChecked = "is-checked"
 
         Constants(NotificationSounds.all: _*).map { sound =>
           val htmlId = "gbfrf-sound-option--" + sound.id
@@ -77,15 +78,26 @@ object SoundSelectionDialog {
           val radioButton =
             <input class="mdl-radio__button" id={ htmlId } type="radio" value={ sound.id.toString } name={ name }/>
 
-          Binding { radioButton.checked = selectedSoundId.bind.contains(sound.id) }.watch
-
-          <li class="gbfrf-js-soundSelect gbfrf-settings__item mdl-list__item" data:data-soundId={ sound.id.toString }>
+          val labelElement =
             <label for={ htmlId } class="mdl-list__item-primary-content mdl-radio mdl-js-radio mdl-js-ripple-effect">
               { radioButton }
               <span class="mdl-radio__label">
                 { sound.fileName }
               </span>
             </label>
+
+          Binding {
+            radioButton.checked = selectedSoundId.bind.contains(sound.id)
+
+            // MDL radio input doesn't update automatically if the real radio button is toggled
+            if (radioButton.checked) labelElement.classList.add(mdlIsChecked)
+            else labelElement.classList.remove(mdlIsChecked)
+          }.watch
+
+          val liClass = "gbfrf-js-soundSelect gbfrf--sound-select__item gbfrf-settings__item mdl-list__item"
+
+          <li class={ liClass } data:data-soundId={ sound.id.toString }>
+            { labelElement }
           </li>
         }
       }
