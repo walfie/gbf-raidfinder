@@ -24,15 +24,23 @@ object MainContent {
   ): Binding[Constants[HTMLElement]] = {
     val mainDialog = MainDialog.element(client, viewState).bind
 
-    val selectedBossName: Var[Option[BossName]] = Var(None)
-
-    val soundSelectionDialog = SoundSelectionDialog.element { selectedSoundId =>
-      selectedBossName.get.foreach { name =>
-        client.setNotificationSound(name, selectedSoundId)
+    val selectedBossName = Var[Option[BossName]](None)
+    val selectedSoundId = Var[Option[NotificationSoundId]](None)
+    val soundSelectionDialog = {
+      val onSoundSave = { selectedSoundId: Option[NotificationSoundId] =>
+        selectedBossName.get.foreach { name =>
+          client.setNotificationSound(name, selectedSoundId)
+        }
       }
-    }.bind
+
+      SoundSelectionDialog.element(
+        selectedSoundId = selectedSoundId,
+        onSave = onSoundSave
+      ).bind
+    }
 
     val onSoundMenuOpen: BossName => Unit = { bossName: BossName =>
+      selectedSoundId := client.getNotificationSound(bossName).map(_.id)
       selectedBossName := Some(bossName)
       soundSelectionDialog.asInstanceOf[js.Dynamic].showModal()
     }

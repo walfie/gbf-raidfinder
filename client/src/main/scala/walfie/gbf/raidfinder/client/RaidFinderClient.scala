@@ -62,6 +62,7 @@ class WebSocketRaidFinderClient(
   fetchFollowedBossesLocalStorage(FollowedBossesStorageKey).foreach { boss =>
     follow(boss.name)
     subscribe(boss.name)
+    setNotificationSound(boss.name, boss.soundId.toOption)
   }
 
   override def onWebSocketOpen(): Unit = {

@@ -15,7 +15,10 @@ import walfie.gbf.raidfinder.protocol._
 
 object SoundSelectionDialog {
   @binding.dom
-  def element(onSave: Option[NotificationSoundId] => Unit): Binding[HTMLElement] = {
+  def element(
+    selectedSoundId: Var[Option[NotificationSoundId]],
+    onSave:          Option[NotificationSoundId] => Unit
+  ): Binding[HTMLElement] = {
     // TODO: This is taken directly from MainDialog. Maybe make a generic version.
     val dialog = dom.document.createElement("dialog").asInstanceOf[HTMLElement]
     dialog.classList.add("mdl-dialog")
@@ -27,8 +30,6 @@ object SoundSelectionDialog {
     if (js.isUndefined(dynamicDialog.showModal)) {
       js.Dynamic.global.dialogPolyfill.registerDialog(dialog)
     }
-
-    val selectedSoundId = Var[Option[NotificationSoundId]](None)
 
     // TODO: Write a more generic event delegation helper
     val soundOptions = listItems(selectedSoundId).bind
