@@ -29,17 +29,27 @@ object RaidTweets {
       <div class="mdl-layout mdl-layout--fixed-header">
         { raidBossHeader(column.raidBoss, viewState.imageQuality, column.isSubscribed, onSoundMenuOpen, client).bind }
         {
-          <div class={
-            "gbfrf-column__notification-banner mdl-shadow--4dp".addIf(!column.isSubscribed.bind, "is-hidden")
-          }>
-            <i class="gbfrf-column__notification-banner-icon material-icons">notifications</i>
-            Notifications on
+          <div class="gbfrf-column__notification-banner mdl-shadow--4dp">
+            { notificationBannerItem("Sound on", "volume_up", Binding(column.notificationSound.bind.nonEmpty)).bind }
+            { notificationBannerItem("Notifications on", "notifications", column.isSubscribed).bind }
           </div>
         }
         <div class="mdl-layout__content">
           { raidTweetList(column.raidTweets, currentTime, notification, viewState).bind }
         </div>
       </div>
+    </div>
+  }
+
+  @binding.dom
+  private def notificationBannerItem(
+    text:    String,
+    icon:    String,
+    isShown: Binding[Boolean]
+  ): Binding[HTMLDivElement] = {
+    <div class={ "gbfrf-column__notification-banner-item".addIf(!isShown.bind, "is-hidden") }>
+      <i class="gbfrf-column__notification-banner-icon material-icons">{ icon }</i>
+      { text }
     </div>
   }
 
