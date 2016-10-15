@@ -6,9 +6,11 @@ import scala.scalajs.js
 package audio {
   case class NotificationSound(id: NotificationSoundId, fileName: String) {
     def play(): Unit = {
-      js.Dynamic.newInstance(js.Dynamic.global.Audio)(pathPrefix + fileName)
-        .asInstanceOf[HTMLAudioElement]
-        .play()
+      NotificationSounds.audioCache.getOrElseUpdate(fileName, {
+        js.Dynamic
+          .newInstance(js.Dynamic.global.Audio)(pathPrefix + fileName)
+          .asInstanceOf[HTMLAudioElement]
+      }).play()
     }
   }
 }
@@ -33,6 +35,9 @@ package object audio {
 
     val findById: NotificationSoundId => Option[NotificationSound] =
       all.map(n => n.id -> n).toMap.get _
+
+    private[audio] var audioCache: js.Dictionary[HTMLAudioElement] = js.Dictionary()
   }
+
 }
 
