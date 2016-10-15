@@ -226,9 +226,9 @@ class WebSocketRaidFinderClient(
 
       if (isOutdatedOpt.getOrElse(false)) {
         HtmlHelpers.desktopNotification(
-          title = s"Version ${r.serverVersion.value} is out!",
-          body = s"You are currently on version ${BuildInfo.version}\n\n(Click to reload page)",
-          icon = None.orUndefined,
+          title = s"gbf-raidfinder v${r.serverVersion.value} is out!",
+          body = s"You are on v${BuildInfo.version}\n\n(Click to reload page)",
+          icon = "/icons/android-chrome-192x192.png", // TODO: Don't hardcode this
           tag = "update",
           onClick = (e: dom.Event) => dom.window.location.reload(),
           closeOnClick = true
