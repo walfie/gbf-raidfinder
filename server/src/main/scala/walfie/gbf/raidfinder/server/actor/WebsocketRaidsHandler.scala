@@ -9,14 +9,15 @@ import walfie.gbf.raidfinder.protocol
 import walfie.gbf.raidfinder.protocol.syntax._
 import walfie.gbf.raidfinder.protocol.{RaidBoss => _, _}
 import walfie.gbf.raidfinder.RaidFinder
-import walfie.gbf.raidfinder.server.BossNameTranslator
+import walfie.gbf.raidfinder.server.{BossNameTranslator, MetricsCollector}
 import walfie.gbf.raidfinder.server.syntax.ProtocolConverters.{RaidBossDomainOps, RaidTweetDomainOps}
 
 class WebsocketRaidsHandler(
   out:               ActorRef,
   raidFinder:        RaidFinder,
   translator:        BossNameTranslator,
-  keepAliveInterval: Option[FiniteDuration]
+  keepAliveInterval: Option[FiniteDuration],
+  metricsCollector:  MetricsCollector
 ) extends Actor {
   implicit val scheduler = Scheduler(context.system.dispatcher)
   implicit val implicitTranslator: BossNameTranslator = translator
@@ -52,6 +53,7 @@ class WebsocketRaidsHandler(
 
   val keepAliveCancelable = keepAliveInterval.map { interval =>
     context.system.scheduler.schedule(interval, interval) {
+      metricsCollector.incrementKeepAliveCount()
       this push KeepAliveResponse()
     }
   }
@@ -115,9 +117,10 @@ object WebsocketRaidsHandler {
     out:               ActorRef,
     raidFinder:        RaidFinder,
     translator:        BossNameTranslator,
-    keepAliveInterval: Option[FiniteDuration]
+    keepAliveInterval: Option[FiniteDuration],
+    metricsCollector:  MetricsCollector
   ): Props = Props {
-    new WebsocketRaidsHandler(out, raidFinder, translator, keepAliveInterval)
+    new WebsocketRaidsHandler(out, raidFinder, translator, keepAliveInterval, metricsCollector)
   }.withDeploy(Deploy.local)
 }
 
