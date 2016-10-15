@@ -42,6 +42,8 @@ trait RaidFinderClient {
     bossName:            BossName,
     notificationSoundId: Option[NotificationSoundId]
   ): Unit
+
+  def isConnected: Var[Boolean]
 }
 
 class WebSocketRaidFinderClient(
@@ -50,7 +52,8 @@ class WebSocketRaidFinderClient(
   import RaidFinderClient._
 
   websocket.setSubscriber(Some(this))
-  val isConnected: Var[Boolean] = Var(false)
+  var isConnected: Var[Boolean] = Var(false)
+  private var isStartingUp = true
 
   private var allBossesMap: Map[BossName, RaidBossColumn] = Map.empty
 
@@ -67,6 +70,11 @@ class WebSocketRaidFinderClient(
 
   override def onWebSocketOpen(): Unit = {
     isConnected := true
+
+    // TODO: Maybe don't hardcode this
+    js.timers.setTimeout(Duration.seconds(1).milliseconds) {
+      isStartingUp = false
+    }
   }
 
   override def onWebSocketReconnect(): Unit = {
@@ -240,13 +248,16 @@ class WebSocketRaidFinderClient(
     if (shouldInsertAtBeginning) {
       tweet +=: columnTweets
 
-      // Play notification sound for the column, if one is set
-      column.notificationSound.get.foreach(_.play)
+      // Suppress notifications for backfill tweets when starting up
+      if (!isStartingUp) {
+        // Play notification sound for the column, if one is set
+        column.notificationSound.get.foreach(_.play)
 
-      // Show desktop notification, if subscribed
-      if (column.isSubscribed.get) {
-        val image = column.raidBoss.get.image.map(_ + ":thumb")
-        desktopNotification(tweet, image)
+        // Show desktop notification, if subscribed
+        if (column.isSubscribed.get) {
+          val image = column.raidBoss.get.image.map(_ + ":thumb")
+          desktopNotification(tweet, image)
+        }
       }
     } else if (!columnTweets.exists(_.tweetId == tweet.tweetId)) {
       val insertIndex = columnTweets.indexWhere { existingTweet =>
