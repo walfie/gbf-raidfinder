@@ -70,39 +70,46 @@ object SoundSelectionDialog {
   def listItems(selectedSoundId: Binding[Option[NotificationSoundId]]): Binding[HTMLUListElement] = {
     <ul class="mdl-list" style="padding: 0; margin: 0;">
       {
-        val name = "gbfrf-sound-option"
-        val mdlIsChecked = "is-checked"
-
+        // Using -1 because it doesn't match any sound ID. This is such a hack.
+        soundListItem(-1, "None", selectedSoundId).bind
+      }
+      {
         Constants(NotificationSounds.all: _*).map { sound =>
-          val htmlId = "gbfrf-sound-option--" + sound.id
-
-          val radioButton =
-            <input class="mdl-radio__button" id={ htmlId } type="radio" value={ sound.id.toString } name={ name }/>
-
-          val labelElement =
-            <label for={ htmlId } class="mdl-list__item-primary-content mdl-radio mdl-js-radio mdl-js-ripple-effect">
-              { radioButton }
-              <span class="mdl-radio__label">
-                { sound.fileName }
-              </span>
-            </label>
-
-          Binding {
-            radioButton.checked = selectedSoundId.bind.contains(sound.id)
-
-            // MDL radio input doesn't update automatically if the real radio button is toggled
-            if (radioButton.checked) labelElement.classList.add(mdlIsChecked)
-            else labelElement.classList.remove(mdlIsChecked)
-          }.watch
-
-          val liClass = "gbfrf-js-soundSelect gbfrf--sound-select__item gbfrf-settings__item mdl-list__item"
-
-          <li class={ liClass } data:data-soundId={ sound.id.toString }>
-            { labelElement }
-          </li>
+          soundListItem(sound.id, sound.fileName, selectedSoundId).bind
         }
       }
     </ul>
+  }
+
+  @binding.dom
+  def soundListItem(id: Int, text: String, selectedSoundId: Binding[Option[NotificationSoundId]]): Binding[HTMLLIElement] = {
+    val htmlId = "gbfrf-sound-option--" + id
+    val htmlName = "gbfrf-sound-option"
+    val mdlIsChecked = "is-checked"
+
+    val radioButton =
+      <input class="mdl-radio__button" id={ htmlId } type="radio" value={ id.toString } name={ htmlName }/>
+
+    val labelElement =
+      <label for={ htmlId } class="mdl-list__item-primary-content mdl-radio mdl-js-radio mdl-js-ripple-effect">
+        { radioButton }
+        <span class="mdl-radio__label">{ text }</span>
+      </label>
+
+    Binding {
+      radioButton.checked = selectedSoundId.bind.contains(id)
+
+      // MDL radio input doesn't update automatically if the real radio button is toggled
+      if (radioButton.checked) labelElement.classList.add(mdlIsChecked)
+      else labelElement.classList.remove(mdlIsChecked)
+    }.watch
+
+    val liClass = "gbfrf-js-soundSelect gbfrf--sound-select__item gbfrf-settings__item mdl-list__item"
+
+    <li class={ liClass } data:data-soundId={ id.toString }>
+      { labelElement }
+    </li>
+
   }
 
   @binding.dom
