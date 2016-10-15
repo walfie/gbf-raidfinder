@@ -4,6 +4,7 @@ import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
+import walfie.gbf.raidfinder.protocol.BossName
 
 object ViewModel {
   trait Labeled {

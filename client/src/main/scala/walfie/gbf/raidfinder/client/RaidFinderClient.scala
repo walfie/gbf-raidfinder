@@ -7,12 +7,14 @@ import org.scalajs.dom
 import org.scalajs.dom.raw.Storage
 import scala.scalajs.js
 import walfie.gbf.raidfinder.BuildInfo
+import walfie.gbf.raidfinder.client.audio._
 import walfie.gbf.raidfinder.client.syntax.BufferOps
 import walfie.gbf.raidfinder.client.util.HtmlHelpers
 import walfie.gbf.raidfinder.client.util.time.{Clock, Duration}
 import walfie.gbf.raidfinder.client.ViewModel._
 import walfie.gbf.raidfinder.protocol._
 
+import js.annotation.ScalaJSDefined
 import js.JSConverters._
 
 trait RaidFinderClient {
@@ -34,6 +36,12 @@ trait RaidFinderClient {
   def move(bossName: BossName, displacement: Int): Unit
 
   def truncateColumns(maxColumnSize: Int): Unit
+
+  def getNotificationSound(bossName: BossName): Option[NotificationSound]
+  def setNotificationSound(
+    bossName:            BossName,
+    notificationSoundId: Option[NotificationSoundId]
+  ): Unit
 }
 
 class WebSocketRaidFinderClient(
@@ -48,12 +56,14 @@ class WebSocketRaidFinderClient(
 
   // Load bosses from localStorage and refollow/resubscribe
   private val FollowedBossesStorageKey = "followedBosses"
-  private val SubscribedBossesStorageKey = "subscribedBosses"
   val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
 
   resetBossList()
-  fetchLocalStorageCsv(FollowedBossesStorageKey).foreach(follow)
-  fetchLocalStorageCsv(SubscribedBossesStorageKey).foreach(subscribe)
+  fetchFollowedBossesLocalStorage(FollowedBossesStorageKey).foreach { boss =>
+    follow(boss.name)
+    if (boss.isSubscribed) { subscribe(boss.name) }
+    if (boss.soundId.nonEmpty) { setNotificationSound(boss.name, boss.soundId.toOption) }
+  }
 
   override def onWebSocketOpen(): Unit = {
     isConnected := true
@@ -98,7 +108,7 @@ class WebSocketRaidFinderClient(
     })
 
     state.followedBosses.get += column
-    updateLocalStorageFollowed()
+    updateFollowedBossesLocalStorage()
   }
 
   def unfollow(bossName: BossName): Unit = {
@@ -114,7 +124,7 @@ class WebSocketRaidFinderClient(
 
       val followedBosses = state.followedBosses.get
       followedBosses.remove(index)
-      updateLocalStorageFollowed()
+      updateFollowedBossesLocalStorage()
     }
   }
 
@@ -128,7 +138,7 @@ class WebSocketRaidFinderClient(
       allBossesMap.get(bossName).foreach { boss =>
         boss.isSubscribed := changeState(boss.isSubscribed.get)
       }
-      updateLocalStorageSubscribed()
+      updateFollowedBossesLocalStorage()
     }
   }
 
@@ -153,7 +163,7 @@ class WebSocketRaidFinderClient(
       }
     }
 
-    updateLocalStorageFollowed()
+    updateFollowedBossesLocalStorage()
   }
 
   def truncateColumns(maxColumnSize: Int): Unit = {
@@ -164,6 +174,20 @@ class WebSocketRaidFinderClient(
         tweets.trimEnd(tweets.length - maxColumnSize)
       }
     }
+  }
+
+  def setNotificationSound(
+    bossName:            BossName,
+    notificationSoundId: Option[NotificationSoundId]
+  ): Unit = {
+    allBossesMap.get(bossName).foreach { column =>
+      column.notificationSound := notificationSoundId.flatMap(NotificationSounds.findById)
+      updateFollowedBossesLocalStorage()
+    }
+  }
+
+  def getNotificationSound(bossName: BossName): Option[NotificationSound] = {
+    allBossesMap.get(bossName).flatMap(_.notificationSound.get)
   }
 
   override def onWebSocketMessage(message: Response): Unit = message match {
@@ -216,6 +240,9 @@ class WebSocketRaidFinderClient(
     if (shouldInsertAtBeginning) {
       tweet +=: columnTweets
 
+      // Play notification sound for the column, if one is set
+      column.notificationSound.get.foreach(_.play)
+
       // Show desktop notification, if subscribed
       if (column.isSubscribed.get) {
         val image = column.raidBoss.get.image.map(_ + ":thumb")
@@ -266,7 +293,8 @@ class WebSocketRaidFinderClient(
           val newColumn = RaidBossColumn(
             raidBoss = Var(raidBoss),
             raidTweets = Vars.empty,
-            isSubscribed = Var(false)
+            isSubscribed = Var(false),
+            notificationSound = Var(None)
           )
           allBossesMap = allBossesMap.updated(bossName, newColumn)
 
@@ -287,36 +315,81 @@ class WebSocketRaidFinderClient(
     updateBosses(followedBosses)
   }
 
-  private def updateLocalStorageFollowed(): Unit = {
-    val followedBossNames = state.followedBosses.get.map(_.raidBoss.get.name)
-    updateLocalStorageCsv(FollowedBossesStorageKey, followedBossNames)
+  //
+  // Persistence in LocalStorage
+  //
+  @ScalaJSDefined
+  private trait JsFollowedBoss extends js.Object {
+    def name: String
+    def isSubscribed: Boolean
+    def soundId: js.UndefOr[NotificationSoundId]
   }
 
-  private def updateLocalStorageSubscribed(): Unit = {
+  private def updateFollowedBossesLocalStorage(): Unit = {
+    val jsFollowedBosses = state.followedBosses.get.map { column =>
+      new JsFollowedBoss {
+        val name = column.raidBoss.get.name
+        val isSubscribed = column.isSubscribed.get
+        val soundId = column.notificationSound.get.map(_.id).orUndefined
+      }
+    }
+
+    val jsString = js.JSON.stringify(jsFollowedBosses.toJSArray)
+    storage.setItem(FollowedBossesStorageKey, jsString)
+  }
+
+  private def fetchFollowedBossesLocalStorage(key: String): Seq[JsFollowedBoss] = {
+    Option(storage.getItem(key)).fold(Seq.empty[JsFollowedBoss]) { jsString =>
+      try {
+        js.JSON.parse(jsString).asInstanceOf[js.Array[JsFollowedBoss]]
+      } catch {
+        case _: Throwable =>
+          // If failed to parse as JSON
+          val followedBossNames = jsString.split(",")
+          val subscribedBossNames = legacyFetchLocalStorageCsv(LegacySubscribedBossesStorageKey)
+
+          followedBossNames.map { bossName =>
+            new JsFollowedBoss {
+              val name = bossName
+              val isSubscribed = subscribedBossNames.contains(bossName)
+              val soundId = None.orUndefined
+            }
+          }
+      }
+    }
+  }
+
+  //
+  // Legacy LocalStorage methods
+  //
+  private val LegacySubscribedBossesStorageKey = "subscribedBosses"
+  private def legacyFetchLocalStorageCsv(key: String): Seq[String] = {
+    Option(storage.getItem(key)).fold(Seq.empty[String])(_.split(","))
+  }
+  private def legacyUpdateLocalStorageFollowed(): Unit = {
+    val followedBossNames = state.followedBosses.get.map(_.raidBoss.get.name)
+    legacyUpdateLocalStorageCsv(FollowedBossesStorageKey, followedBossNames)
+  }
+  private def legacyUpdateLocalStorageSubscribed(): Unit = {
     val subscribedBossNames = state.allBosses.get.collect {
       case column if column.isSubscribed.get => column.raidBoss.get.name
     }
-    updateLocalStorageCsv(SubscribedBossesStorageKey, subscribedBossNames)
+    legacyUpdateLocalStorageCsv(LegacySubscribedBossesStorageKey, subscribedBossNames)
   }
-
-  private def updateLocalStorageCsv(key: String, values: Seq[String]): Unit = {
+  private def legacyUpdateLocalStorageCsv(key: String, values: Seq[String]): Unit = {
     if (values.isEmpty)
       storage.removeItem(key)
     else
       storage.setItem(key, values.mkString(","))
   }
-
-  private def fetchLocalStorageCsv(key: String): Seq[String] = {
-    Option(storage.getItem(key)).fold(Seq.empty[String])(_.split(","))
-  }
-
 }
 
 object RaidFinderClient {
   case class RaidBossColumn(
-    raidBoss:     Var[RaidBoss],
-    raidTweets:   Vars[RaidTweetResponse],
-    isSubscribed: Var[Boolean]
+    raidBoss:          Var[RaidBoss],
+    raidTweets:        Vars[RaidTweetResponse],
+    isSubscribed:      Var[Boolean],
+    notificationSound: Var[Option[NotificationSound]]
   ) { def clear(): Unit = raidTweets.get.clear() }
 
   object RaidBossColumn {
@@ -325,7 +398,8 @@ object RaidFinderClient {
       RaidBossColumn(
         raidBoss = Var(raidBoss),
         raidTweets = Vars.empty,
-        isSubscribed = Var(false)
+        isSubscribed = Var(false),
+        notificationSound = Var(None)
       )
     }
   }

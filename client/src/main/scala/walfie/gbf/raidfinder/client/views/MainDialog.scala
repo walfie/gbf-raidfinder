@@ -11,7 +11,7 @@ import walfie.gbf.raidfinder.client.syntax.{ElementOps, EventOps, HTMLElementOps
 import walfie.gbf.raidfinder.client.ViewModel._
 import walfie.gbf.raidfinder.protocol._
 
-object Dialog {
+object MainDialog {
   @binding.dom
   def element(client: RaidFinderClient, viewState: ViewModel.State): Binding[HTMLElement] = {
     val dialog = dom.document.createElement("dialog").asInstanceOf[HTMLElement]
@@ -31,7 +31,7 @@ object Dialog {
     val currentTab = viewState.currentTab
 
     val inner =
-      <div class="gbfrf-dialog__container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
+      <div class="gbfrf-main-dialog gbfrf-dialog__container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
         { dialogHeader(viewState.currentTab, onClose = closeModal, onTabChange = onTabChange).bind }
         { BossSelectMenu.content(client, closeModal, currentTab, viewState.imageQuality).bind }
         { SettingsMenu.content(client, viewState).bind }

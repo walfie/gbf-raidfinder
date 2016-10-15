@@ -7,6 +7,7 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
+import walfie.gbf.raidfinder.client.audio._
 import walfie.gbf.raidfinder.client.syntax._
 import walfie.gbf.raidfinder.client.ViewModel
 import walfie.gbf.raidfinder.client.ViewModel.DialogTab
@@ -21,7 +22,28 @@ object MainContent {
     currentTime:  Binding[Double],
     isConnected:  Binding[Boolean]
   ): Binding[Constants[HTMLElement]] = {
-    val dialog = Dialog.element(client, viewState).bind
+    val mainDialog = MainDialog.element(client, viewState).bind
+
+    val selectedBossName = Var[Option[BossName]](None)
+    val selectedSoundId = Var[Option[NotificationSoundId]](None)
+    val soundSelectionDialog = {
+      val onSoundSave = { selectedSoundId: Option[NotificationSoundId] =>
+        selectedBossName.get.foreach { name =>
+          client.setNotificationSound(name, selectedSoundId)
+        }
+      }
+
+      SoundSelectionDialog.element(
+        selectedSoundId = selectedSoundId,
+        onSave = onSoundSave
+      ).bind
+    }
+
+    val onSoundMenuOpen: BossName => Unit = { bossName: BossName =>
+      selectedSoundId := client.getNotificationSound(bossName).map(_.id)
+      selectedBossName := Some(bossName)
+      soundSelectionDialog.asInstanceOf[js.Dynamic].showModal()
+    }
 
     handleNightMode(viewState.nightMode).watch
 
@@ -32,12 +54,12 @@ object MainContent {
       <div class="gbfrf-main-content">
         { styleElement }
         { notification.binding.bind }
-        { floatingActionButton(dialog, client, viewState.currentTab).bind }
+        { floatingActionButton(mainDialog, client, viewState.currentTab).bind }
         <div class="gbfrf-columns">
           {
             client.state.followedBosses.map { column =>
               RaidTweets.raidTweetColumn(
-                column, currentTime, client, notification, viewState
+                column, currentTime, client, notification, viewState, onSoundMenuOpen
               ).bind
             }
           }
@@ -46,7 +68,8 @@ object MainContent {
 
     Constants(
       loadingBar(isConnected).bind,
-      dialog,
+      mainDialog,
+      soundSelectionDialog,
       main
     )
   }
