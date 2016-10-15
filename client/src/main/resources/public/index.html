@@ -32,15 +32,24 @@ function loadCSS(url) {
 (function() {
 
 var l = window.location;
+var queryParams = document.location.search.substring(1).split('&')
+  .map(function(n) { return n = n.split("="), this[n[0]] = n[1], this; }.bind({}))[0];
+
 var isLocalFile = l.protocol == 'file:';
 var isLocalhost = l.hostname == 'localhost';
 var isLocal = isLocalFile || isLocalhost;
-var remoteUrl = 'ws://gbf-raidfinder.aikats.us';
+
+function getBaseUrl() {
+  if (queryParams.baseUrl) return queryParams.baseUrl;
+
+  var protocol = (l.protocol === 'https:') ? 'wss://' : 'ws://';
+  var remoteUrl = 'ws://gbf-raidfinder.aikats.us';
+  return isLocalFile ? remoteUrl : (protocol + l.host);
+};
 
 [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://code.getmdl.io/1.2.0/material.indigo-pink.min.css',
-  'css/base.css',
   'css/dark.css'
 ].forEach(loadCSS);
 
@@ -48,10 +57,9 @@ loadScript('./js/gbf-raidfinder-client-jsdeps.js', function() {
   var fileVer = isLocal ? 'fastopt' : 'opt';
 
   loadScript('./js/gbf-raidfinder-client-' + fileVer + '.js', function() {
-    var protocol = (l.protocol === 'https:') ? 'wss://' : 'ws://';
-    var baseUrl = isLocalFile ? remoteUrl : (protocol + l.host);
-    var url = baseUrl + '/ws/raids?keepAlive=true';
+    var url = getBaseUrl() + '/ws/raids?keepAlive=true';
     GbfRaidFinder().init(url);
+    loadCSS('css/base.css'); // Reduce amount of reflow by delaying load
   });
 });
 
