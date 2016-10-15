@@ -36,6 +36,12 @@ trait RaidFinderClient {
   def move(bossName: BossName, displacement: Int): Unit
 
   def truncateColumns(maxColumnSize: Int): Unit
+
+  def getNotificationSound(bossName: BossName): Option[NotificationSound]
+  def setNotificationSound(
+    bossName:            BossName,
+    notificationSoundId: Option[NotificationSoundId]
+  ): Unit
 }
 
 class WebSocketRaidFinderClient(
@@ -167,6 +173,20 @@ class WebSocketRaidFinderClient(
         tweets.trimEnd(tweets.length - maxColumnSize)
       }
     }
+  }
+
+  def setNotificationSound(
+    bossName:            BossName,
+    notificationSoundId: Option[NotificationSoundId]
+  ): Unit = {
+    allBossesMap.get(bossName).foreach { column =>
+      column.notificationSound := notificationSoundId.flatMap(NotificationSounds.findById)
+      updateFollowedBossesLocalStorage()
+    }
+  }
+
+  def getNotificationSound(bossName: BossName): Option[NotificationSound] = {
+    allBossesMap.get(bossName).flatMap(_.notificationSound.get)
   }
 
   override def onWebSocketMessage(message: Response): Unit = message match {
@@ -309,7 +329,7 @@ class WebSocketRaidFinderClient(
       new JsFollowedBoss {
         val name = column.raidBoss.get.name
         val isSubscribed = column.isSubscribed.get
-        val soundId = None.orUndefined // TODO: Persist sound ID
+        val soundId = column.notificationSound.get.map(_.id).orUndefined
       }
     }
 

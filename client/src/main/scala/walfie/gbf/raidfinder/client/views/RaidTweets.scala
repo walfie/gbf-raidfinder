@@ -18,15 +18,16 @@ import walfie.gbf.raidfinder.protocol._
 object RaidTweets {
   @binding.dom
   def raidTweetColumn(
-    column:       RaidBossColumn,
-    currentTime:  Binding[Double],
-    client:       RaidFinderClient,
-    notification: Notification,
-    viewState:    ViewModel.State
+    column:          RaidBossColumn,
+    currentTime:     Binding[Double],
+    client:          RaidFinderClient,
+    notification:    Notification,
+    viewState:       ViewModel.State,
+    onSoundMenuOpen: BossName => Unit
   ): Binding[HTMLDivElement] = {
     <div class="gbfrf-column mdl-shadow--2dp">
       <div class="mdl-layout mdl-layout--fixed-header">
-        { raidBossHeader(column.raidBoss, viewState.imageQuality, column.isSubscribed, client).bind }
+        { raidBossHeader(column.raidBoss, viewState.imageQuality, column.isSubscribed, onSoundMenuOpen, client).bind }
         {
           <div class={
             "gbfrf-column__notification-banner mdl-shadow--4dp".addIf(!column.isSubscribed.bind, "is-hidden")
@@ -138,10 +139,11 @@ object RaidTweets {
 
   @binding.dom
   def raidBossHeader(
-    raidBoss:     Binding[RaidBoss],
-    imageQuality: Binding[ImageQuality],
-    isSubscribed: Binding[Boolean],
-    client:       RaidFinderClient
+    raidBoss:        Binding[RaidBoss],
+    imageQuality:    Binding[ImageQuality],
+    isSubscribed:    Binding[Boolean],
+    onSoundMenuOpen: BossName => Unit,
+    client:          RaidFinderClient
   ): Binding[HTMLElement] = {
     val bossName = Binding(raidBoss.bind.name)
 
@@ -162,7 +164,9 @@ object RaidTweets {
         <button class="mdl-button mdl-js-button mdl-button--icon" id={ menuId(bossName.bind) }>
           <i class="material-icons">more_vert</i>
         </button>
-        { raidBossHeaderMenu(bossName.bind, isSubscribed, client).bind }
+        {
+          raidBossHeaderMenu(bossName.bind, isSubscribed, onSoundMenuOpen, client).bind
+        }
       </div>
 
     headerRow.backgroundImageQuality(raidBoss.bind.image, 0.25, imageQuality.bind)
@@ -174,9 +178,10 @@ object RaidTweets {
 
   @binding.dom
   def raidBossHeaderMenu(
-    bossName:     String,
-    isSubscribed: Binding[Boolean],
-    client:       RaidFinderClient
+    bossName:        String,
+    isSubscribed:    Binding[Boolean],
+    onSoundMenuOpen: BossName => Unit,
+    client:          RaidFinderClient
   ): Binding[HTMLUListElement] = {
     <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" data:for={ menuId(bossName) }>
       { menuItem("Move Left", "keyboard_arrow_left", _ => client.move(bossName, -1)).bind }
@@ -189,6 +194,7 @@ object RaidTweets {
           else ("Subscribe", "notifications_on")
         menuItem(text, icon, _ => client.toggleSubscribe(bossName)).bind
       }
+      { menuItem("Sound", "music_note", _ => onSoundMenuOpen(bossName)).bind }
     </ul>
   }
 

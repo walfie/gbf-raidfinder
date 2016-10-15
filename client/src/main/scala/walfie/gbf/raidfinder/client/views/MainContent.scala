@@ -23,9 +23,19 @@ object MainContent {
     isConnected:  Binding[Boolean]
   ): Binding[Constants[HTMLElement]] = {
     val mainDialog = MainDialog.element(client, viewState).bind
+
+    val selectedBossName: Var[Option[BossName]] = Var(None)
+
     val soundSelectionDialog = SoundSelectionDialog.element { selectedSoundId =>
-      println(selectedSoundId)
+      selectedBossName.get.foreach { name =>
+        client.setNotificationSound(name, selectedSoundId)
+      }
     }.bind
+
+    val onSoundMenuOpen: BossName => Unit = { bossName: BossName =>
+      selectedBossName := Some(bossName)
+      soundSelectionDialog.asInstanceOf[js.Dynamic].showModal()
+    }
 
     handleNightMode(viewState.nightMode).watch
 
@@ -41,7 +51,7 @@ object MainContent {
           {
             client.state.followedBosses.map { column =>
               RaidTweets.raidTweetColumn(
-                column, currentTime, client, notification, viewState
+                column, currentTime, client, notification, viewState, onSoundMenuOpen
               ).bind
             }
           }
