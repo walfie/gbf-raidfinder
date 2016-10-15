@@ -1,0 +1,17 @@
+{
+	"name": "gbf-raidfinder",
+	"icons": [
+		{
+			"src": "\/icons\/android-chrome-192x192.png?v=20161015",
+			"sizes": "192x192",
+			"type": "image\/png"
+		},
+		{
+			"src": "\/icons\/android-chrome-512x512.png?v=20161015",
+			"sizes": "512x512",
+			"type": "image\/png"
+		}
+	],
+	"theme_color": "#ffffff",
+	"display": "standalone"
+}
