@@ -30,8 +30,10 @@ object RaidTweets {
         { raidBossHeader(column.raidBoss, viewState.imageQuality, column.isSubscribed, onSoundMenuOpen, client).bind }
         {
           <div class="gbfrf-column__notification-banner mdl-shadow--4dp">
-            { notificationBannerItem("Sound on", "volume_up", Binding(column.notificationSound.bind.nonEmpty)).bind }
-            { notificationBannerItem("Notifications on", "notifications", column.isSubscribed).bind }
+            <div class="gbfrf-column__notification-banner-container">
+              { notificationBannerItem("Sound on", "volume_up", Binding(column.notificationSound.bind.nonEmpty)).bind }
+              { notificationBannerItem("Notifications on", "notifications", column.isSubscribed).bind }
+            </div>
           </div>
         }
         <div class="mdl-layout__content">

@@ -61,8 +61,8 @@ class WebSocketRaidFinderClient(
   resetBossList()
   fetchFollowedBossesLocalStorage(FollowedBossesStorageKey).foreach { boss =>
     follow(boss.name)
-    subscribe(boss.name)
-    setNotificationSound(boss.name, boss.soundId.toOption)
+    if (boss.isSubscribed) { subscribe(boss.name) }
+    if (boss.soundId.nonEmpty) { setNotificationSound(boss.name, boss.soundId.toOption) }
   }
 
   override def onWebSocketOpen(): Unit = {

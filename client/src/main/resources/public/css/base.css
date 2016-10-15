@@ -93,10 +93,13 @@ html, body, .gbfrf-container {
   background-color: #eaeaea;
   color: #292f33;
   line-height: 30px;
-  display: flex;
   flex-direction: row;
   justify-content: center;
   font-size: 0.9em;
+}
+
+.gbfrf-column__notification-banner-container {
+  display: flex;
 }
 
 .gbfrf-column__notification-banner-item {
