@@ -19,7 +19,7 @@ object Application {
 
     val websocket = new BinaryProtobufWebSocketClient(url, maxReconnectInterval)
 
-    val client = new WebSocketRaidFinderClient(
+    val client: RaidFinderClient = new WebSocketRaidFinderClient(
       websocket, dom.window.localStorage, SystemClock
     )
 
