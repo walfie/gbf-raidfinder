@@ -28,7 +28,12 @@ object RaidFinder {
     initialBosses:       Seq[RaidBoss] = Seq.empty
   )(implicit scheduler: Scheduler): DefaultRaidFinder = {
     val statuses = TwitterStreamer(twitterStream).observable
-    new DefaultRaidFinder(statuses, cachedTweetsPerBoss, initialBosses)
+    new DefaultRaidFinder(statuses, cachedTweetsPerBoss, initialBosses) {
+      override def onShutdown(): Unit = {
+        twitterStream.cleanUp()
+        twitterStream.shutdown()
+      }
+    }
   }
 
   /** Search for old tweets first before streaming new tweets */

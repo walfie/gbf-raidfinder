@@ -12,6 +12,7 @@ import play.api.routing.Router
 import play.api.routing.sird._
 import play.core.server._
 import play.filters.gzip.GzipFilterComponents
+import play.filters.cors.{CORSConfig, CORSFilter}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.Future
 import walfie.gbf.raidfinder.protocol.RaidBossesResponse
@@ -31,7 +32,8 @@ class Components(
 
   override lazy val serverConfig = ServerConfig(port = Some(port), mode = mode)
 
-  override lazy val httpFilters = List(gzipFilter)
+  private val corsFilter = new CORSFilter(corsConfig = CORSConfig().withAnyOriginAllowed)
+  override lazy val httpFilters = List(gzipFilter, corsFilter)
 
   lazy val websocketController = new WebsocketController(
     raidFinder, translator, websocketKeepAliveInterval, metricsCollector
@@ -41,9 +43,15 @@ class Components(
     case GET(p"/") =>
       controllers.Assets.at(path = "/public", "index.html")
 
-    case GET(p"/api/bosses.json") =>
-      val bosses = raidFinder.getKnownBosses.values.map(_.toProtocol(translator))
-      val responseProtobuf = RaidBossesResponse(raidBosses = bosses.toSeq)
+    case GET(p"/api/bosses.json" ? q_s"name=$names") =>
+      val bosses = if (names.nonEmpty) {
+        val knownBossesMap = raidFinder.getKnownBosses
+        names.collect(knownBossesMap)
+      } else raidFinder.getKnownBosses.values
+
+      val responseProtobuf = RaidBossesResponse(
+        raidBosses = bosses.map(_.toProtocol(translator)).toSeq
+      )
       val responseJson = JsonFormat.toJsonString(responseProtobuf)
       Action(Ok(responseJson).as(ContentTypes.JSON))
 
@@ -62,7 +70,6 @@ class Components(
   override lazy val httpErrorHandler = new ErrorHandler
 
   override def serverStopHook = () => Future.successful {
-    raidFinder.shutdown()
     actorSystem.terminate()
   }
 }
