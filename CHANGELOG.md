@@ -1,5 +1,27 @@
 # Change Log
 
+## [v0.3.0](https://github.com/walfie/gbf-raidfinder/tree/v0.3.0) (2016-10-16)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.2.1...v0.3.0)
+
+**Implemented enhancements:**
+
+- Internal metrics on number of active users [\#76](https://github.com/walfie/gbf-raidfinder/issues/76)
+- API endpoint for boss list [\#72](https://github.com/walfie/gbf-raidfinder/issues/72)
+- Disable notifications for backfill tweets [\#71](https://github.com/walfie/gbf-raidfinder/issues/71)
+- Notification sound [\#62](https://github.com/walfie/gbf-raidfinder/issues/62)
+- Add custom favicon [\#34](https://github.com/walfie/gbf-raidfinder/issues/34)
+
+**Merged pull requests:**
+
+- Add changelog link to settings menu footer [\#80](https://github.com/walfie/gbf-raidfinder/pull/80) ([walfie](https://github.com/walfie))
+- Enable CORS, add name param to bosses API [\#79](https://github.com/walfie/gbf-raidfinder/pull/79) ([walfie](https://github.com/walfie))
+- Reduce startup time by several seconds [\#78](https://github.com/walfie/gbf-raidfinder/pull/78) ([walfie](https://github.com/walfie))
+- Add metric for number of active users [\#77](https://github.com/walfie/gbf-raidfinder/pull/77) ([walfie](https://github.com/walfie))
+- Add `/api/bosses.json` endpoint [\#75](https://github.com/walfie/gbf-raidfinder/pull/75) ([walfie](https://github.com/walfie))
+- Add favicon [\#74](https://github.com/walfie/gbf-raidfinder/pull/74) ([walfie](https://github.com/walfie))
+- Disable notifications for startup backfill tweets [\#73](https://github.com/walfie/gbf-raidfinder/pull/73) ([walfie](https://github.com/walfie))
+- Add audio notifications [\#70](https://github.com/walfie/gbf-raidfinder/pull/70) ([walfie](https://github.com/walfie))
+
 ## [v0.2.1](https://github.com/walfie/gbf-raidfinder/tree/v0.2.1) (2016-09-23)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.2.0...v0.2.1)
 
