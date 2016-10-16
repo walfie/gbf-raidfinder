@@ -79,7 +79,7 @@ object Application {
     val port = config.as[Int]("http.port")
     val mode = getMode(appConfig.as[String]("mode"))
     val keepAliveInterval = appConfig.as[FiniteDuration]("websocket.keepAliveInterval")
-    val metricsCollector = new MetricsCollectorImpl(keepAliveInterval)
+    val metricsCollector = new MetricsCollectorImpl
     val components = new Components(raidFinder, translator, port, mode, keepAliveInterval, metricsCollector)
     val server = components.server
 

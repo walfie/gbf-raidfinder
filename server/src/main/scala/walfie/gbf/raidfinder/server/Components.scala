@@ -48,7 +48,7 @@ class Components(
       Action(Ok(responseJson).as(ContentTypes.JSON))
 
     case GET(p"/api/metrics.json") =>
-      val activeUsers = metricsCollector.getActiveUsers()
+      val activeUsers = metricsCollector.getActiveWebSocketCount()
       val json = Json.obj("activeUsers" -> activeUsers)
       Action(Ok(json))
 

@@ -25,6 +25,7 @@ class WebsocketRaidsHandler(
   // On connect, send current version
   override def preStart(): Unit = {
     this push VersionResponse(serverVersion = VersionString(BuildInfo.version))
+    metricsCollector.webSocketConnected()
   }
 
   var followed: Map[BossName, Cancelable] = Map.empty
@@ -53,7 +54,6 @@ class WebsocketRaidsHandler(
 
   val keepAliveCancelable = keepAliveInterval.map { interval =>
     context.system.scheduler.schedule(interval, interval) {
-      metricsCollector.incrementKeepAliveCount()
       this push KeepAliveResponse()
     }
   }
@@ -105,6 +105,7 @@ class WebsocketRaidsHandler(
   }
 
   override def postStop(): Unit = {
+    metricsCollector.webSocketDisconnected()
     newTranslationCancelable.cancel()
     newBossCancelable.cancel()
     keepAliveCancelable.foreach(_.cancel())

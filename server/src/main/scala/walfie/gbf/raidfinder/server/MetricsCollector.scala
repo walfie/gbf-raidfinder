@@ -1,28 +1,21 @@
 package walfie.gbf.raidfinder.server
 
 import akka.agent._
-import monix.execution.Scheduler
-import monix.reactive.subjects.ConcurrentSubject
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.ExecutionContext
 
 trait MetricsCollector {
-  def incrementKeepAliveCount(): Unit
-  def getActiveUsers(): Int
+  def webSocketConnected(): Unit
+  def webSocketDisconnected(): Unit
+
+  def getActiveWebSocketCount(): Int
 }
 
-class MetricsCollectorImpl(
-  keepAliveInterval: FiniteDuration
-)(implicit scheduler: Scheduler) extends MetricsCollector {
-  private val keepAliveSubject = ConcurrentSubject.publish[Unit]
-  private val keepAliveCountAgent = Agent[Int](0)
+class MetricsCollectorImpl(implicit ec: ExecutionContext) extends MetricsCollector {
+  private val webSocketConnectionCountAgent = Agent[Int](0)
 
-  keepAliveSubject
-    .bufferTimed(keepAliveInterval)
-    .map(_.length)
-    .foreach(keepAliveCountAgent.send)
+  def webSocketConnected(): Unit = webSocketConnectionCountAgent.send(_ + 1)
+  def webSocketDisconnected(): Unit = webSocketConnectionCountAgent.send(_ - 1)
 
-  def incrementKeepAliveCount(): Unit = keepAliveSubject.onNext(())
-
-  def getActiveUsers(): Int = keepAliveCountAgent.get
+  def getActiveWebSocketCount(): Int = webSocketConnectionCountAgent.get
 }
 
