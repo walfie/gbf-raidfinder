@@ -9,14 +9,15 @@ import walfie.gbf.raidfinder.protocol
 import walfie.gbf.raidfinder.protocol.syntax._
 import walfie.gbf.raidfinder.protocol.{RaidBoss => _, _}
 import walfie.gbf.raidfinder.RaidFinder
-import walfie.gbf.raidfinder.server.BossNameTranslator
+import walfie.gbf.raidfinder.server.{BossNameTranslator, MetricsCollector}
 import walfie.gbf.raidfinder.server.syntax.ProtocolConverters.{RaidBossDomainOps, RaidTweetDomainOps}
 
 class WebsocketRaidsHandler(
   out:               ActorRef,
   raidFinder:        RaidFinder,
   translator:        BossNameTranslator,
-  keepAliveInterval: Option[FiniteDuration]
+  keepAliveInterval: Option[FiniteDuration],
+  metricsCollector:  MetricsCollector
 ) extends Actor {
   implicit val scheduler = Scheduler(context.system.dispatcher)
   implicit val implicitTranslator: BossNameTranslator = translator
@@ -24,6 +25,7 @@ class WebsocketRaidsHandler(
   // On connect, send current version
   override def preStart(): Unit = {
     this push VersionResponse(serverVersion = VersionString(BuildInfo.version))
+    metricsCollector.webSocketConnected()
   }
 
   var followed: Map[BossName, Cancelable] = Map.empty
@@ -103,6 +105,7 @@ class WebsocketRaidsHandler(
   }
 
   override def postStop(): Unit = {
+    metricsCollector.webSocketDisconnected()
     newTranslationCancelable.cancel()
     newBossCancelable.cancel()
     keepAliveCancelable.foreach(_.cancel())
@@ -115,9 +118,10 @@ object WebsocketRaidsHandler {
     out:               ActorRef,
     raidFinder:        RaidFinder,
     translator:        BossNameTranslator,
-    keepAliveInterval: Option[FiniteDuration]
+    keepAliveInterval: Option[FiniteDuration],
+    metricsCollector:  MetricsCollector
   ): Props = Props {
-    new WebsocketRaidsHandler(out, raidFinder, translator, keepAliveInterval)
+    new WebsocketRaidsHandler(out, raidFinder, translator, keepAliveInterval, metricsCollector)
   }.withDeploy(Deploy.local)
 }
 

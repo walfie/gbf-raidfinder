@@ -13,11 +13,14 @@ import walfie.gbf.raidfinder.domain._
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.RaidFinder
 import walfie.gbf.raidfinder.server.actor.WebsocketRaidsHandler
-import walfie.gbf.raidfinder.server.BossNameTranslator
 import walfie.gbf.raidfinder.server.util.MessageFlowTransformerUtil
+import walfie.gbf.raidfinder.server.{BossNameTranslator, MetricsCollector}
 
 class WebsocketController(
-  raidFinder: RaidFinder, translator: BossNameTranslator, keepAliveInterval: FiniteDuration
+  raidFinder:        RaidFinder,
+  translator:        BossNameTranslator,
+  keepAliveInterval: FiniteDuration,
+  metricsCollector:  MetricsCollector
 )(implicit system: ActorSystem, materializer: Materializer) extends Controller {
   private val jsonTransformer = MessageFlowTransformerUtil.protobufJsonMessageFlowTransformer
   private val binaryTransformer = MessageFlowTransformerUtil.protobufBinaryMessageFlowTransformer
@@ -49,7 +52,7 @@ class WebsocketController(
     val result: Either[Result, Flow[Message, Message, _]] = transformerOpt match {
       case Some(transformer) => Right {
         val flow = ActorFlow.actorRef { out =>
-          WebsocketRaidsHandler.props(out, raidFinder, translator, interval)
+          WebsocketRaidsHandler.props(out, raidFinder, translator, interval, metricsCollector)
         }
         transformer.transform(flow)
       }

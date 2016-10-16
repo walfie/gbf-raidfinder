@@ -5,6 +5,7 @@ import akka.stream.Materializer
 import com.trueaccord.scalapb.json.JsonFormat
 import play.api.BuiltInComponents
 import play.api.http.{ContentTypes, DefaultHttpErrorHandler}
+import play.api.libs.json.Json
 import play.api.Mode.Mode
 import play.api.mvc._
 import play.api.routing.Router
@@ -23,7 +24,8 @@ class Components(
   translator:                 BossNameTranslator,
   port:                       Int,
   mode:                       Mode,
-  websocketKeepAliveInterval: FiniteDuration
+  websocketKeepAliveInterval: FiniteDuration,
+  metricsCollector:           MetricsCollector
 ) extends NettyServerComponents
   with BuiltInComponents with GzipFilterComponents with Controller {
 
@@ -32,7 +34,7 @@ class Components(
   override lazy val httpFilters = List(gzipFilter)
 
   lazy val websocketController = new WebsocketController(
-    raidFinder, translator, websocketKeepAliveInterval
+    raidFinder, translator, websocketKeepAliveInterval, metricsCollector
   )(actorSystem, materializer)
 
   lazy val router = Router.from {
@@ -44,6 +46,11 @@ class Components(
       val responseProtobuf = RaidBossesResponse(raidBosses = bosses.toSeq)
       val responseJson = JsonFormat.toJsonString(responseProtobuf)
       Action(Ok(responseJson).as(ContentTypes.JSON))
+
+    case GET(p"/api/metrics.json") =>
+      val activeUsers = metricsCollector.getActiveWebSocketCount()
+      val json = Json.obj("activeUsers" -> activeUsers)
+      Action(Ok(json))
 
     case GET(p"/ws/raids" ? q_o"keepAlive=${ bool(keepAlive) }") =>
       websocketController.raids(keepAlive = keepAlive.getOrElse(false))
