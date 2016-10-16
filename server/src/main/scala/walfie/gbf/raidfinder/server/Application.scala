@@ -85,6 +85,7 @@ object Application {
 
     // Shutdown handling
     val shutdown = () => {
+      raidFinder.shutdown()
       server.stop()
       translatorNewBossCancelable.cancel()
       bossFlushCancelable.cancel()
