@@ -275,8 +275,18 @@ html, body, .gbfrf-container {
   color: gray;
 }
 
+.gbfrf-settings__footer-links {
+  margin: 0;
+  list-style: none;
+}
+
 .gbfrf-settings__item {
   border-bottom: 1px solid gray;
+}
+
+.gbfrf-linkout {
+  vertical-align: middle;
+  font-size: 1em;
 }
 
 .gbfrf-settings__radio-buttons {

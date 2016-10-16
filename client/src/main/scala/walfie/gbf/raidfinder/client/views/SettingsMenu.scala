@@ -66,14 +66,36 @@ object SettingsMenu {
     val gitShortHash = gitHash.take(7)
 
     // TODO: Don't hardcode this
-    <div class="gbfrf-settings__footer">
-      <span class="gbfrf-settings__version">{ "v" + BuildInfo.version }</span>
-      <span class="gbfrf-settings__sha gbfrf-parentheses" title={ gitHash }>{ gitShortHash }</span>
-      <br/>
-      <a href="https://github.com/walfie/gbf-raidfinder" target="_blank">
-        github.com/walfie/gbf-raidfinder
-      </a>
-    </div>
+    val githubBaseUrl = "https://github.com/walfie/gbf-raidfinder"
+
+    def linkOut() = Binding(<i class="gbfrf-linkout material-icons">open_in_new</i>)
+
+    val result =
+      <div class="gbfrf-settings__footer">
+        <ul class="gbfrf-settings__footer-links">
+          <li>
+            <a href={ githubBaseUrl + "/blob/master/CHANGELOG.md" } target="_blank">
+              Changelog
+              { linkOut.bind }
+            </a>
+          </li>
+          <li>
+            <a href={ githubBaseUrl + "/tree/" + gitHash } target="_blank">
+              <span class="gbfrf-settings__version">{ "v" + BuildInfo.version }</span>
+              <span class="gbfrf-settings__sha gbfrf-parentheses" title={ gitHash }>{ gitShortHash }</span>
+              { linkOut.bind }
+            </a>
+          </li>
+          <li>
+            <a href={ githubBaseUrl } target="_blank">
+              github.com/walfie/gbf-raidfinder
+              { linkOut.bind }
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    result
   }
 
   @binding.dom
