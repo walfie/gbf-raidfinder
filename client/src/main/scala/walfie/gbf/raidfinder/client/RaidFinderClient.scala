@@ -216,7 +216,7 @@ class WebSocketRaidFinderClient(
         } yield addRaidTweetToColumn(tweet, column)
       }
 
-    case r: VersionResponse =>
+    case r: WelcomeResponse =>
       val isOutdatedOpt = for {
         clientVersion <- VersionString(BuildInfo.version).parse
         serverVersion <- r.serverVersion.parse

@@ -37,7 +37,7 @@ package object syntax {
       case RaidTweetMessage(v) => Some(v)
       case RaidBossesMessage(v) => Some(v)
       case FollowStatusMessage(v) => Some(v)
-      case VersionMessage(v) => Some(v)
+      case WelcomeMessage(v) => Some(v)
       case KeepAliveMessage(v) => Some(v)
       case Empty => None
     }
@@ -51,7 +51,7 @@ package object syntax {
         case v: RaidTweetResponse => RaidTweetMessage(v)
         case v: RaidBossesResponse => RaidBossesMessage(v)
         case v: FollowStatusResponse => FollowStatusMessage(v)
-        case v: VersionResponse => VersionMessage(v)
+        case v: WelcomeResponse => WelcomeMessage(v)
         case v: KeepAliveResponse => KeepAliveMessage(v)
       }
       ResponseMessage(data = data)
