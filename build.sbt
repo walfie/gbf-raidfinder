@@ -113,6 +113,7 @@ lazy val root = (project in file("."))
     herokuProcessTypes in Compile := Map(
       "web" -> Seq(
         s"target/universal/stage/bin/${name.value}",
+        "-Dfile.encoding=UTF-8",
         "-Dhttp.port=$PORT",
         "-Dapplication.cache.redisUrl=$REDIS_URL",
         "-Dapplication.mode=prod"
