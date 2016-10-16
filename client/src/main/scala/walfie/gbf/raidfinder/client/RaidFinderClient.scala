@@ -216,7 +216,7 @@ class WebSocketRaidFinderClient(
         } yield addRaidTweetToColumn(tweet, column)
       }
 
-    case r: VersionResponse =>
+    case r: WelcomeResponse =>
       val isOutdatedOpt = for {
         clientVersion <- VersionString(BuildInfo.version).parse
         serverVersion <- r.serverVersion.parse
@@ -309,14 +309,14 @@ class WebSocketRaidFinderClient(
           )
           allBossesMap = allBossesMap.updated(bossName, newColumn)
 
-          state.allBosses.get := allBossesMap.values.toArray.sortBy { column =>
-            val boss = column.raidBoss.get
-            (boss.level, boss.name)
-          }
-
         case Some(column) => // Update existing raid boss data
           column.raidBoss := raidBoss
       }
+    }
+
+    state.allBosses.get := allBossesMap.values.toArray.sortBy { column =>
+      val boss = column.raidBoss.get
+      (boss.level, boss.name)
     }
   }
 

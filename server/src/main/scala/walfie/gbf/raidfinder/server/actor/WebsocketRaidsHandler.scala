@@ -24,7 +24,7 @@ class WebsocketRaidsHandler(
 
   // On connect, send current version
   override def preStart(): Unit = {
-    this push VersionResponse(serverVersion = VersionString(BuildInfo.version))
+    this push WelcomeResponse(serverVersion = VersionString(BuildInfo.version))
     metricsCollector.webSocketConnected()
   }
 

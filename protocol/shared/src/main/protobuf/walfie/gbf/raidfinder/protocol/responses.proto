@@ -13,7 +13,7 @@ option (scalapb.options) = {
 
 message ResponseMessage {
   oneof data {
-    VersionResponse versionMessage = 1;
+    WelcomeResponse welcomeMessage = 1;
     FollowStatusResponse followStatusMessage = 2;
     RaidTweetResponse raidTweetMessage = 3;
     RaidBossesResponse raidBossesMessage = 4;
@@ -21,7 +21,7 @@ message ResponseMessage {
   };
 };
 
-message VersionResponse {
+message WelcomeResponse {
   option (scalapb.message).extends = "Response";
 
   string serverVersion = 1 [(scalapb.field).type = "VersionString"];
