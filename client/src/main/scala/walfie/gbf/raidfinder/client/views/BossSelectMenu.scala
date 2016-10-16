@@ -43,35 +43,34 @@ object BossSelectMenu {
   def bossList(client: RaidFinderClient, imageQuality: Binding[ImageQuality]): Binding[HTMLUListElement] = {
     <ul class="mdl-list" style="padding: 0; margin: 0;">
       {
-        client.state.allBosses.map { bossColumn =>
-          val boss = bossColumn.raidBoss.bind
-          val isFollowing = client.state.followedBossNames.bind(boss.name)
+        for {
+          bossColumn <- client.state.allBosses
+          boss = bossColumn.raidBoss
+          isFollowing = Binding { client.state.followedBossNames.bind(boss.bind.name) }
 
           // Only show Japanese bosses unless there is no translation
           // TODO: This is kinda hacky, maybe think of a better way
-          if (boss.language == Language.JAPANESE || boss.translatedName.isEmpty || isFollowing)
-            bossListItem(boss, isFollowing, imageQuality).bind
-          else <li></li>
-        }
+          if (boss.bind.language == Language.JAPANESE || boss.bind.translatedName.isEmpty || isFollowing.bind)
+        } yield bossListItem(boss, isFollowing, imageQuality).bind
       }
     </ul>
   }
 
   @binding.dom
   def bossListItem(
-    boss: RaidBoss, isFollowing: Boolean, imageQuality: Binding[ImageQuality]
+    boss: Binding[RaidBoss], isFollowing: Binding[Boolean], imageQuality: Binding[ImageQuality]
   ): Binding[HTMLLIElement] = {
     val elem =
       <li class={
         "gbfrf-js-bossSelect gbfrf-follow__boss-box mdl-list__item".addIf(
           imageQuality.bind != ImageQuality.Off,
           "gbfrf-follow__boss-box--with-image mdl-shadow--2dp"
-        ).addIf(boss.translatedName.nonEmpty, "mdl-list__item--two-line")
-      } data:data-bossName={ boss.name }>
+        ).addIf(boss.bind.translatedName.nonEmpty, "mdl-list__item--two-line")
+      } data:data-bossName={ boss.bind.name }>
         <span class="mdl-list__item-primary-content">
-          <span>{ boss.name }</span>
+          <span>{ boss.bind.name }</span>
           {
-            boss.translatedName match {
+            boss.bind.translatedName match {
               case Some(translatedName) => Constants(
                 <span class="gbfrf-follow__boss-box-subtitle mdl-list__item-sub-title">{ translatedName }</span>
               )
@@ -81,12 +80,12 @@ object BossSelectMenu {
         </span>
         <div class="mdl-layout-spacer"></div>
         {
-          if (isFollowing) List(<div class="mdl-badge mdl-badge--overlap" data:data-badge="★"></div>)
-          else List.empty
+          if (isFollowing.bind) Constants(<div class="mdl-badge mdl-badge--overlap" data:data-badge="★"></div>)
+          else Constants()
         }
       </li>
 
-    elem.backgroundImageQuality(boss.image, 0.25, imageQuality.bind)
+    elem.backgroundImageQuality(boss.bind.image, 0.25, imageQuality.bind)
   }
 }
 

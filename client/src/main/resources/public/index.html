@@ -58,7 +58,8 @@ function getBaseUrl() {
 [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://code.getmdl.io/1.2.0/material.indigo-pink.min.css',
-  'css/dark.css'
+  'css/dark.css',
+  'css/base.css'
 ].forEach(loadCSS);
 
 loadScript('./js/gbf-raidfinder-client-jsdeps.js', function() {
@@ -67,7 +68,6 @@ loadScript('./js/gbf-raidfinder-client-jsdeps.js', function() {
   loadScript('./js/gbf-raidfinder-client-' + fileVer + '.js', function() {
     var url = getBaseUrl() + '/ws/raids?keepAlive=true';
     GbfRaidFinder().init(url);
-    loadCSS('css/base.css'); // Reduce amount of reflow by delaying load
   });
 });
 
