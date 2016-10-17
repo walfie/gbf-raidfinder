@@ -39,6 +39,11 @@ class Components(
     raidFinder, translator, websocketKeepAliveInterval, metricsCollector
   )(actorSystem, materializer)
 
+  // The charset isn't necessary, but without it, Chrome displays Japanese incorrectly
+  // if you try to view the JSON directly.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=438464
+  private val ContentTypeJsonWithUtf8 = "application/json; charset=utf-8"
+
   lazy val router = Router.from {
     case GET(p"/") =>
       controllers.Assets.at(path = "/public", "index.html")
@@ -53,7 +58,7 @@ class Components(
         raidBosses = bosses.map(_.toProtocol(translator)).toSeq
       )
       val responseJson = JsonFormat.toJsonString(responseProtobuf)
-      Action(Ok(responseJson).as(ContentTypes.JSON))
+      Action(Ok(responseJson).as(ContentTypeJsonWithUtf8))
 
     case GET(p"/api/metrics.json") =>
       val activeUsers = metricsCollector.getActiveWebSocketCount()
