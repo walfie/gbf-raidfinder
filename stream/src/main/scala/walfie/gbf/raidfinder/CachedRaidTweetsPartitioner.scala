@@ -11,8 +11,7 @@ object CachedRaidTweetsPartitioner {
     cacheSizePerBoss: Int
   )(implicit scheduler: Scheduler): (CachedRaidTweetsPartitioner, Cancelable) = {
     CachedObservablesPartitioner.fromUngroupedObservable(
-      observable,
-      cacheSizePerBoss
+      observable, cacheSizePerBoss
     )(_.bossName)
   }
 }
