@@ -13,19 +13,24 @@ trait ObservablesPartitioner[K, V] {
 }
 
 object CachedObservablesPartitioner {
-  def fromUngroupedObservable[K, V](observable: Observable[V], cacheSizePerKey: Int)(
-    keySelector: V => K
-  )(implicit scheduler: Scheduler): (CachedObservablesPartitioner[K, V], Cancelable) = {
-    val partitioner = new CachedObservablesPartitioner[K, V](cacheSizePerKey)
+  def fromUngroupedObservable[K, InputV, OutputV](
+    observable:      Observable[InputV],
+    cacheSizePerKey: Int,
+    keySelector:     InputV => K,
+    mappingFunction: InputV => OutputV
+  )(implicit scheduler: Scheduler): (CachedObservablesPartitioner[K, InputV, OutputV], Cancelable) = {
+    val partitioner = new CachedObservablesPartitioner[K, InputV, OutputV](cacheSizePerKey, mappingFunction)
     val cancelable = observable.groupBy(keySelector).subscribe(partitioner)
     (partitioner, cancelable)
   }
 }
 
-class CachedObservablesPartitioner[K, V](cacheSizePerKey: Int)(implicit ec: ExecutionContext)
-  extends Observer[GroupedObservable[K, V]] with ObservablesPartitioner[K, V] {
+class CachedObservablesPartitioner[K, InputV, OutputV](
+  cacheSizePerKey: Int, mappingFunction: InputV => OutputV
+)(implicit ec: ExecutionContext)
+  extends Observer[GroupedObservable[K, InputV]] with ObservablesPartitioner[K, OutputV] {
 
-  private val observablesByKey = Agent[Map[K, Observable[V]]](Map.empty)
+  private val observablesByKey = Agent[Map[K, Observable[OutputV]]](Map.empty)
   private val incomingKeys = PublishSubject[K]()
 
   def onComplete(): Unit = {
@@ -42,9 +47,9 @@ class CachedObservablesPartitioner[K, V](cacheSizePerKey: Int)(implicit ec: Exec
     * the key to the internal `incomingKeys` subject, to inform subscribers
     * that attempted to get an observable on an unknown key.
     */
-  def onNext(elem: GroupedObservable[K, V]): Future[Ack] = {
+  def onNext(elem: GroupedObservable[K, InputV]): Future[Ack] = {
     val key = elem.key
-    val cachedObservable = elem.cache(cacheSizePerKey)
+    val cachedObservable = elem.map(mappingFunction).cache(cacheSizePerKey)
 
     for {
       _ <- observablesByKey.alter(_.updated(key, cachedObservable))
@@ -60,7 +65,7 @@ class CachedObservablesPartitioner[K, V](cacheSizePerKey: Int)(implicit ec: Exec
     * NOTE: This may be a cold observable, so it should not be shared by subscribers
     * unless explicitly turned into a hot observable (e.g., with `.publish`)
     */
-  def getObservable(key: K): Observable[V] = {
+  def getObservable(key: K): Observable[OutputV] = {
     observablesByKey.get.getOrElse(
       key,
       incomingKeys.findF(_ == key).flatMap(_ => getObservable(key))

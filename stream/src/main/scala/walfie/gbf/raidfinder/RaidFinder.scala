@@ -87,9 +87,11 @@ class RaidFinderImpl[T](
 
   private val (partitioner, partitionerCancelable) =
     CachedObservablesPartitioner.fromUngroupedObservable(
-      raidInfos.map(raidInfo => fromRaidTweet.from(raidInfo.tweet)),
-      cachedTweetsPerBoss
-    )(fromRaidTweet.getBossName)
+      raidInfos.map(_.tweet),
+      cachedTweetsPerBoss,
+      (_: RaidTweet).bossName,
+      fromRaidTweet.from // TODO
+    )
 
   private val (knownBosses, knownBossesCancelable) = KnownBossesObserver
     .fromRaidInfoObservable(raidInfos, initialBosses)

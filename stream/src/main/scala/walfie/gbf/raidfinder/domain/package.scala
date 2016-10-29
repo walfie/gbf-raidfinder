@@ -42,20 +42,15 @@ package domain {
 
   trait FromRaidTweet[T] {
     def from(raidTweet: RaidTweet): T
-    def getBossName(t: T): BossName
   }
 
   object FromRaidTweet {
-    def apply[T](
-      fromF:        RaidTweet => T,
-      getBossNameF: T => BossName
-    ) = new FromRaidTweet[T] {
+    def apply[T](fromF: RaidTweet => T) = new FromRaidTweet[T] {
       def from(raidTweet: RaidTweet): T = fromF(raidTweet)
-      def getBossName(t: T): BossName = getBossNameF(t)
     }
 
     val Identity: FromRaidTweet[RaidTweet] =
-      FromRaidTweet[RaidTweet](identity, _.bossName)
+      FromRaidTweet[RaidTweet](identity)
   }
 }
 

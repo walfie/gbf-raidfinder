@@ -88,6 +88,8 @@ class CachedObservablesPartitionerSpec extends CachedObservablesPartitionerSpecH
 
       cancelable.cancel()
     }
+
+    // TODO: Add test for partitioner with mapping function
   }
 }
 
@@ -106,7 +108,7 @@ trait CachedObservablesPartitionerSpecHelpers extends FreeSpec {
     implicit val scheduler = TestScheduler(SynchronousExecution)
     lazy val input = ConcurrentSubject.replay[Idol]
     lazy val (partitioner, cancelable) = CachedObservablesPartitioner
-      .fromUngroupedObservable(input, cacheSize)(_.color)
+      .fromUngroupedObservable(input, cacheSize, (_: Idol).color, identity[Idol])
     lazy val receiver = new TestObserver[Idol]
   }
 }
