@@ -73,15 +73,13 @@ class WebsocketRaidsHandler(
 
     case r: FollowRequest =>
       // Follow bosses and their translated counterparts
-      follow(r.bossNames)
-      follow(r.bossNames.flatMap(translator.translate))
+      follow(r.bossNames ++ r.bossNames.flatMap(translator.translate))
 
       this push FollowStatusResponse(followed.keys.toSeq)
 
     case r: UnfollowRequest =>
       // Unfollow bosses and their translated counterparts
-      unfollow(r.bossNames)
-      unfollow(r.bossNames.flatMap(translator.translate))
+      unfollow(r.bossNames ++ r.bossNames.flatMap(translator.translate))
 
       this push FollowStatusResponse(followed.keys.toSeq)
   }

@@ -24,7 +24,7 @@ trait RaidFinderClient {
   def updateAllBosses(): Unit
   def resetBossList(): Unit
 
-  def follow(bossName: BossName): Unit
+  def follow(bossName: BossName, sendMessage: Boolean = true): Unit
   def unfollow(bossName: BossName): Unit
   def toggleFollow(bossName: BossName): Unit
 
@@ -51,7 +51,6 @@ class WebSocketRaidFinderClient(
 ) extends RaidFinderClient with WebSocketSubscriber {
   import RaidFinderClient._
 
-  websocket.setSubscriber(Some(this))
   var isConnected: Var[Boolean] = Var(false)
   private var isStartingUp = true
 
@@ -61,11 +60,16 @@ class WebSocketRaidFinderClient(
   private val FollowedBossesStorageKey = "followedBosses"
   val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
 
-  resetBossList()
-  fetchFollowedBossesLocalStorage(FollowedBossesStorageKey).foreach { boss =>
-    follow(boss.name)
-    if (boss.isSubscribed) { subscribe(boss.name) }
-    if (boss.soundId.nonEmpty) { setNotificationSound(boss.name, boss.soundId.toOption) }
+  {
+    websocket.setSubscriber(Some(this))
+    resetBossList()
+    val storedBosses = fetchFollowedBossesLocalStorage(FollowedBossesStorageKey)
+    storedBosses.foreach { boss =>
+      follow(boss.name, sendMessage = false)
+      if (boss.isSubscribed) { subscribe(boss.name) }
+      if (boss.soundId.nonEmpty) { setNotificationSound(boss.name, boss.soundId.toOption) }
+    }
+    websocket.send(FollowRequest(bossNames = storedBosses.map(_.name)))
   }
 
   override def onWebSocketOpen(): Unit = {
@@ -105,8 +109,12 @@ class WebSocketRaidFinderClient(
     if (index < 0) None else Some(index)
   }
 
-  def follow(bossName: BossName): Unit = if (columnIndex(bossName).isEmpty) {
-    websocket.send(FollowRequest(bossNames = List(bossName)))
+  def follow(
+    bossName: BossName, sendMessage: Boolean = true
+  ): Unit = if (columnIndex(bossName).isEmpty) {
+    if (sendMessage) {
+      websocket.send(FollowRequest(bossNames = List(bossName)))
+    }
 
     // If it's not a boss we know about, create an empty column for it
     val column: RaidBossColumn = allBossesMap.getOrElse(bossName, {
