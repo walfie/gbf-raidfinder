@@ -19,6 +19,8 @@ class WebsocketRaidsHandler(
   keepAliveInterval: Option[FiniteDuration],
   metricsCollector:  MetricsCollector
 ) extends Actor {
+  import WebsocketRaidsHandler.SerializedKeepAliveMessage
+
   implicit val scheduler = Scheduler(context.system.dispatcher)
   implicit val implicitTranslator: BossNameTranslator = translator
 
@@ -54,7 +56,7 @@ class WebsocketRaidsHandler(
 
   val keepAliveCancelable = keepAliveInterval.map { interval =>
     context.system.scheduler.schedule(interval, interval) {
-      this push KeepAliveResponse()
+      out ! SerializedKeepAliveMessage
     }
   }
 
@@ -114,6 +116,10 @@ class WebsocketRaidsHandler(
 }
 
 object WebsocketRaidsHandler {
+  // Since this never changes, there's no need to create and serialize
+  // a new instance of it every time.
+  private val SerializedKeepAliveMessage = KeepAliveResponse().toMessage
+
   def props(
     out:               ActorRef,
     raidFinder:        RaidFinder,
