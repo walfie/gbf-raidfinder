@@ -39,5 +39,18 @@ package domain {
     lastSeen: Date,
     language: Language
   )
+
+  trait FromRaidTweet[T] {
+    def from(raidTweet: RaidTweet): T
+  }
+
+  object FromRaidTweet {
+    def apply[T](fromF: RaidTweet => T) = new FromRaidTweet[T] {
+      def from(raidTweet: RaidTweet): T = fromF(raidTweet)
+    }
+
+    val Identity: FromRaidTweet[RaidTweet] =
+      FromRaidTweet[RaidTweet](identity)
+  }
 }
 

@@ -17,7 +17,7 @@ import walfie.gbf.raidfinder.server.util.MessageFlowTransformerUtil
 import walfie.gbf.raidfinder.server.{BossNameTranslator, MetricsCollector}
 
 class WebsocketController(
-  raidFinder:        RaidFinder,
+  raidFinder:        RaidFinder[ResponseMessage],
   translator:        BossNameTranslator,
   keepAliveInterval: FiniteDuration,
   metricsCollector:  MetricsCollector

@@ -8,9 +8,10 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 import twitter4j._
 import walfie.gbf.raidfinder.domain._
+import walfie.gbf.raidfinder.util.CachedObservablesPartitioner
 
-trait RaidFinder {
-  def getRaidTweets(bossName: BossName): Observable[RaidTweet]
+trait RaidFinder[T] {
+  def getRaidTweets(bossName: BossName): Observable[T]
   def newBossObservable: Observable[RaidBoss]
   def getKnownBosses(): Map[BossName, RaidBoss]
   def purgeOldBosses(minDate: Date, levelThreshold: Int): Future[Map[BossName, RaidBoss]]
@@ -22,13 +23,13 @@ object RaidFinder {
   val DefaultBackfillSize = 200
 
   /** Stream tweets without looking up old tweets first */
-  def withoutBackfill(
+  def withoutBackfill[T: FromRaidTweet](
     twitterStream:       TwitterStream = TwitterStreamFactory.getSingleton,
     cachedTweetsPerBoss: Int           = DefaultCacheSizePerBoss,
     initialBosses:       Seq[RaidBoss] = Seq.empty
-  )(implicit scheduler: Scheduler): DefaultRaidFinder = {
+  )(implicit scheduler: Scheduler): RaidFinderImpl[T] = {
     val statuses = TwitterStreamer(twitterStream).observable
-    new DefaultRaidFinder(statuses, cachedTweetsPerBoss, initialBosses) {
+    new RaidFinderImpl(statuses, cachedTweetsPerBoss, initialBosses) {
       override def onShutdown(): Unit = {
         twitterStream.cleanUp()
         twitterStream.shutdown()
@@ -37,13 +38,13 @@ object RaidFinder {
   }
 
   /** Search for old tweets first before streaming new tweets */
-  def withBackfill(
+  def withBackfill[T: FromRaidTweet](
     twitter:             Twitter       = TwitterFactory.getSingleton,
     twitterStream:       TwitterStream = TwitterStreamFactory.getSingleton,
     backfillSize:        Int           = DefaultBackfillSize,
     cachedTweetsPerBoss: Int           = DefaultCacheSizePerBoss,
     initialBosses:       Seq[RaidBoss] = Seq.empty
-  )(implicit scheduler: Scheduler): DefaultRaidFinder = {
+  )(implicit scheduler: Scheduler): RaidFinderImpl[T] = {
     import TwitterSearcher._
 
     // Get backfill of tweets, then sort them by earliest first
@@ -60,7 +61,7 @@ object RaidFinder {
     val backfillObservable = Observable.fromTask(backfillTask).flatMap(Observable.fromIterable)
     val newStatusesObservable = TwitterStreamer(twitterStream).observable
 
-    new DefaultRaidFinder(
+    new RaidFinderImpl(
       backfillObservable ++ newStatusesObservable, cachedTweetsPerBoss, initialBosses
     ) {
       override def onShutdown(): Unit = {
@@ -71,11 +72,11 @@ object RaidFinder {
   }
 }
 
-class DefaultRaidFinder(
+class RaidFinderImpl[T](
   statusesObservable:  Observable[Status],
   cachedTweetsPerBoss: Int,
   initialBosses:       Seq[RaidBoss]
-)(implicit scheduler: Scheduler) extends RaidFinder {
+)(implicit scheduler: Scheduler, fromRaidTweet: FromRaidTweet[T]) extends RaidFinder[T] {
   /** Override this to perform additional cleanup on shutdown */
   protected def onShutdown(): Unit = ()
 
@@ -84,8 +85,13 @@ class DefaultRaidFinder(
     .collect(Function.unlift(StatusParser.parse))
     .publish
 
-  private val (partitioner, partitionerCancelable) = CachedRaidTweetsPartitioner
-    .fromUngroupedObservable(raidInfos.map(_.tweet), cachedTweetsPerBoss)
+  private val (partitioner, partitionerCancelable) =
+    CachedObservablesPartitioner.fromUngroupedObservable(
+      raidInfos.map(_.tweet),
+      cachedTweetsPerBoss,
+      (_: RaidTweet).bossName,
+      fromRaidTweet.from // TODO
+    )
 
   private val (knownBosses, knownBossesCancelable) = KnownBossesObserver
     .fromRaidInfoObservable(raidInfos, initialBosses)
@@ -106,7 +112,7 @@ class DefaultRaidFinder(
   def shutdown(): Unit = cancelable.cancel()
   def getKnownBosses(): Map[BossName, RaidBoss] =
     knownBosses.get()
-  def getRaidTweets(bossName: BossName): Observable[RaidTweet] =
+  def getRaidTweets(bossName: BossName): Observable[T] =
     partitioner.getObservable(bossName)
   def purgeOldBosses(minDate: Date, levelThreshold: Int): Future[Map[BossName, RaidBoss]] =
     knownBosses.purgeOldBosses(minDate, levelThreshold)

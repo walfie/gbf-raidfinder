@@ -9,6 +9,7 @@ import play.api.{Logger, Mode}
 import scala.concurrent.duration._
 import walfie.gbf.raidfinder.domain
 import walfie.gbf.raidfinder.protocol._
+import walfie.gbf.raidfinder.protocol.syntax.ResponseOps
 import walfie.gbf.raidfinder.RaidFinder
 import walfie.gbf.raidfinder.server.{ImageBasedBossNameTranslator => translator}
 import walfie.gbf.raidfinder.server.persistence._
@@ -31,9 +32,11 @@ object Application {
     }
 
     // Start RaidFinder
-    val raidFinder = RaidFinder.withBackfill(
-      initialBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
-    )
+    val raidFinder = {
+      implicit val fromRaidTweet = domain.FromRaidTweet(_.toProtocol.toMessage)
+      val initialBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
+      RaidFinder.withBackfill(initialBosses = initialBosses)
+    }
 
     val translator = new ImageBasedBossNameTranslator(
       initialTranslationData = getCachedTranslationData(protobufStorage, translationsConfig.cacheKey),

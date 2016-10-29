@@ -14,7 +14,7 @@ import walfie.gbf.raidfinder.server.syntax.ProtocolConverters.{RaidBossDomainOps
 
 class WebsocketRaidsHandler(
   out:               ActorRef,
-  raidFinder:        RaidFinder,
+  raidFinder:        RaidFinder[ResponseMessage],
   translator:        BossNameTranslator,
   keepAliveInterval: Option[FiniteDuration],
   metricsCollector:  MetricsCollector
@@ -93,7 +93,7 @@ class WebsocketRaidsHandler(
     val cancelables = newBosses.map { bossName =>
       val cancelable = raidFinder
         .getRaidTweets(bossName)
-        .foreach(raidTweet => this.push(raidTweet.toProtocol))
+        .foreach(out ! _)
 
       bossName -> cancelable
     }
@@ -122,7 +122,7 @@ object WebsocketRaidsHandler {
 
   def props(
     out:               ActorRef,
-    raidFinder:        RaidFinder,
+    raidFinder:        RaidFinder[ResponseMessage],
     translator:        BossNameTranslator,
     keepAliveInterval: Option[FiniteDuration],
     metricsCollector:  MetricsCollector
