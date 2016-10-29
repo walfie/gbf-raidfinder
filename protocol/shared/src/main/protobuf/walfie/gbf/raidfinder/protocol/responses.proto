@@ -56,5 +56,3 @@ message KeepAliveResponse {
   option (scalapb.message).extends = "Response";
 };
 
-// TODO: ShutdownResponse
-
