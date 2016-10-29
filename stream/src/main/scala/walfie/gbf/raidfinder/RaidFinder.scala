@@ -51,8 +51,8 @@ object RaidFinder {
     val backfillTask: Task[Seq[Status]] =
       TwitterSearcher(twitter, TwitterSearcher.ReverseChronological)
         .observable(DefaultSearchTerm, None, MaxCount)
+        .take(backfillSize / MaxCount)
         .flatMap(Observable.fromIterable)
-        .take(backfillSize)
         .toListL
         .map(_.sortBy(_.getCreatedAt)) // earliest first
 
