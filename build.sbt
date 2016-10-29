@@ -114,7 +114,7 @@ lazy val root = (project in file("."))
       "web" -> Seq(
         s"target/universal/stage/bin/${name.value}",
         "-Dhttp.port=$PORT",
-        "-Dapplication.cache.redisUrl=$REDIS_URL",
+        "-Dapplication.cache.redisUrl=$REDISCLOUD_URL",
         "-Dapplication.mode=prod"
       ).mkString(" ")
     )
