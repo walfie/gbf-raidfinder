@@ -24,7 +24,7 @@ trait RaidFinderClient {
   def updateAllBosses(): Unit
   def resetBossList(): Unit
 
-  def follow(bossName: BossName, sendMessage: Boolean = true): Unit
+  def follow(bossName: BossName): Unit
   def unfollow(bossName: BossName): Unit
   def toggleFollow(bossName: BossName): Unit
 
@@ -61,15 +61,13 @@ class WebSocketRaidFinderClient(
   val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
 
   {
-    websocket.setSubscriber(Some(this))
     resetBossList()
-    val storedBosses = fetchFollowedBossesLocalStorage(FollowedBossesStorageKey)
-    storedBosses.foreach { boss =>
-      follow(boss.name, sendMessage = false)
+    fetchFollowedBossesLocalStorage(FollowedBossesStorageKey).foreach { boss =>
+      follow(boss.name)
       if (boss.isSubscribed) { subscribe(boss.name) }
       if (boss.soundId.nonEmpty) { setNotificationSound(boss.name, boss.soundId.toOption) }
     }
-    websocket.send(FollowRequest(bossNames = storedBosses.map(_.name)))
+    websocket.setSubscriber(Some(this))
   }
 
   override def onWebSocketOpen(): Unit = {
@@ -110,11 +108,9 @@ class WebSocketRaidFinderClient(
   }
 
   def follow(
-    bossName: BossName, sendMessage: Boolean = true
+    bossName: BossName
   ): Unit = if (columnIndex(bossName).isEmpty) {
-    if (sendMessage) {
-      websocket.send(FollowRequest(bossNames = List(bossName)))
-    }
+    websocket.send(FollowRequest(bossNames = List(bossName)))
 
     // If it's not a boss we know about, create an empty column for it
     val column: RaidBossColumn = allBossesMap.getOrElse(bossName, {

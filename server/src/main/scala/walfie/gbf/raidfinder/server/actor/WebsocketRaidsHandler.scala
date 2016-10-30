@@ -18,10 +18,9 @@ class WebsocketRaidsHandler(
   translator:        BossNameTranslator,
   keepAliveInterval: Option[FiniteDuration],
   metricsCollector:  MetricsCollector
-) extends Actor {
+)(implicit scheduler: Scheduler) extends Actor {
   import WebsocketRaidsHandler.SerializedKeepAliveMessage
 
-  implicit val scheduler = Scheduler(context.system.dispatcher)
   implicit val implicitTranslator: BossNameTranslator = translator
 
   // On connect, send current version
@@ -124,7 +123,7 @@ object WebsocketRaidsHandler {
     translator:        BossNameTranslator,
     keepAliveInterval: Option[FiniteDuration],
     metricsCollector:  MetricsCollector
-  ): Props = Props {
+  )(implicit scheduler: Scheduler): Props = Props {
     new WebsocketRaidsHandler(out, raidFinder, translator, keepAliveInterval, metricsCollector)
   }.withDeploy(Deploy.local)
 }

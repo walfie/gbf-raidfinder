@@ -3,6 +3,7 @@ package walfie.gbf.raidfinder.server
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.trueaccord.scalapb.json.JsonFormat
+import monix.execution.Scheduler
 import play.api.BuiltInComponents
 import play.api.http.{ContentTypes, DefaultHttpErrorHandler}
 import play.api.libs.json.Json
@@ -11,8 +12,8 @@ import play.api.mvc._
 import play.api.routing.Router
 import play.api.routing.sird._
 import play.core.server._
-import play.filters.gzip.GzipFilterComponents
 import play.filters.cors.{CORSConfig, CORSFilter}
+import play.filters.gzip.GzipFilterComponents
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.Future
 import walfie.gbf.raidfinder.protocol.{RaidBossesResponse, ResponseMessage}
@@ -37,7 +38,7 @@ class Components(
 
   lazy val websocketController = new WebsocketController(
     raidFinder, translator, websocketKeepAliveInterval, metricsCollector
-  )(actorSystem, materializer)
+  )(actorSystem, materializer, Scheduler.Implicits.global)
 
   // The charset isn't necessary, but without it, Chrome displays Japanese incorrectly
   // if you try to view the JSON directly.
