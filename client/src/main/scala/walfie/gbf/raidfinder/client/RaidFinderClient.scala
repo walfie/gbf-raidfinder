@@ -51,7 +51,6 @@ class WebSocketRaidFinderClient(
 ) extends RaidFinderClient with WebSocketSubscriber {
   import RaidFinderClient._
 
-  websocket.setSubscriber(Some(this))
   var isConnected: Var[Boolean] = Var(false)
   private var isStartingUp = true
 
@@ -61,11 +60,14 @@ class WebSocketRaidFinderClient(
   private val FollowedBossesStorageKey = "followedBosses"
   val state = State(allBosses = Vars.empty, followedBosses = Vars.empty)
 
-  resetBossList()
-  fetchFollowedBossesLocalStorage(FollowedBossesStorageKey).foreach { boss =>
-    follow(boss.name)
-    if (boss.isSubscribed) { subscribe(boss.name) }
-    if (boss.soundId.nonEmpty) { setNotificationSound(boss.name, boss.soundId.toOption) }
+  {
+    resetBossList()
+    fetchFollowedBossesLocalStorage(FollowedBossesStorageKey).foreach { boss =>
+      follow(boss.name)
+      if (boss.isSubscribed) { subscribe(boss.name) }
+      if (boss.soundId.nonEmpty) { setNotificationSound(boss.name, boss.soundId.toOption) }
+    }
+    websocket.setSubscriber(Some(this))
   }
 
   override def onWebSocketOpen(): Unit = {
@@ -105,7 +107,9 @@ class WebSocketRaidFinderClient(
     if (index < 0) None else Some(index)
   }
 
-  def follow(bossName: BossName): Unit = if (columnIndex(bossName).isEmpty) {
+  def follow(
+    bossName: BossName
+  ): Unit = if (columnIndex(bossName).isEmpty) {
     websocket.send(FollowRequest(bossNames = List(bossName)))
 
     // If it's not a boss we know about, create an empty column for it

@@ -1,8 +1,9 @@
 package walfie.gbf.raidfinder.server.controller
 
 import akka.actor._
-import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
+import akka.stream.{Materializer, OverflowStrategy}
+import monix.execution.Scheduler
 import play.api.http.websocket.Message
 import play.api.libs.streams._
 import play.api.mvc._
@@ -21,7 +22,7 @@ class WebsocketController(
   translator:        BossNameTranslator,
   keepAliveInterval: FiniteDuration,
   metricsCollector:  MetricsCollector
-)(implicit system: ActorSystem, materializer: Materializer) extends Controller {
+)(implicit system: ActorSystem, materializer: Materializer, scheduler: Scheduler) extends Controller {
   private val jsonTransformer = MessageFlowTransformerUtil.protobufJsonMessageFlowTransformer
   private val binaryTransformer = MessageFlowTransformerUtil.protobufBinaryMessageFlowTransformer
   private val defaultTransformer = jsonTransformer
@@ -51,9 +52,20 @@ class WebsocketController(
 
     val result: Either[Result, Flow[Message, Message, _]] = transformerOpt match {
       case Some(transformer) => Right {
-        val flow = ActorFlow.actorRef { out =>
+        val props = { out: ActorRef =>
           WebsocketRaidsHandler.props(out, raidFinder, translator, interval, metricsCollector)
         }
+
+        /**
+          * By default, `ActorFlow.actorRef` buffers 16 messages and drops new messages if
+          * the buffer is full. We'll likely hit that limit when returning backfill tweets.
+          *
+          * See: https://github.com/playframework/playframework/issues/6246
+          *
+          * There's not a great way to handle this server-side without increasing buffer
+          * size, so instead I'm going to throttle the startup requests client-side.
+          */
+        val flow = ActorFlow.actorRef(props = props)
         transformer.transform(flow)
       }
       case None => Left {

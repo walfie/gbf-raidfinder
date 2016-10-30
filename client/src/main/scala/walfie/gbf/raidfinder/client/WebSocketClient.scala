@@ -3,6 +3,7 @@ package walfie.gbf.raidfinder.client
 import java.nio.ByteBuffer
 import org.scalajs.dom
 import scala.scalajs.js
+import scala.util.Failure
 import walfie.gbf.raidfinder.client.util.time.Duration
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.syntax._
@@ -33,15 +34,25 @@ class BinaryProtobufWebSocketClient(
   private var websocketIsOpen = false
   private var websocketSendQueue = js.Array[ArrayBuffer]()
 
+  /** Like a `foreach` but with a delay between each item */
+  private def websocketDelayedDequeue(ws: dom.WebSocket, delay: Duration): Unit = {
+    js.timers.setTimeout(delay.milliseconds) {
+      if (websocketSendQueue.length > 0) {
+        ws.send(websocketSendQueue.shift)
+        websocketDelayedDequeue(ws, delay)
+      }
+    }
+  }
+
   private def connectWebSocket(isReconnect: Boolean): dom.WebSocket = {
     val ws = new dom.WebSocket(websocketUrl, js.Array("binary"))
+    val dequeueDelay = Duration(milliseconds = 5) // TODO: Stop hardcoding things
 
     ws.binaryType = "arraybuffer"
 
     ws.onopen = { _: dom.Event =>
       websocketIsOpen = true
-      websocketSendQueue.foreach(ws.send)
-      websocketSendQueue = js.Array()
+      websocketDelayedDequeue(ws, dequeueDelay)
       subscriber.foreach { sub =>
         if (isReconnect) sub.onWebSocketReconnect()
         else sub.onWebSocketOpen()
@@ -80,10 +91,11 @@ class BinaryProtobufWebSocketClient(
   // Only connect websocket when a subscriber is present
   def setSubscriber(newSubscriber: Option[WebSocketSubscriber]): Unit = {
     if (subscriber.isEmpty && newSubscriber.nonEmpty) {
+      subscriber = newSubscriber
       websocket = Option(connectWebSocket(isReconnect = false))
+    } else {
+      subscriber = newSubscriber
     }
-
-    subscriber = newSubscriber
   }
 
   def send(request: Request): Unit = {
