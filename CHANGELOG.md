@@ -1,5 +1,26 @@
 # Change Log
 
+## [v0.3.1](https://github.com/walfie/gbf-raidfinder/tree/v0.3.1) (2016-10-30)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.3.0...v0.3.1)
+
+**Fixed bugs:**
+
+- Backfilled raid tweets are sometimes missing on startup [\#93](https://github.com/walfie/gbf-raidfinder/issues/93)
+- Missing Kirin in raid list? [\#85](https://github.com/walfie/gbf-raidfinder/issues/85)
+- Mojibake in bosses.json API endpoint [\#82](https://github.com/walfie/gbf-raidfinder/issues/82)
+
+**Merged pull requests:**
+
+- Fix missing backfill tweets [\#92](https://github.com/walfie/gbf-raidfinder/pull/92) ([walfie](https://github.com/walfie))
+- Cache protobuf objects in observable instead of domain objects [\#91](https://github.com/walfie/gbf-raidfinder/pull/91) ([walfie](https://github.com/walfie))
+- Keep singleton value for KeepAliveResponse [\#90](https://github.com/walfie/gbf-raidfinder/pull/90) ([walfie](https://github.com/walfie))
+- Switch from Heroku Redis to Redis Cloud [\#89](https://github.com/walfie/gbf-raidfinder/pull/89) ([walfie](https://github.com/walfie))
+- Limit number of search API calls on startup [\#88](https://github.com/walfie/gbf-raidfinder/pull/88) ([walfie](https://github.com/walfie))
+- Update Akka, Monix, Play to latest versions [\#86](https://github.com/walfie/gbf-raidfinder/pull/86) ([walfie](https://github.com/walfie))
+- Add charset to JSON content type [\#84](https://github.com/walfie/gbf-raidfinder/pull/84) ([walfie](https://github.com/walfie))
+- Revert "Set `-Dfile.encoding=UTF-8` in Heroku settings" [\#83](https://github.com/walfie/gbf-raidfinder/pull/83) ([walfie](https://github.com/walfie))
+- Set `-Dfile.encoding=UTF-8` in Heroku settings [\#81](https://github.com/walfie/gbf-raidfinder/pull/81) ([walfie](https://github.com/walfie))
+
 ## [v0.3.0](https://github.com/walfie/gbf-raidfinder/tree/v0.3.0) (2016-10-16)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.2.1...v0.3.0)
 
