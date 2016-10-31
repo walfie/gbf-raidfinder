@@ -38,7 +38,7 @@ class KnownBossesObserver(
   initialBosses: Seq[RaidBoss]
 )(implicit scheduler: Scheduler) extends Observer[RaidInfo] with KnownBossesMap {
   private val agent = Agent[Map[BossName, RaidBoss]](
-    initialBosses.map(boss => boss.name -> boss).toMap
+    initialBosses.map(boss => boss.name -> boss)(scala.collection.breakOut)
   )
 
   // TODO: Write test for this

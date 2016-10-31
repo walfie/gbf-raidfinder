@@ -96,7 +96,7 @@ class WebSocketRaidFinderClient(
   def resetBossList(): Unit = {
     val followed = state.followedBosses.get
     state.allBosses.get := followed
-    allBossesMap = followed.map(column => column.raidBoss.get.name -> column).toMap
+    allBossesMap = followed.map(column => column.raidBoss.get.name -> column)(scala.collection.breakOut)
 
     updateAllBosses()
   }

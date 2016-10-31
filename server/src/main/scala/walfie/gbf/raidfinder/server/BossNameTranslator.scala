@@ -43,7 +43,7 @@ class ImageBasedBossNameTranslator(
   private val pHash = new ImagePHash()
 
   private val translationDataAgent: Agent[Map[BossName, TranslationData]] = Agent {
-    initialTranslationData.map(data => data.name -> data).toMap
+    initialTranslationData.map(data => data.name -> data)(scala.collection.breakOut)
   }
 
   private val subject = ConcurrentSubject.publish[Translation]
@@ -56,7 +56,7 @@ class ImageBasedBossNameTranslator(
     // i.e., "A translates to B" implies "B translates to A"
     translationDataAgent.get.values.flatMap { data =>
       findTranslation(data).map(data.name -> _)
-    }.toMap
+    }(scala.collection.breakOut)
   }
 
   def update(latestBosses: Map[BossName, RaidBoss]): Future[Unit] = {
