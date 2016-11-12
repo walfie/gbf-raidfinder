@@ -106,8 +106,8 @@ lazy val root = (project in file("."))
     releaseProcess -= ReleaseTransformations.publishArtifacts,
     mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
 
-    run in Compile <<= (run in Compile) dependsOn (fastOptJS in (client, Compile)),
-    stage <<= stage dependsOn (fullOptJS in (client, Compile)),
+    run in Compile := run.in(Compile).dependsOn(fastOptJS.in(client, Compile)).evaluated,
+    stage := stage.dependsOn(fullOptJS.in(client, Compile)).value,
     herokuAppName in Compile := "gbf-raidfinder",
     herokuSkipSubProjects in Compile := false,
     herokuProcessTypes in Compile := Map(
