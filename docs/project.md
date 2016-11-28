@@ -42,6 +42,8 @@ restarts.
 
 ### Run Locally
 
+* Ensure you have [jre](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html), [sbt](http://www.scala-sbt.org/), and [python 2.x](https://www.python.org/downloads/) installed prior to running the app.
+
 The Play application can be run with `sbt run` and going to
 [localhost:9000](http://localhost:9000). This will also compile the
 client-side JavaScript and make it available to the server.
