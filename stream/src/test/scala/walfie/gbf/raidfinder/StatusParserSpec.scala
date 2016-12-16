@@ -134,6 +134,15 @@ class StatusParserSpec extends StatusParserSpecHelpers {
     StatusParser.parse(status) should not be empty
   }
 
+  "parse a status with a newline at the end" in {
+    val text = """
+      |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
+      |Lv60 オオゾラッコ""".stripMargin.trim + "\n"
+    val status = mockStatus(text = text)
+
+    StatusParser.parse(status) should not be empty
+  }
+
   "parse a status without media entities" in {
     val status = mockStatus(mediaEntities = Array.empty)
 
@@ -146,9 +155,41 @@ class StatusParserSpec extends StatusParserSpecHelpers {
     StatusParser.parse(mockStatus(source = "TweetDeck")) shouldBe None
   }
 
-  "return None invalid text" in {
-    val haiku = "#GranblueHaiku http://example.com/haiku.png"
-    StatusParser.parse(mockStatus(text = haiku)) shouldBe None
+  "return None invalid text" - {
+    "haiku" in {
+      val haiku = "#GranblueHaiku http://example.com/haiku.png"
+      StatusParser.parse(mockStatus(text = haiku)) shouldBe None
+    }
+
+    "daily refresh" in {
+      // Ignore tweets made via the daily Twitter refresh
+      // https://github.com/walfie/gbf-raidfinder/issues/98
+      val text = """
+        |救援依頼 参加者募集！参戦ID：114514810
+        |Lv100 ケルベロス スマホRPGは今これをやってるよ。今の推しキャラはこちら！　ゲーム内プロフィール→　https://t.co/5Xgohi9wlE https://t.co/Xlu7lqQ3km
+        """.stripMargin.trim
+      StatusParser.parse(mockStatus(text = text)) shouldBe None
+    }
+
+    "another daily refresh" in {
+      // First two lines are user input
+      val text = """
+        |救援依頼 参加者募集！参戦ID：114514810
+        |Lv100 ケルベロス
+        |スマホRPGは今これをやってるよ。今の推しキャラはこちら！　ゲーム内プロフィール→　https://t.co/5Xgohi9wlE https://t.co/Xlu7lqQ3km
+        """.stripMargin.trim
+      StatusParser.parse(mockStatus(text = text)) shouldBe None
+    }
+
+    "image URL has extra text after" in {
+      // First two lines are user input
+      val text = """
+        |救援依頼 参加者募集！参戦ID：114514810
+        |Lv100 ケルベロス
+        |https://t.co/5Xgohi9wlE https://t.co/Xlu7lqQ3km
+        """.stripMargin.trim
+      StatusParser.parse(mockStatus(text = text)) shouldBe None
+    }
   }
 }
 
