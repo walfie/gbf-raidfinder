@@ -1,5 +1,28 @@
 # Change Log
 
+## [v0.3.2](https://github.com/walfie/gbf-raidfinder/tree/v0.3.2) (2016-12-16)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.3.1...v0.3.2)
+
+**Implemented enhancements:**
+
+- Documentation [\#29](https://github.com/walfie/gbf-raidfinder/issues/29)
+
+**Fixed bugs:**
+
+- False raid names can be created using the twitter reset function. [\#98](https://github.com/walfie/gbf-raidfinder/issues/98)
+
+**Closed issues:**
+
+- "Child terminated, stopping" message on websocket disconnect [\#19](https://github.com/walfie/gbf-raidfinder/issues/19)
+
+**Merged pull requests:**
+
+- Ignore daily refresh tweets [\#99](https://github.com/walfie/gbf-raidfinder/pull/99) ([walfie](https://github.com/walfie))
+- Update sbt to 0.13.13 [\#97](https://github.com/walfie/gbf-raidfinder/pull/97) ([walfie](https://github.com/walfie))
+- Additional Documentation [\#96](https://github.com/walfie/gbf-raidfinder/pull/96) ([krishnaglick](https://github.com/krishnaglick))
+- Use scala.collection.breakOut [\#95](https://github.com/walfie/gbf-raidfinder/pull/95) ([walfie](https://github.com/walfie))
+- Add documentation [\#94](https://github.com/walfie/gbf-raidfinder/pull/94) ([walfie](https://github.com/walfie))
+
 ## [v0.3.1](https://github.com/walfie/gbf-raidfinder/tree/v0.3.1) (2016-10-30)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.3.0...v0.3.1)
 
