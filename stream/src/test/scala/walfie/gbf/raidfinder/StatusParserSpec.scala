@@ -180,6 +180,16 @@ class StatusParserSpec extends StatusParserSpecHelpers {
         """.stripMargin.trim
       StatusParser.parse(mockStatus(text = text)) shouldBe None
     }
+
+    "image URL has extra text after" in {
+      // First two lines are user input
+      val text = """
+        |救援依頼 参加者募集！参戦ID：114514810
+        |Lv100 ケルベロス
+        |https://t.co/5Xgohi9wlE https://t.co/Xlu7lqQ3km
+        """.stripMargin.trim
+      StatusParser.parse(mockStatus(text = text)) shouldBe None
+    }
   }
 }
 

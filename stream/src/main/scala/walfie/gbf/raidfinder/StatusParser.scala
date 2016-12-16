@@ -20,7 +20,7 @@ object StatusParser {
     """<a href="http://granbluefantasy.jp/" rel="nofollow">グランブルー ファンタジー</a>"""
 
   def isValidName(name: BossName): Boolean = !name.contains("http")
-  private def isValidUrl(url: String): Boolean = url.isEmpty || url.matches("https?://[^ ].*")
+  private def isValidUrl(url: String): Boolean = url.isEmpty || url.matches("https?://[^ ]+")
 
   def parse(status: Status): Option[RaidInfo] = status.getText match {
     case _ if status.getSource != GranblueSource => None
