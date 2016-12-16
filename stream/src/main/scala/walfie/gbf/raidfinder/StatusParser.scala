@@ -6,8 +6,8 @@ import scala.util.Try
 
 object StatusParser {
   /** Regexes to match raid request tweets */
-  val RaidRegexJapanese = "((?s).*)参加者募集！参戦ID：([0-9A-F]+)\n(.+)\n?.*".r
-  val RaidRegexEnglish = "((?s).*)I need backup!Battle ID: ([0-9A-F]+)\n(.+)\n?.*".r
+  val RaidRegexJapanese = "((?s).*)参加者募集！参戦ID：([0-9A-F]+)\n(.+)\n?(.*)".r
+  val RaidRegexEnglish = "((?s).*)I need backup!Battle ID: ([0-9A-F]+)\n(.+)\n?(.*)".r
 
   /**
     * Regex to get boss level from full name
@@ -20,14 +20,15 @@ object StatusParser {
     """<a href="http://granbluefantasy.jp/" rel="nofollow">グランブルー ファンタジー</a>"""
 
   def isValidName(name: BossName): Boolean = !name.contains("http")
+  private def isValidUrl(url: String): Boolean = url.isEmpty || url.matches("https?://[^ ].*")
 
   def parse(status: Status): Option[RaidInfo] = status.getText match {
     case _ if status.getSource != GranblueSource => None
 
-    case RaidRegexJapanese(extraText, raidId, boss) if isValidName(boss) =>
+    case RaidRegexJapanese(extraText, raidId, boss, url) if isValidName(boss) && isValidUrl(url) =>
       Some(TweetParts(status, extraText, raidId, boss).toRaidInfo(Language.Japanese))
 
-    case RaidRegexEnglish(extraText, raidId, boss) if isValidName(boss) =>
+    case RaidRegexEnglish(extraText, raidId, boss, url) if isValidName(boss) && isValidUrl(url) =>
       Some(TweetParts(status, extraText, raidId, boss).toRaidInfo(Language.English))
 
     case _ => None
