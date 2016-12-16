@@ -10,7 +10,7 @@ import scala.concurrent.duration._
 import walfie.gbf.raidfinder.domain
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.syntax.ResponseOps
-import walfie.gbf.raidfinder.RaidFinder
+import walfie.gbf.raidfinder.{RaidFinder, StatusParser}
 import walfie.gbf.raidfinder.server.{ImageBasedBossNameTranslator => translator}
 import walfie.gbf.raidfinder.server.persistence._
 import walfie.gbf.raidfinder.server.syntax.ProtocolConverters._
@@ -117,12 +117,14 @@ object Application {
     storage
       .get[RaidBossesItem](key)
       .fold(Seq.empty[domain.RaidBoss])(_.raidBosses.map(_.toDomain))
+      .filter(boss => StatusParser.isValidName(boss.name))
   }
 
   def getCachedTranslationData(storage: ProtobufStorage, key: String): Seq[translator.TranslationData] = {
     storage
       .get[TranslationDataItem](key)
       .fold(Seq.empty[translator.TranslationData])(_.data.map(_.toDomain))
+      .filter(data => StatusParser.isValidName(data.name))
   }
 
   def handleShutdown(mode: Mode.Mode, shutdown: () => Unit) = {

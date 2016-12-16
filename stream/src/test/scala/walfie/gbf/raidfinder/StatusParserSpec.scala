@@ -150,6 +150,16 @@ class StatusParserSpec extends StatusParserSpecHelpers {
     val haiku = "#GranblueHaiku http://example.com/haiku.png"
     StatusParser.parse(mockStatus(text = haiku)) shouldBe None
   }
+
+  "return None if boss name contains http" in {
+    // Ignore tweets made via the daily Twitter refresh
+    // https://github.com/walfie/gbf-raidfinder/issues/98
+    val text = """
+      |救援依頼 参加者募集！参戦ID：114514810
+      |Lv100 ケルベロス スマホRPGは今これをやってるよ。今の推しキャラはこちら！　ゲーム内プロフィール→　https://t.co/5Xgohi9wlE https://t.co/Xlu7lqQ3km
+      """.stripMargin.trim
+    StatusParser.parse(mockStatus(text = text)) shouldBe None
+  }
 }
 
 trait StatusParserSpecHelpers extends FreeSpec with MockitoSugar {

@@ -19,13 +19,15 @@ object StatusParser {
   val GranblueSource =
     """<a href="http://granbluefantasy.jp/" rel="nofollow">グランブルー ファンタジー</a>"""
 
+  def isValidName(name: BossName): Boolean = !name.contains("http")
+
   def parse(status: Status): Option[RaidInfo] = status.getText match {
     case _ if status.getSource != GranblueSource => None
 
-    case RaidRegexJapanese(extraText, raidId, boss) =>
+    case RaidRegexJapanese(extraText, raidId, boss) if isValidName(boss) =>
       Some(TweetParts(status, extraText, raidId, boss).toRaidInfo(Language.Japanese))
 
-    case RaidRegexEnglish(extraText, raidId, boss) =>
+    case RaidRegexEnglish(extraText, raidId, boss) if isValidName(boss) =>
       Some(TweetParts(status, extraText, raidId, boss).toRaidInfo(Language.English))
 
     case _ => None
