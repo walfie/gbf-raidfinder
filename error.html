@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta content="width=device-width,initial-scale=1.0" name=viewport>
+<title>Error | Granblue Raid Finder</title>
+<link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+
+<style>
+html, body {
+  font-family: sans-serif;
+  background-color: #F7F8FB;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.message {
+  text-align: center;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px 20px;
+  max-width: 500px;
+}
+
+.message__title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 15px;
+  color: #444444;
+  margin-bottom: 8px;
+}
+
+p {
+  font-size: 15px;
+  color: #555555;
+  line-height: 21px;
+  margin-bottom: 4px;
+}
+
+.info_area {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+}
+
+.logo {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+}
+
+a {
+  text-decoration: none;
+  color: #6e5ca4;
+  font-weight: bold;
+}
+
+p a:hover {
+  text-decoration: underline;
+}
+</style>
+<base target=_parent />
+</head>
+
+<body>
+
+<div class=spacer>
+  <img src="images/sad_hermit.png" title="Sad hermit Akari (by @walfieee)">
+</div>
+<div class=message>
+  <div class=message__title>Application Error</div>
+  <p>gbf-raidfinder is unavailable, possibly due to high amounts of traffic.</p>
+  <p>
+  You can check back later, or use the <a href="http://granblue-raidfinder.herokuapp.com" target="_blank">backup site</a> (or <a href="http://gbf-raider.com" target="_blank">gbf-raider</a>).
+  </p>
+  <p>
+    gbf-raidfinder runs on Heroku's free tier. If you want to set up your own instance, you
+    can follow the instructions on the
+    <a href="https://github.com/walfie/gbf-raidfinder/blob/master/docs/heroku.md">GitHub repo</a>.
+  </p>
+</div>
+<div class=logo>
+  <a href="https://twitter.com/gbf_raidfinder" target="_blank" title="@gbf_raidfinder on Twitter">
+    <img src="images/twitter.png">
+  </a>
+  <a href="https://github.com/walfie/gbf-raidfinder" target="_blank" title="walfie/gbf-raidfinder on GitHub">
+    <img src="images/github.png">
+  </a>
+</div>
+<div class=info_area>
+  <a href="https://heroku.com/deploy?template=https://github.com/walfie/gbf-raidfinder" target="_blank">
+    <img src="https://www.herokucdn.com/deploy/button.svg">
+  </a>
+</div>
+
+</body>
+</html>
