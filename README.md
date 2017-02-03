@@ -5,6 +5,8 @@
 
 ![Screenshot](http://i.imgur.com/utjVgBV.png)
 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 ## Features
 
 gbf-raidfinder is similar to manually configuring boss names as search
@@ -30,5 +32,6 @@ boss discovery and automatic translations), see
 [`/docs/implementation.md`](/docs/implementation.md).
 
 For project details (including running the app locally and deploying to
-Heroku), see [`/docs/project.md`](/docs/project.md).
+Heroku), see [`/docs/project.md`](/docs/project.md) and
+[`/docs/heroku.md`](/docs/heroku.md).
 

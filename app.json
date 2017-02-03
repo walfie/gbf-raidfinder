@@ -1,0 +1,17 @@
+{
+  "name": "gbf-raidfinder",
+  "description": "A TweetDeck-like site for streaming Granblue raid tweets",
+  "repository": "https://github.com/walfie/gbf-raidfinder",
+  "logo": "https://cdn.rawgit.com/walfie/gbf-raidfinder/master/client/src/main/resources/public/icons/android-chrome-192x192.png",
+  "keywords": ["gbf", "granblue", "granblue fantasy"],
+  "env": {
+    "oauth.consumerKey": { "description": "Twitter consumer key (API Key)" },
+    "oauth.consumerSecret": { "description": "Twitter consumer secret (API Secret)" },
+    "oauth.accessToken": { "description": "Twitter access token" },
+    "oauth.accessTokenSecret": { "description": "Twitter access token secret" }
+  },
+  "addons": [
+    "rediscloud:30"
+  ]
+}
+
