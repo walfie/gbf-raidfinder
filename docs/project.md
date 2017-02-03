@@ -42,7 +42,9 @@ restarts.
 
 ### Run Locally
 
-* Ensure you have [jre](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html), [sbt](http://www.scala-sbt.org/), and [python 2.x](https://www.python.org/downloads/) installed prior to running the app.
+* Ensure you have [jre](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html),
+[sbt](http://www.scala-sbt.org/), and [python 2.x](https://www.python.org/downloads/)
+(if using Windows) installed prior to running the app.
 
 The Play application can be run with `sbt run` and going to
 [localhost:9000](http://localhost:9000). This will also compile the
@@ -54,30 +56,7 @@ via local filesystem or some other HTTP server). If viewed via local
 filesystem, the client will connect to `gbf-raidfinder.aikats.us` instead
 of a locally-running server.
 
-## Heroku Deployment
+### Heroku Deployment
 
-gbf-raidfinder uses [sbt-heroku](https://github.com/heroku/sbt-heroku) for
-Heroku deployment. To run your own instance, you will need to set some
-environment variables and enable Redis Cloud.
-
-* Set Twitter credentials:
-
-  ```sh
-  heroku config:add oauth.consumerKey=insert
-  heroku config:add oauth.consumerSecret=your
-  heroku config:add oauth.accessToken=credentials
-  heroku config:add oauth.accessTokenSecret=here
-  ```
-
-* Add the [Redis Cloud](https://elements.heroku.com/addons/rediscloud)
-  add-on to your project
-
-* Change the following line in [`/build.sbt`](/build.sbt) to point to your
-  application name (not "gbf-raidfinder")
-
-  ```scala
-  herokuAppName in Compile := "gbf-raidfinder",
-  ```
-
-* Run `sbt stage deployHeroku`
+See [`docs/heroku.md`](heroku.md) for instructions on deploying to Heroku.
 
