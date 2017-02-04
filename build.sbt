@@ -95,28 +95,49 @@ lazy val client = (project in file("client"))
   )
   .dependsOn(protocolJS, buildInfoJS)
 
+lazy val herokuSettings = Seq(
+  herokuAppName in Compile := "gbf-raidfinder",
+  herokuSkipSubProjects in Compile := false,
+  herokuProcessTypes in Compile := Map(
+    "web" -> Seq(
+      s"target/universal/stage/bin/${name.value}",
+      "-Dhttp.port=$PORT",
+      "-Dapplication.cache.redisUrl=$REDISCLOUD_URL",
+      "-Dapplication.mode=prod"
+    ).mkString(" ")
+  )
+)
+
+val jsFast = fastOptJS.in(client, Compile)
+val jsFull = fullOptJS.in(client, Compile)
+val jsAll = Seq(jsFast, jsFull)
+
+lazy val dockerSettings = Seq(
+  packageName in Docker := name.value,
+  dockerRepository := Some("walfie"),
+  dockerExposedPorts := Seq(9000),
+  dockerEntrypoint := Seq(
+    s"bin/${executableScriptName.value}",
+    "-Dapplication.mode=prod",
+    s"-Dhttp.port=${dockerExposedPorts.value.head}"
+  ),
+  dockerBaseImage := "anapsix/alpine-java:8_server-jre",
+  dockerUpdateLatest := true,
+  stage in Docker := stage.in(Docker).dependsOn(jsAll: _*).value
+)
+
 // TODO: Running `test` on the root project doesn't test `stream` project
 lazy val root = (project in file("."))
-  .enablePlugins(JavaServerAppPackaging)
+  .enablePlugins(JavaServerAppPackaging, DockerPlugin)
   .dependsOn(server, client)
-  .settings(commonSettings: _*)
+  .settings((commonSettings ++ herokuSettings ++ dockerSettings): _*)
   .settings(
     name := "gbf-raidfinder",
     publish := (),
     releaseProcess -= ReleaseTransformations.publishArtifacts,
     mainClass in Compile := Some("walfie.gbf.raidfinder.server.Application"),
 
-    run in Compile := run.in(Compile).dependsOn(fastOptJS.in(client, Compile)).evaluated,
-    stage := stage.dependsOn(fullOptJS.in(client, Compile)).value,
-    herokuAppName in Compile := "gbf-raidfinder",
-    herokuSkipSubProjects in Compile := false,
-    herokuProcessTypes in Compile := Map(
-      "web" -> Seq(
-        s"target/universal/stage/bin/${name.value}",
-        "-Dhttp.port=$PORT",
-        "-Dapplication.cache.redisUrl=$REDISCLOUD_URL",
-        "-Dapplication.mode=prod"
-      ).mkString(" ")
-    )
+    run in Compile := run.in(Compile).dependsOn(jsFast).evaluated,
+    stage := stage.dependsOn(jsAll: _*).value
   )
 

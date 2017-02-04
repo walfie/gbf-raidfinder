@@ -5,7 +5,11 @@
 
 ![Screenshot](http://i.imgur.com/utjVgBV.png)
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[DockerHub](https://hub.docker.com/r/walfie/gbf-raidfinder/)
+•
+[Twitter](https://twitter.com/gbf_raidfinder)
+•
+[Deploy to Heroku](https://heroku.com/deploy)
 
 ## Features
 
@@ -25,13 +29,26 @@ terms in TweetDeck, but with some additional functionality:
   * Adds new bosses automatically when they're tweeted about
   * Boss names are automatically translated when possible
 
-## Documentation
+## Deployment
 
-For implementation details for some of the above features (including raid
-boss discovery and automatic translations), see
-[`/docs/implementation.md`](/docs/implementation.md).
+gbf-raidfinder uses [sbt-native-packager](https://github.com/sbt/sbt-native-packager)
+for creating runnable packages. The [sbt-native-packager docs](http://www.scala-sbt.org/sbt-native-packager/index.html)
+explain the types of packages that are possible.
 
-For project details (including running the app locally and deploying to
-Heroku), see [`/docs/project.md`](/docs/project.md) and
-[`/docs/heroku.md`](/docs/heroku.md).
+More detailed descriptions of gbf-raidfinder supported deployments
+can be found on the following pages:
+
+* [Heroku](/docs/deployment/heroku.md)
+* [Docker](/docs/deployment/docker.md)
+
+The original version of gbf-raidfinder runs on Heroku's free tier.
+
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+## Additional Documentation
+
+* [Implementation details](/docs/implementation.md): explains some
+  runtime logic (raid boss discovery, automatic translations, etc)
+* [Project details](/docs/project.md): project structure and local
+  development
 

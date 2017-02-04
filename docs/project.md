@@ -56,7 +56,3 @@ via local filesystem or some other HTTP server). If viewed via local
 filesystem, the client will connect to `gbf-raidfinder.aikats.us` instead
 of a locally-running server.
 
-### Heroku Deployment
-
-See [`docs/heroku.md`](heroku.md) for instructions on deploying to Heroku.
-
