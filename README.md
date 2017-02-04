@@ -5,7 +5,9 @@
 
 ![Screenshot](http://i.imgur.com/utjVgBV.png)
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[Heroku](https://heroku.com/deploy) |
+[DockerHub](https://hub.docker.com/r/walfie/gbf-raidfinder/) |
+[Twitter](https://twitter.com/gbf_raidfinder)
 
 ## Features
 
@@ -27,11 +29,10 @@ terms in TweetDeck, but with some additional functionality:
 
 ## Documentation
 
-For implementation details for some of the above features (including raid
-boss discovery and automatic translations), see
-[`/docs/implementation.md`](/docs/implementation.md).
-
-For project details (including running the app locally and deploying to
-Heroku), see [`/docs/project.md`](/docs/project.md) and
-[`/docs/heroku.md`](/docs/heroku.md).
+* [Implementation details](/docs/implementation.md): explains some
+  runtime logic (raid boss discovery, automatic translations, etc)
+* [Project details](/docs/project.md): project structure and local
+  development
+* [Deployment](/docs/deployment/README.md): how to deploy to Heroku or
+  run the app in a Docker container
 
