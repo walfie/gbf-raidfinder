@@ -37,7 +37,7 @@ wanted to run the app on port 5555 of the host machine:
 docker run -p5555:9000 --env-file /path/to/env walfie/gbf-raidfinder
 ```
 
-The above would bind port 9000 of the application to port 1234 of the
+The above would bind port 9000 of the application to port 5555 of the
 host machine, and set environment variables based on the file.
 
 This is equivalent to:
@@ -63,4 +63,3 @@ one on DockerHub, you can run the following in the root directory:
 ```
 sbt docker:publish
 ```
-
