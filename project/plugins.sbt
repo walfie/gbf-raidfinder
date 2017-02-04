@@ -6,7 +6,7 @@ addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.6.0")
 
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.12")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.4")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.5")
 
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.3")
 
