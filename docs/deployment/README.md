@@ -7,8 +7,8 @@ explain the types of packages that are possible.
 More detailed descriptions of gbf-raidfinder supported deployments
 can be found on the following pages:
 
-* [Heroku](docs/deployment/heroku.md)
-* [Docker](docs/deployment/docker.md)
+* [Heroku](heroku.md)
+* [Docker](docker.md)
 
 The original version of gbf-raidfinder runs on Heroku's free tier.
 
