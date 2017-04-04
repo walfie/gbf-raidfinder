@@ -14,7 +14,11 @@ trait RaidFinder[T] {
   def getRaidTweets(bossName: BossName): Observable[T]
   def newBossObservable: Observable[RaidBoss]
   def getKnownBosses(): Map[BossName, RaidBoss]
-  def purgeOldBosses(minDate: Date, levelThreshold: Int): Future[Map[BossName, RaidBoss]]
+  def purgeOldBosses(
+    minDate:        Date,
+    levelThreshold: Option[Int]
+  ): Future[Map[BossName, RaidBoss]]
+
   def shutdown(): Unit
 }
 
@@ -114,7 +118,11 @@ class RaidFinderImpl[T](
     knownBosses.get()
   def getRaidTweets(bossName: BossName): Observable[T] =
     partitioner.getObservable(bossName)
-  def purgeOldBosses(minDate: Date, levelThreshold: Int): Future[Map[BossName, RaidBoss]] =
+
+  def purgeOldBosses(
+    minDate:        Date,
+    levelThreshold: Option[Int]
+  ): Future[Map[BossName, RaidBoss]] =
     knownBosses.purgeOldBosses(minDate, levelThreshold)
 }
 

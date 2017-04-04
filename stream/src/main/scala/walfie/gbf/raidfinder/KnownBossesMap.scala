@@ -16,7 +16,10 @@ trait KnownBossesMap {
     * @param minDate Remove bosses that haven't been seen since this date
     * @param levelThreshold Bosses higher than this level (inclusive) will not be removed
     */
-  def purgeOldBosses(minDate: Date, levelThreshold: Int): Future[Map[BossName, RaidBoss]]
+  def purgeOldBosses(
+    minDate:        Date,
+    levelThreshold: Option[Int]
+  ): Future[Map[BossName, RaidBoss]]
 }
 
 object KnownBossesObserver {
@@ -59,10 +62,10 @@ class KnownBossesObserver(
   def get(): Map[BossName, RaidBoss] = agent.get()
   def purgeOldBosses(
     minDate:        Date,
-    levelThreshold: Int
+    levelThreshold: Option[Int]
   ): Future[Map[BossName, RaidBoss]] = {
     agent.alter(_.filter {
-      case (name, boss) => boss.lastSeen.after(minDate) || boss.level >= levelThreshold
+      case (name, boss) => boss.lastSeen.after(minDate) || levelThreshold.exists(boss.level >= _)
     })
   }
 }
