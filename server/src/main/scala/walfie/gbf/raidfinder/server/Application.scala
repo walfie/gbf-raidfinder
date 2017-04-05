@@ -7,14 +7,15 @@ import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import play.api.{Logger, Mode}
 import scala.concurrent.duration._
+import scala.concurrent.Future
 import walfie.gbf.raidfinder.domain
 import walfie.gbf.raidfinder.protocol._
 import walfie.gbf.raidfinder.protocol.syntax.ResponseOps
-import walfie.gbf.raidfinder.{RaidFinder, StatusParser}
-import walfie.gbf.raidfinder.server.{ImageBasedBossNameTranslator => translator}
 import walfie.gbf.raidfinder.server.persistence._
 import walfie.gbf.raidfinder.server.syntax.ProtocolConverters._
+import walfie.gbf.raidfinder.server.{ImageBasedBossNameTranslator => translator}
 import walfie.gbf.raidfinder.util.BlockingIO
+import walfie.gbf.raidfinder.{RaidFinder, StatusParser}
 
 object Application {
   def main(args: Array[String]): Unit = {
@@ -49,14 +50,27 @@ object Application {
     ) {
       // Purge old bosses and then update the cache
       val purgeMinDate = new Date(System.currentTimeMillis() - bossStorageConfig.ttl.toMillis)
+
       for {
         domainBosses <- raidFinder.purgeOldBosses(
           minDate = purgeMinDate,
-          levelThreshold = bossStorageConfig.levelThreshold
+          levelThreshold = Some(bossStorageConfig.levelThreshold)
         )
-        protocolBosses = domainBosses.values.map { boss =>
+
+        // If maxTtl is specified, do another purge, ignoring boss level
+        domainBosses0 <- bossStorageConfig.maxTtl.fold(
+          Future.successful(domainBosses)
+        ) { maxTtl =>
+            raidFinder.purgeOldBosses(
+              minDate = new Date(System.currentTimeMillis() - maxTtl.toMillis),
+              levelThreshold = None
+            )
+          }
+
+        protocolBosses = domainBosses0.values.map { boss =>
           boss.toProtocol(translator.translate(boss.name))
         }
+
         cacheObj = RaidBossesItem(raidBosses = protocolBosses.toSeq)
         _ <- BlockingIO.future(protobufStorage.set(bossStorageConfig.cacheKey, cacheObj))
       } yield ()
@@ -145,6 +159,7 @@ object Application {
 case class BossStorageConfig(
   cacheKey:       String,
   ttl:            FiniteDuration,
+  maxTtl:         Option[FiniteDuration],
   flushInterval:  FiniteDuration,
   levelThreshold: Int
 )
