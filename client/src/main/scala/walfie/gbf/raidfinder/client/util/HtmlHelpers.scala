@@ -2,7 +2,7 @@ package walfie.gbf.raidfinder.client.util
 
 import org.scalajs.dom.experimental.{Notification, NotificationOptions}
 import org.scalajs.dom.raw._
-import org.scalajs.dom.{console, document}
+import org.scalajs.dom.{console, document, window}
 import scala.annotation.tailrec
 import scala.scalajs.js
 import scala.util.{Success, Failure, Try}
@@ -45,6 +45,27 @@ object HtmlHelpers {
     }
   }
 
+  private val iOsAgents = js.Array("iPad", "iPhone", "iPod")
+
+  // Select + copy on iOS works weirdly, and we can't just call `.select()`
+  // http://stackoverflow.com/questions/34045777/copy-to-clipboard-using-javascript-in-ios/41267511#41267511
+  private def select(elem: HTMLTextAreaElement): Unit = {
+    if (iOsAgents.exists(window.navigator.userAgent.contains)) {
+      elem.contentEditable = "true"
+      elem.readOnly = false
+
+      var range = document.createRange()
+      range.selectNodeContents(elem)
+
+      var sel = window.getSelection()
+      sel.removeAllRanges()
+      sel.addRange(range)
+      elem.setSelectionRange(0, 999999)
+    } else {
+      elem.select()
+    }
+  }
+
   /** Create an empty textarea, select the text inside, and copy to clipboard */
   def copy(stringToCopy: String): Boolean = {
     // If the user has already selected something, store the selection
@@ -56,13 +77,14 @@ object HtmlHelpers {
     val textArea = createInvisibleTextArea()
     textArea.value = stringToCopy
     document.body.appendChild(textArea)
-    textArea.select()
+    select(textArea)
 
     val result = try {
       document.execCommand("copy")
     } catch {
       case e: Throwable => false // TODO: Maybe don't swallow this exception
     } finally {
+      textArea.blur()
       document.body.removeChild(textArea)
     }
 
@@ -89,6 +111,7 @@ object HtmlHelpers {
     s.outline = "none"
     s.boxShadow = "none"
     s.background = "transparent"
+    s.fontSize = "16px"
 
     textArea
   }
