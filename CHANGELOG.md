@@ -1,5 +1,30 @@
 # Change Log
 
+## [v0.3.3](https://github.com/walfie/gbf-raidfinder/tree/v0.3.3) (2017-04-05)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.3.2...v0.3.3)
+
+**Implemented enhancements:**
+
+- Don't keep lv100 bosses on the list forever [\#110](https://github.com/walfie/gbf-raidfinder/issues/110)
+- Publish to DockerHub [\#107](https://github.com/walfie/gbf-raidfinder/issues/107)
+
+**Fixed bugs:**
+
+- iOS Safari clipboard copy [\#111](https://github.com/walfie/gbf-raidfinder/issues/111)
+
+**Closed issues:**
+
+- Attribution and Licensing [\#109](https://github.com/walfie/gbf-raidfinder/issues/109)
+- Names of Bosses are blank in Heroku Deployment [\#105](https://github.com/walfie/gbf-raidfinder/issues/105)
+- \[iOS\] Settings/Subscription cleared during refresh/reopen [\#104](https://github.com/walfie/gbf-raidfinder/issues/104)
+
+**Merged pull requests:**
+
+- Fix iOS Safari clipboard copy [\#113](https://github.com/walfie/gbf-raidfinder/pull/113) ([walfie](https://github.com/walfie))
+- Add 30-day max TTL for bosses, regardless of level [\#112](https://github.com/walfie/gbf-raidfinder/pull/112) ([walfie](https://github.com/walfie))
+- Publish to Docker [\#108](https://github.com/walfie/gbf-raidfinder/pull/108) ([walfie](https://github.com/walfie))
+- Add "Deploy to Heroku" button [\#103](https://github.com/walfie/gbf-raidfinder/pull/103) ([walfie](https://github.com/walfie))
+
 ## [v0.3.2](https://github.com/walfie/gbf-raidfinder/tree/v0.3.2) (2016-12-16)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.3.1...v0.3.2)
 
