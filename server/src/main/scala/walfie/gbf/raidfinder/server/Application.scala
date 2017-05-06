@@ -34,7 +34,10 @@ object Application {
 
     // Start RaidFinder
     val raidFinder = {
-      implicit val fromRaidTweet = domain.FromRaidTweet(_.toProtocol.toMessage)
+      implicit val fromRaidTweet: domain.FromRaidTweet[BinaryProtobuf] =
+        domain.FromRaidTweet { raidTweet =>
+          BinaryProtobuf(raidTweet.toProtocol.toMessage.toByteArray)
+        }
       val initialBosses = getCachedBosses(protobufStorage, bossStorageConfig.cacheKey)
       RaidFinder.withBackfill(initialBosses = initialBosses)
     }

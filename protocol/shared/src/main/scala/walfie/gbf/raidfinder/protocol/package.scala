@@ -10,6 +10,12 @@ package object protocol {
 }
 
 package protocol {
+  class BinaryProtobuf(val value: Array[Byte]) extends AnyVal
+  object BinaryProtobuf {
+    def apply(value: Array[Byte]): BinaryProtobuf =
+      new BinaryProtobuf(value)
+  }
+
   // Doesn't support versions with no bugfix segment
   // TODO: This throws a ton of errors on linking scala.js if this extends AnyVal.
   // Should figure out why. Maybe. It's not incredibly important.

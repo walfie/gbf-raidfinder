@@ -18,7 +18,7 @@ import walfie.gbf.raidfinder.server.util.MessageFlowTransformerUtil
 import walfie.gbf.raidfinder.server.{BossNameTranslator, MetricsCollector}
 
 class WebsocketController(
-  raidFinder:        RaidFinder[ResponseMessage],
+  raidFinder:        RaidFinder[BinaryProtobuf],
   translator:        BossNameTranslator,
   keepAliveInterval: FiniteDuration,
   metricsCollector:  MetricsCollector
@@ -42,7 +42,7 @@ class WebsocketController(
 
     val interval = if (keepAlive) Some(keepAliveInterval) else None
 
-    val transformerOpt: Option[MessageFlowTransformer[RequestMessage, ResponseMessage]] =
+    val transformerOpt: Option[MessageFlowTransformer[RequestMessage, BinaryProtobuf]] =
       if (requestedProtocols.isEmpty) {
         Some(defaultTransformer)
       } else requestedProtocols.collectFirst {

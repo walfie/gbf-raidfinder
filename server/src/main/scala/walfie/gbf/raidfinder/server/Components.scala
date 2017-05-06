@@ -16,13 +16,13 @@ import play.filters.cors.{CORSConfig, CORSFilter}
 import play.filters.gzip.GzipFilterComponents
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.Future
-import walfie.gbf.raidfinder.protocol.{RaidBossesResponse, ResponseMessage}
+import walfie.gbf.raidfinder.protocol.{RaidBossesResponse, BinaryProtobuf}
 import walfie.gbf.raidfinder.RaidFinder
 import walfie.gbf.raidfinder.server.controller._
 import walfie.gbf.raidfinder.server.syntax.ProtocolConverters.RaidBossDomainOps
 
 class Components(
-  raidFinder:                 RaidFinder[ResponseMessage],
+  raidFinder:                 RaidFinder[BinaryProtobuf],
   translator:                 BossNameTranslator,
   port:                       Int,
   mode:                       Mode,
