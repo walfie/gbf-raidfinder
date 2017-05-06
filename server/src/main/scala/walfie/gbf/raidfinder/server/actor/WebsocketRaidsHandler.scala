@@ -21,7 +21,7 @@ class WebsocketRaidsHandler(
 )(implicit scheduler: Scheduler) extends Actor {
   import WebsocketRaidsHandler.SerializedKeepAliveMessage
 
-  implicit val implicitTranslator: BossNameTranslator = translator
+  private implicit val implicitTranslator: BossNameTranslator = translator
 
   // On connect, send current version
   override def preStart(): Unit = {
@@ -29,13 +29,13 @@ class WebsocketRaidsHandler(
     metricsCollector.webSocketConnected()
   }
 
-  var followed: Map[BossName, Cancelable] = Map.empty
-  val newBossCancelable = raidFinder.newBossObservable.foreach { boss =>
+  private var followed: Map[BossName, Cancelable] = Map.empty
+  private val newBossCancelable = raidFinder.newBossObservable.foreach { boss =>
     val bosses = Seq(boss.toProtocol)
     this push RaidBossesResponse(raidBosses = bosses)
   }
 
-  val newTranslationCancelable = translator.observable.foreach { translation =>
+  private val newTranslationCancelable = translator.observable.foreach { translation =>
     raidFinder.getKnownBosses.get(translation.from).foreach { boss =>
       // If a boss we're following gets a new translation, follow the translated boss too
       if (followed.isDefinedAt(translation.from)) {
@@ -51,15 +51,16 @@ class WebsocketRaidsHandler(
     case r: RequestMessage => r.toRequest.foreach(handleRequest)
   }
 
-  def push(response: Response): Unit = out ! BinaryProtobuf(response.toMessage.toByteArray)
+  private def push(response: Response): Unit =
+    out ! BinaryProtobuf(response.toMessage.toByteArray)
 
-  val keepAliveCancelable = keepAliveInterval.map { interval =>
+  private val keepAliveCancelable = keepAliveInterval.map { interval =>
     context.system.scheduler.schedule(interval, interval) {
       out ! SerializedKeepAliveMessage
     }
   }
 
-  val handleRequest: PartialFunction[Request, _] = {
+  private val handleRequest: PartialFunction[Request, _] = {
     case r: AllRaidBossesRequest =>
       val bosses = raidFinder.getKnownBosses.values.map(_.toProtocol)
       this push RaidBossesResponse(raidBosses = bosses.toSeq)
@@ -83,7 +84,7 @@ class WebsocketRaidsHandler(
       this push FollowStatusResponse(followed.keys.toSeq)
   }
 
-  def follow(bossNames: Seq[BossName]): Unit = {
+  private def follow(bossNames: Seq[BossName]): Unit = {
     // Filter out bosses we're already following
     val newBosses = bossNames.filterNot(followed.keys.toSet)
 
@@ -92,13 +93,15 @@ class WebsocketRaidsHandler(
         .getRaidTweets(bossName)
         .foreach(out ! _)
 
-      bossName -> cancelable
+      // Intern the bossName string to reduce memory usage, since boss
+      // names are repeated often between different users.
+      bossName.intern -> cancelable
     }
 
     followed = followed ++ cancelables
   }
 
-  def unfollow(bossNames: Seq[BossName]): Unit = {
+  private def unfollow(bossNames: Seq[BossName]): Unit = {
     bossNames.flatMap(followed.get).foreach(_.cancel())
     followed = followed -- bossNames
   }
