@@ -1,5 +1,13 @@
 # Change Log
 
+## [v0.3.4](https://github.com/walfie/gbf-raidfinder/tree/v0.3.4) (2017-05-06)
+[Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.3.3...v0.3.4)
+
+**Implemented enhancements:**
+
+- Use interned strings for per-user followed boss names [\#116](https://github.com/walfie/gbf-raidfinder/pull/116) ([walfie](https://github.com/walfie))
+- Optimize serializing outbound Protobuf messages [\#115](https://github.com/walfie/gbf-raidfinder/pull/115) ([walfie](https://github.com/walfie))
+
 ## [v0.3.3](https://github.com/walfie/gbf-raidfinder/tree/v0.3.3) (2017-04-05)
 [Full Changelog](https://github.com/walfie/gbf-raidfinder/compare/v0.3.2...v0.3.3)
 
