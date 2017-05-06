@@ -11,7 +11,7 @@ import scala.util.Try
 import walfie.gbf.raidfinder.protocol._
 
 object MessageFlowTransformerUtil {
-  private type ProtobufMessageFlowTransformer = MessageFlowTransformer[RequestMessage, ResponseMessage]
+  private type ProtobufMessageFlowTransformer = MessageFlowTransformer[RequestMessage, BinaryProtobuf]
 
   // Throwing a WebSocketCloseException doesn't seem to actually propagate the
   // close reason to the client, despite what the ScalaDoc page says.
@@ -25,14 +25,18 @@ object MessageFlowTransformerUtil {
     MessageFlowTransformer.stringMessageFlowTransformer.map(
       s => Try(JsonFormat.fromJsonString[RequestMessage](s))
         .getOrElse(throw closeWebsocket(binary = false)),
-      JsonFormat.toJsonString(_)
+      binary => JsonFormat.toJsonString(
+        ResponseMessage
+          .validate(binary.value)
+          .getOrElse(throw closeWebsocket(binary = false))
+      )
     )
   }
 
   implicit val protobufBinaryMessageFlowTransformer: ProtobufMessageFlowTransformer = {
     MessageFlowTransformer.byteArrayMessageFlowTransformer.map(
       RequestMessage.validate(_).getOrElse(throw closeWebsocket(binary = true)),
-      _.toByteArray
+      _.value
     )
   }
 }

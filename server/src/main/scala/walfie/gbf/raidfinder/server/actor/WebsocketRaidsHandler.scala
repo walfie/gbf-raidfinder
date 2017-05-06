@@ -14,7 +14,7 @@ import walfie.gbf.raidfinder.server.syntax.ProtocolConverters.{RaidBossDomainOps
 
 class WebsocketRaidsHandler(
   out:               ActorRef,
-  raidFinder:        RaidFinder[ResponseMessage],
+  raidFinder:        RaidFinder[BinaryProtobuf],
   translator:        BossNameTranslator,
   keepAliveInterval: Option[FiniteDuration],
   metricsCollector:  MetricsCollector
@@ -51,7 +51,7 @@ class WebsocketRaidsHandler(
     case r: RequestMessage => r.toRequest.foreach(handleRequest)
   }
 
-  def push(response: Response): Unit = out ! response.toMessage
+  def push(response: Response): Unit = out ! BinaryProtobuf(response.toMessage.toByteArray)
 
   val keepAliveCancelable = keepAliveInterval.map { interval =>
     context.system.scheduler.schedule(interval, interval) {
@@ -115,11 +115,12 @@ class WebsocketRaidsHandler(
 object WebsocketRaidsHandler {
   // Since this never changes, there's no need to create and serialize
   // a new instance of it every time.
-  private val SerializedKeepAliveMessage = KeepAliveResponse().toMessage
+  private val SerializedKeepAliveMessage: BinaryProtobuf =
+    BinaryProtobuf(KeepAliveResponse().toMessage.toByteArray)
 
   def props(
     out:               ActorRef,
-    raidFinder:        RaidFinder[ResponseMessage],
+    raidFinder:        RaidFinder[BinaryProtobuf],
     translator:        BossNameTranslator,
     keepAliveInterval: Option[FiniteDuration],
     metricsCollector:  MetricsCollector
