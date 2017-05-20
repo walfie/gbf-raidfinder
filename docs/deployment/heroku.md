@@ -27,18 +27,34 @@ gbf-raidfinder uses [sbt-heroku](https://github.com/heroku/sbt-heroku)
 for manual Heroku deployment. To run your own instance, you will need
 to set some environment variables and enable Redis Cloud.
 
+* Clone the repository and add Heroku as a remote:
+
+  ```sh
+  git clone https://github.com/walfie/gbf-raidfinder.git
+  cd gbf-raidfinder
+  heroku git:remote -a your-heroku-app-name-here
+  ```
+
 * Set Twitter credentials:
 
   ```sh
-  heroku config:add oauth.consumerKey=insert
-  heroku config:add oauth.consumerSecret=your
-  heroku config:add oauth.accessToken=credentials
-  heroku config:add oauth.accessTokenSecret=here
+  heroku config:add oauth.consumerKey=****************
+  heroku config:add oauth.consumerSecret=****************
+  heroku config:add oauth.accessToken=****************
+  heroku config:add oauth.accessTokenSecret=****************
   ```
 
 * Add the [Redis Cloud](https://elements.heroku.com/addons/rediscloud)
-  add-on to your project
+  add-on to your project, either on the website or using the command below:
+  
+  ```sh
+  heroku addons:create rediscloud:30
+  ```
 
+Then, you can either use the usual `git push heroku master` workflow (the app
+will be compiled on Heroku), or build it on your own computer and push the
+compiled artifacts using sbt as shown below:
+  
 * Change the following line in [`/build.sbt`](/build.sbt) to point to your
   application name (not "gbf-raidfinder")
 
@@ -48,3 +64,9 @@ to set some environment variables and enable Redis Cloud.
 
 * Run `sbt stage deployHeroku`
 
+## Troubleshooting
+
+If it deploys successfully but no bosses show up when you visit the site, check
+the Heroku logs for the app for any errors. It's most likely due to incorrectly
+configured Twitter API keys, so double-check that you've entered the correct
+keys.
