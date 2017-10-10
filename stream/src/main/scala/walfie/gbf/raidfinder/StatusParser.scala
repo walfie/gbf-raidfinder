@@ -6,8 +6,8 @@ import scala.util.Try
 
 object StatusParser {
   /** Regexes to match raid request tweets */
-  val RaidRegexJapanese = "((?s).*)参加者募集！参戦ID：([0-9A-F]+)\n(.+)\n?(.*)".r
-  val RaidRegexEnglish = "((?s).*)I need backup!Battle ID: ([0-9A-F]+)\n(.+)\n?(.*)".r
+  val RaidRegexJapanese = "((?s).*)([0-9A-F]{8}) :参戦ID\n参加者募集！\n(.+)\n?(.*)".r
+  val RaidRegexEnglish = "((?s).*)([0-9A-F]{8}) :Battle ID\nI need backup!\n(.+)\n?(.*)".r
 
   /**
     * Regex to get boss level from full name

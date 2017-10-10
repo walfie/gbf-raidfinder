@@ -220,25 +220,7 @@ class WebSocketRaidFinderClient(
         } yield addRaidTweetToColumn(tweet, column)
       }
 
-    case r: WelcomeResponse =>
-      val isOutdatedOpt = for {
-        clientVersion <- VersionString(BuildInfo.version).parse
-        serverVersion <- r.serverVersion.parse
-      } yield {
-        serverVersion > clientVersion
-      }
-
-      if (isOutdatedOpt.getOrElse(false)) {
-        HtmlHelpers.desktopNotification(
-          title = s"gbf-raidfinder v${r.serverVersion.value} is out!",
-          body = s"You are on v${BuildInfo.version}\n\n(Click to reload page)",
-          icon = "/icons/android-chrome-192x192.png", // TODO: Don't hardcode this
-          tag = "update",
-          onClick = (e: dom.Event) => dom.window.location.reload(),
-          closeOnClick = true
-        )
-      }
-
+    case r: WelcomeResponse => // Ignore
     case r: KeepAliveResponse => // Ignore
   }
 
