@@ -12,6 +12,7 @@
   },
   "addons": [
     "rediscloud:30"
-  ]
+  ],
+  "buildpacks": [ { "url": "heroku/scala" } ]
 }
 
