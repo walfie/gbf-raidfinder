@@ -42,7 +42,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
         |Newlines
         |Are
         |Cool
-        |参加者募集！参戦ID：ABCD1234
+        |ABCD1234 :参戦ID
+        |参加者募集！
         |Lv60 オオゾラッコ
         |http://example.com/image-that-is-ignored.png""".stripMargin.trim
 
@@ -53,7 +54,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
 
     "without extra text" in {
       val text = """
-        |参加者募集！参戦ID：ABCD1234
+        |ABCD1234 :参戦ID
+        |参加者募集！
         |Lv60 オオゾラッコ
         |http://example.com/image-that-is-ignored.png""".stripMargin.trim
 
@@ -86,7 +88,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
 
     "with extra text" in {
       val text = """
-        |INSERT CUSTOM MESSAGE HERE I need backup!Battle ID: ABCD1234
+        |INSERT CUSTOM MESSAGE HERE ABCD1234 :Battle ID
+        |I need backup!
         |Lvl 60 Ozorotter""".stripMargin.trim
       val status = mockStatus(text = text)
 
@@ -101,7 +104,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
         |Newlines
         |Are
         |Cool
-        |I need backup!Battle ID: ABCD1234
+        |ABCD1234 :Battle ID
+        |I need backup!
         |Lvl 60 Ozorotter
         |http://example.com/image-that-is-ignored.png""".stripMargin.trim
       val status = mockStatus(text = text)
@@ -113,7 +117,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
 
     "without extra text" in {
       val text = """
-        |I need backup!Battle ID: ABCD1234
+        |ABCD1234 :Battle ID
+        |I need backup!
         |Lvl 60 Ozorotter
         |http://example.com/image-that-is-ignored.png""".stripMargin.trim
       val status = mockStatus(text = text)
@@ -127,7 +132,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
   "parse a status without an image URL at the end" in {
     // New bosses (e.g., watermelon boss) might not have images when they first come out
     val text = """
-      |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
+      |INSERT CUSTOM MESSAGE HERE ABCD1234 :参戦ID
+      |参加者募集！
       |Lv60 オオゾラッコ""".stripMargin.trim
     val status = mockStatus(text = text)
 
@@ -136,7 +142,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
 
   "parse a status with a newline at the end" in {
     val text = """
-      |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
+      |INSERT CUSTOM MESSAGE HERE ABCD1234 :参戦ID
+      |参加者募集！
       |Lv60 オオゾラッコ""".stripMargin.trim + "\n"
     val status = mockStatus(text = text)
 
@@ -172,9 +179,10 @@ class StatusParserSpec extends StatusParserSpecHelpers {
     }
 
     "another daily refresh" in {
-      // First two lines are user input
+      // First three lines are user input
       val text = """
-        |救援依頼 参加者募集！参戦ID：114514810
+        |ABCD1234 :参戦ID
+        |参加者募集！
         |Lv100 ケルベロス
         |スマホRPGは今これをやってるよ。今の推しキャラはこちら！　ゲーム内プロフィール→　https://t.co/5Xgohi9wlE https://t.co/Xlu7lqQ3km
         """.stripMargin.trim
@@ -184,7 +192,8 @@ class StatusParserSpec extends StatusParserSpecHelpers {
     "image URL has extra text after" in {
       // First two lines are user input
       val text = """
-        |救援依頼 参加者募集！参戦ID：114514810
+        |ABCD1234 :参戦ID
+        |参加者募集！
         |Lv100 ケルベロス
         |https://t.co/5Xgohi9wlE https://t.co/Xlu7lqQ3km
         """.stripMargin.trim
@@ -197,7 +206,8 @@ trait StatusParserSpecHelpers extends FreeSpec with MockitoSugar {
   val now = new java.util.Date()
 
   val validTweetText = """
-    |INSERT CUSTOM MESSAGE HERE 参加者募集！参戦ID：ABCD1234
+    |INSERT CUSTOM MESSAGE HERE ABCD1234 :参戦ID
+    |参加者募集！
     |Lv60 オオゾラッコ
     |http://example.com/image-that-is-ignored.png""".stripMargin.trim
 

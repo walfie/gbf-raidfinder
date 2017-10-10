@@ -50,7 +50,7 @@ class KnownBossesObserverSpec extends KnownBossesObserverSpecHelpers {
       scheduler.tick()
       observer.get shouldBe bosses.map(boss => boss.name -> boss).toMap
 
-      val resultF = observer.purgeOldBosses(minDate = new Date(5), levelThreshold = 100)
+      val resultF = observer.purgeOldBosses(minDate = new Date(5), levelThreshold = Some(100))
       scheduler.tick()
 
       resultF.futureValue shouldBe
@@ -66,7 +66,7 @@ class KnownBossesObserverSpec extends KnownBossesObserverSpecHelpers {
       scheduler.tick()
       observer.get.values.toSet shouldBe bosses.toSet
 
-      val resultF = observer.purgeOldBosses(minDate = new Date(5), levelThreshold = 100)
+      val resultF = observer.purgeOldBosses(minDate = new Date(5), levelThreshold = Some(100))
       scheduler.tick()
 
       resultF.futureValue.values.toSet shouldBe

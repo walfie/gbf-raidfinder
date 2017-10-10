@@ -11,10 +11,7 @@ trait TwitterStreamer {
 }
 
 object TwitterStreamer {
-  // For English tweets, we can just search "I need backup!Battle ID:"
-  // For Japanese tweets we can't just use "参加者募集！" since words must be
-  // space-separated, and the only space-separated thing is the boss level.
-  val DefaultFilterTerms = (15 to 200 by 5).map("Lv" + _) :+ "I need backup!Battle ID:"
+  val DefaultFilterTerms = Seq("参加者募集！", ":参戦ID", "I need backup!", ":Battle ID")
 
   def apply(
     twitterStream: twitter4j.TwitterStream = TwitterStreamFactory.getSingleton,
