@@ -96,7 +96,7 @@ lazy val client = (project in file("client"))
   .dependsOn(protocolJS, buildInfoJS)
 
 lazy val herokuSettings = Seq(
-  herokuAppName in Compile := "gbf-raidfinder",
+  herokuAppName in Compile := "gbf-raidfinder-bb",
   herokuSkipSubProjects in Compile := false,
   herokuProcessTypes in Compile := Map(
     "web" -> Seq(
