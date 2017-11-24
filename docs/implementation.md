@@ -6,22 +6,13 @@ gbf-raidfinder uses Twitter's streaming API to find raid tweets. However,
 boss names aren't hardcoded into the program -- instead, they're
 automatically discovered when users tweet about them.
 
-For Japanese raid tweets, the gbf-raidfinder backend uses the search terms
-`Lv20,Lv25,Lv30,...,Lv150` and parses the tweets to get the boss name,
-raid ID, and other tweet information (boss image, user details, additional
-text). Tweets that don't parse or aren't tweeted from the official in-game
+The gbf-raidfinder backend uses the search terms `参加者募集！` and
+`I need backup!` and parses the tweets to get the boss name, raid ID,
+and other tweet information (boss image, user details, additional text).
+Tweets that don't parse or aren't tweeted from the official in-game
 Granblue twitter client are discarded. Tweets are then grouped by boss
 name. When a new boss name is found, it gets added to the list of known
 bosses.
-
-Note that we can't use `参加者募集！` -- which is in all Japanese raid
-tweets -- as a search term to find all raid tweets, since the Twitter
-streaming API has a limitation where CJK (Chinese, Japanese, Korean)
-tweets can only match on whitespace-separated words. Unfortunately,
-Japanese raid tweets don't have spaces in convenient spots.
-
-However, since English doesn't have this limitation, to find all English
-raid tweets, we just search for `I need backup!`.
 
 ## Automatic translations
 
