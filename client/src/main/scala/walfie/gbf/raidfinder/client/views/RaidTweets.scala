@@ -161,7 +161,7 @@ object RaidTweets {
 
     val headerRow =
       <div class="mdl-layout__header-row gbfrf-column__header-row">
-        <div class="mdl-layout-title gbfrf-column__header">
+        <div lang="ja" class="mdl-layout-title gbfrf-column__header">
           <div class="gbfrf-column__header-name">{ bossName.bind }</div>
           {
             raidBoss.bind.translatedName match {

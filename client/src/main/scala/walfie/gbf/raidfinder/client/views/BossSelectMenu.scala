@@ -31,7 +31,7 @@ object BossSelectMenu {
       } yield client.toggleFollow(bossName)
     })
 
-    <section id="gbfrf-dialog__follow" class={
+    <section lang="ja" id="gbfrf-dialog__follow" class={
       val isActive = currentTab.bind == DialogTab.Follow
       "gbfrf-dialog__content mdl-layout__tab-panel".addIf(isActive, "is-active")
     }>
