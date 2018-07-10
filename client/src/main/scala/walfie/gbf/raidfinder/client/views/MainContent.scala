@@ -5,6 +5,7 @@ import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding._
 import org.scalajs.dom
 import org.scalajs.dom.raw._
+import org.scalajs.dom.{window}
 import scala.scalajs.js
 import walfie.gbf.raidfinder.client._
 import walfie.gbf.raidfinder.client.audio._
@@ -94,8 +95,20 @@ object MainContent {
   @binding.dom
   def handleColumnWidth(columnWidthScale: Var[Double], style: HTMLStyleElement): Binding[Unit] = {
     val scale = columnWidthScale.bind
+    var defaultWidth = 240
+    var scaleWidth = 120
+
+    if(window.innerWidth <= 414) {
+      scaleWidth = (window.innerWidth/2).toInt;
+      defaultWidth = scaleWidth;
+
+    } else if(window.innerWidth <= 768) {
+      scaleWidth = ((window.innerWidth / 2) - (window.innerWidth / 3)).toInt;
+      defaultWidth = (window.innerWidth/2 - scaleWidth).toInt;
+    }
+
     style.innerHTML = js.Array(
-      s".gbfrf-column { width: ${240 + scale * 110}px; }",
+      s".gbfrf-column { width: ${defaultWidth + scale * scaleWidth}px; }",
       s".gbfrf-tweet__text { font-size: ${0.8 + scale * 0.2}em; margin-right: ${5 * (1 - scale)}px; }"
     ).join("\n")
   }
